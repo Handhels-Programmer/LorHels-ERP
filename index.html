@@ -268,7 +268,7 @@
                 <!-- VISTA: CLIENTES LISTA -->
                 <div id="view-clientes" class="app-view hidden-screen">
                     <div class="flex justify-between items-center mb-6">
-                        <button onclick="document.getElementById('form-add-client').classList.toggle('hidden')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium flex items-center shadow transition">
+                        <button onclick="openNewClientForm()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium flex items-center shadow transition">
                             <i data-lucide="plus" class="w-4 h-4 mr-2"></i> Nuevo Contacto
                         </button>
                     </div>
@@ -286,7 +286,7 @@
                             <div><label class="block text-xs font-semibold text-gray-600 mb-1">Límite de Crédito ($)</label><input type="number" id="cli-credit" class="w-full border rounded-lg px-3 py-2" value="0"></div>
                             <div class="md:col-span-3 flex justify-end gap-3 mt-2">
                                 <button type="button" onclick="document.getElementById('form-add-client').classList.add('hidden')" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg">Cancelar</button>
-                                <button type="submit" class="px-4 py-2 bg-indigo-600 text-white font-medium rounded-lg">Guardar</button>
+                                <button type="submit" id="btn-submit-client" class="px-4 py-2 bg-indigo-600 text-white font-medium rounded-lg">Guardar</button>
                             </div>
                         </div>
                     </form>
@@ -299,9 +299,14 @@
 
                 <!-- VISTA: CLIENTES DETALLES -->
                 <div id="view-clientes-detalles" class="app-view hidden-screen space-y-6">
-                    <button onclick="navigateTo('clientes', '10. Clientes/Prov.')" class="flex items-center text-slate-500 hover:text-indigo-600 font-medium transition mb-4">
-                        <i data-lucide="arrow-left" class="w-4 h-4 mr-2"></i> Volver a la lista
-                    </button>
+                    <div class="flex justify-between items-center mb-4">
+                        <button onclick="navigateTo('clientes', '10. Clientes/Prov.')" class="flex items-center text-slate-500 hover:text-indigo-600 font-medium transition">
+                            <i data-lucide="arrow-left" class="w-4 h-4 mr-2"></i> Volver a la lista
+                        </button>
+                        <button onclick="editCurrentClient()" class="flex items-center text-indigo-600 hover:text-indigo-800 font-medium transition bg-indigo-50 px-3 py-1.5 rounded-lg">
+                            <i data-lucide="edit" class="w-4 h-4 mr-2"></i> Editar Info
+                        </button>
+                    </div>
 
                     <div class="bg-white p-8 rounded-2xl shadow-sm border flex flex-col md:flex-row items-start gap-6">
                         <div id="cd-initial" class="w-20 h-20 rounded-full bg-slate-100 flex items-center justify-center text-3xl font-bold text-slate-400 shrink-0">
@@ -400,6 +405,8 @@
         let currentView = 'dashboard';
         let isRegistering = false; // Bandera para evitar conflictos al registrar
         let allClients = [];
+        let currentEditingClientId = null;
+        let currentViewClient = null;
         
         const menuItems = [
             { id: 'dashboard', icon: 'layout-dashboard', label: '1. Dashboard' },
@@ -787,17 +794,56 @@
                 phone: document.getElementById('cli-phone').value,
                 address: document.getElementById('cli-address').value,
                 shippingAddress: document.getElementById('cli-shipping').value,
-                creditLimit: parseFloat(document.getElementById('cli-credit').value || 0),
-                createdAt: serverTimestamp()
+                creditLimit: parseFloat(document.getElementById('cli-credit').value || 0)
             };
             try {
-                await addDoc(collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'clients'), data);
+                if (currentEditingClientId) {
+                    // Actualizar documento existente
+                    await updateDoc(doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'clients', currentEditingClientId), data);
+                    currentEditingClientId = null;
+                    document.getElementById('btn-submit-client').innerText = "Guardar";
+                } else {
+                    // Crear nuevo documento
+                    data.createdAt = serverTimestamp();
+                    await addDoc(collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'clients'), data);
+                }
                 e.target.reset();
                 e.target.classList.add('hidden');
             } catch (error) {
                 alert("Error guardando contacto.");
             }
         });
+
+        window.openNewClientForm = function() {
+            document.getElementById('form-add-client').reset();
+            currentEditingClientId = null;
+            document.getElementById('btn-submit-client').innerText = "Guardar";
+            document.getElementById('form-add-client').classList.toggle('hidden');
+        }
+
+        window.editCurrentClient = function() {
+            if(!currentViewClient) return;
+            
+            // Llenar el formulario con los datos actuales
+            document.getElementById('cli-type').value = currentViewClient.type;
+            document.getElementById('cli-org').value = currentViewClient.orgName;
+            document.getElementById('cli-name').value = currentViewClient.contactName || '';
+            document.getElementById('cli-email').value = currentViewClient.email || '';
+            document.getElementById('cli-phone').value = currentViewClient.phone || '';
+            document.getElementById('cli-address').value = currentViewClient.address || '';
+            document.getElementById('cli-shipping').value = currentViewClient.shippingAddress || '';
+            document.getElementById('cli-credit').value = currentViewClient.creditLimit || 0;
+            
+            // Establecer el estado de edición
+            currentEditingClientId = currentViewClient.id;
+            document.getElementById('btn-submit-client').innerText = "Actualizar";
+
+            // Cambiar a la vista principal de clientes y abrir formulario
+            document.querySelectorAll('.app-view').forEach(v => v.classList.add('hidden-screen'));
+            document.getElementById('view-clientes').classList.remove('hidden-screen');
+            document.getElementById('form-add-client').classList.remove('hidden');
+            lucide.createIcons();
+        }
 
         function loadClients() {
             if(!currentUser) return;
@@ -833,6 +879,8 @@
         
         // Mostrar detalles del cliente
         window.showClientDetails = function(client) {
+            currentViewClient = client; // Guardamos la referencia globalmente
+            
             // Ocultar vistas
             document.querySelectorAll('.app-view').forEach(v => v.classList.add('hidden-screen'));
             
