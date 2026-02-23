@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="do">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -265,7 +265,7 @@
                     </div>
                 </div>
 
-                <!-- VISTA: CLIENTES -->
+                <!-- VISTA: CLIENTES LISTA -->
                 <div id="view-clientes" class="app-view hidden-screen">
                     <div class="flex justify-between items-center mb-6">
                         <button onclick="document.getElementById('form-add-client').classList.toggle('hidden')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium flex items-center shadow transition">
@@ -279,7 +279,10 @@
                             <div><label class="block text-xs font-semibold text-gray-600 mb-1">Tipo *</label><select id="cli-type" class="w-full border rounded-lg px-3 py-2"><option value="cliente">Cliente</option><option value="proveedor">Proveedor</option></select></div>
                             <div><label class="block text-xs font-semibold text-gray-600 mb-1">Organización *</label><input required type="text" id="cli-org" class="w-full border rounded-lg px-3 py-2"></div>
                             <div><label class="block text-xs font-semibold text-gray-600 mb-1">Contacto Personal</label><input type="text" id="cli-name" class="w-full border rounded-lg px-3 py-2"></div>
+                            <div><label class="block text-xs font-semibold text-gray-600 mb-1">Email</label><input type="email" id="cli-email" class="w-full border rounded-lg px-3 py-2"></div>
                             <div><label class="block text-xs font-semibold text-gray-600 mb-1">Teléfono</label><input type="tel" id="cli-phone" class="w-full border rounded-lg px-3 py-2"></div>
+                            <div class="md:col-span-2"><label class="block text-xs font-semibold text-gray-600 mb-1">Dirección Principal</label><input type="text" id="cli-address" class="w-full border rounded-lg px-3 py-2"></div>
+                            <div class="md:col-span-2"><label class="block text-xs font-semibold text-gray-600 mb-1">Dirección Envío</label><input type="text" id="cli-shipping" class="w-full border rounded-lg px-3 py-2"></div>
                             <div><label class="block text-xs font-semibold text-gray-600 mb-1">Límite de Crédito ($)</label><input type="number" id="cli-credit" class="w-full border rounded-lg px-3 py-2" value="0"></div>
                             <div class="md:col-span-3 flex justify-end gap-3 mt-2">
                                 <button type="button" onclick="document.getElementById('form-add-client').classList.add('hidden')" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg">Cancelar</button>
@@ -291,6 +294,61 @@
                     <!-- Lista de Clientes -->
                     <div id="clients-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         <!-- Generado por JS -->
+                    </div>
+                </div>
+
+                <!-- VISTA: CLIENTES DETALLES -->
+                <div id="view-clientes-detalles" class="app-view hidden-screen space-y-6">
+                    <button onclick="navigateTo('clientes', '10. Clientes/Prov.')" class="flex items-center text-slate-500 hover:text-indigo-600 font-medium transition mb-4">
+                        <i data-lucide="arrow-left" class="w-4 h-4 mr-2"></i> Volver a la lista
+                    </button>
+
+                    <div class="bg-white p-8 rounded-2xl shadow-sm border flex flex-col md:flex-row items-start gap-6">
+                        <div id="cd-initial" class="w-20 h-20 rounded-full bg-slate-100 flex items-center justify-center text-3xl font-bold text-slate-400 shrink-0">
+                            <!-- Generado por JS -->
+                        </div>
+                        <div class="flex-1 w-full">
+                            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                                <div>
+                                    <h2 id="cd-org" class="text-3xl font-bold text-gray-800">Organización</h2>
+                                    <p id="cd-name" class="text-gray-500 text-lg">Contacto</p>
+                                    <span id="cd-type" class="inline-block mt-2 px-3 py-1 rounded-full text-xs font-bold uppercase bg-indigo-100 text-indigo-700">
+                                        Cliente
+                                    </span>
+                                </div>
+                                <div class="text-left md:text-right border md:border-none p-4 md:p-0 rounded-lg w-full md:w-auto bg-slate-50 md:bg-transparent">
+                                    <p class="text-sm text-gray-500 mb-1">Límite de Crédito</p>
+                                    <p id="cd-credit-limit" class="text-3xl font-black text-green-600">$0.00</p>
+                                    <p class="text-sm text-gray-500 mt-1">Balance Restante: <strong id="cd-credit-remaining">$0.00</strong></p>
+                                </div>
+                            </div>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8 border-t pt-6">
+                                <div>
+                                    <h4 class="font-bold text-gray-700 mb-3 flex items-center"><i data-lucide="phone" class="w-4 h-4 mr-2"></i> Contacto</h4>
+                                    <p class="text-sm text-gray-600"><strong>Email:</strong> <span id="cd-email">N/A</span></p>
+                                    <p class="text-sm text-gray-600 mt-1"><strong>Tel:</strong> <span id="cd-phone">N/A</span></p>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-gray-700 mb-3 flex items-center"><i data-lucide="building" class="w-4 h-4 mr-2"></i> Direcciones</h4>
+                                    <p class="text-sm text-gray-600"><strong>Principal:</strong> <span id="cd-address">N/A</span></p>
+                                    <p class="text-sm text-gray-600 mt-1"><strong>Envío:</strong> <span id="cd-shipping">N/A</span></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl shadow-sm border overflow-hidden">
+                        <div class="p-4 bg-slate-50 border-b flex justify-between items-center">
+                            <h3 class="font-bold text-gray-700">Histórico de Movimientos</h3>
+                            <div class="text-sm text-gray-500">
+                                <span>Facturas: <strong>0</strong></span> | 
+                                <span>Cotizaciones: <strong>0</strong></span>
+                            </div>
+                        </div>
+                        <div class="p-12 text-center text-gray-400">
+                            No hay transacciones registradas para este contacto aún.
+                        </div>
                     </div>
                 </div>
 
@@ -341,6 +399,7 @@
         let companyProfile = null;
         let currentView = 'dashboard';
         let isRegistering = false; // Bandera para evitar conflictos al registrar
+        let allClients = [];
         
         const menuItems = [
             { id: 'dashboard', icon: 'layout-dashboard', label: '1. Dashboard' },
@@ -649,9 +708,9 @@
             loadClients();
         }
 
-        function navigateTo(viewId, viewLabel) {
+        window.navigateTo = function(viewId, viewLabel) {
             currentView = viewId;
-            document.getElementById('header-title').innerText = viewLabel.replace(/^[0-9]+\.\s/, '');
+            document.getElementById('header-title').innerText = viewLabel ? viewLabel.replace(/^[0-9]+\.\s/, '') : viewId;
             
             document.querySelectorAll('.nav-btn').forEach((btn, idx) => {
                 if(menuItems[idx].id === viewId) {
@@ -666,9 +725,10 @@
             const targetView = document.getElementById(`view-${viewId}`);
             if(targetView) {
                 targetView.classList.remove('hidden-screen');
+                lucide.createIcons();
             } else {
                 document.getElementById('view-placeholder').classList.remove('hidden-screen');
-                document.getElementById('placeholder-title').innerText = `Módulo: ${viewLabel.replace(/^[0-9]+\.\s/, '')}`;
+                document.getElementById('placeholder-title').innerText = `Módulo: ${viewLabel ? viewLabel.replace(/^[0-9]+\.\s/, '') : viewId}`;
             }
         }
 
@@ -723,7 +783,10 @@
                 type: document.getElementById('cli-type').value,
                 orgName: document.getElementById('cli-org').value,
                 contactName: document.getElementById('cli-name').value,
+                email: document.getElementById('cli-email').value,
                 phone: document.getElementById('cli-phone').value,
+                address: document.getElementById('cli-address').value,
+                shippingAddress: document.getElementById('cli-shipping').value,
                 creditLimit: parseFloat(document.getElementById('cli-credit').value || 0),
                 createdAt: serverTimestamp()
             };
@@ -742,15 +805,21 @@
             onSnapshot(q, (snapshot) => {
                 const grid = document.getElementById('clients-grid');
                 grid.innerHTML = '';
+                allClients = [];
+                
                 snapshot.forEach(docSnap => {
-                    const c = docSnap.data();
+                    const c = {id: docSnap.id, ...docSnap.data()};
+                    allClients.push(c);
+                    
                     const card = document.createElement('div');
-                    card.className = "bg-white p-5 rounded-xl border shadow-sm relative group";
+                    card.className = "bg-white p-5 rounded-xl border shadow-sm relative group cursor-pointer hover:border-indigo-400 transition";
+                    card.onclick = () => showClientDetails(c);
+                    
                     card.innerHTML = `
                         <span class="absolute top-4 right-4 text-[10px] font-bold uppercase px-2 py-1 rounded-full ${c.type === 'cliente' ? 'bg-indigo-100 text-indigo-700' : 'bg-orange-100 text-orange-700'}">
                             ${c.type}
                         </span>
-                        <h3 class="font-bold text-lg text-gray-800 mb-1 pr-16 truncate">${c.orgName}</h3>
+                        <h3 class="font-bold text-lg text-gray-800 mb-1 pr-16 truncate group-hover:text-indigo-600">${c.orgName}</h3>
                         <p class="text-sm text-gray-500 mb-4">${c.contactName || 'Sin contacto'}</p>
                         <div class="text-sm text-gray-600 space-y-1">
                             <p>📞 ${c.phone || 'N/D'}</p>
@@ -760,6 +829,38 @@
                     grid.appendChild(card);
                 });
             });
+        }
+        
+        // Mostrar detalles del cliente
+        window.showClientDetails = function(client) {
+            // Ocultar vistas
+            document.querySelectorAll('.app-view').forEach(v => v.classList.add('hidden-screen'));
+            
+            // Llenar datos
+            document.getElementById('cd-initial').innerText = client.orgName.charAt(0);
+            document.getElementById('cd-org').innerText = client.orgName;
+            document.getElementById('cd-name').innerText = client.contactName || 'Sin contacto asociado';
+            
+            const typeBadge = document.getElementById('cd-type');
+            typeBadge.innerText = client.type;
+            if(client.type === 'cliente') {
+                typeBadge.className = 'inline-block mt-2 px-3 py-1 rounded-full text-xs font-bold uppercase bg-indigo-100 text-indigo-700';
+            } else {
+                typeBadge.className = 'inline-block mt-2 px-3 py-1 rounded-full text-xs font-bold uppercase bg-orange-100 text-orange-700';
+            }
+            
+            document.getElementById('cd-credit-limit').innerText = `$${client.creditLimit.toFixed(2)}`;
+            // En el futuro, el balance restante se calculará restando las facturas a crédito no pagadas
+            document.getElementById('cd-credit-remaining').innerText = `$${client.creditLimit.toFixed(2)}`;
+            
+            document.getElementById('cd-email').innerText = client.email || 'N/A';
+            document.getElementById('cd-phone').innerText = client.phone || 'N/A';
+            document.getElementById('cd-address').innerText = client.address || 'N/A';
+            document.getElementById('cd-shipping').innerText = client.shippingAddress || 'N/A';
+            
+            // Mostrar la vista de detalles
+            document.getElementById('view-clientes-detalles').classList.remove('hidden-screen');
+            lucide.createIcons();
         }
 
     </script>
