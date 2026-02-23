@@ -226,22 +226,45 @@
                 <!-- VISTA: PRODUCTOS -->
                 <div id="view-productos" class="app-view hidden-screen">
                     <div class="flex justify-between items-center mb-6">
-                        <button onclick="document.getElementById('form-container-products').classList.toggle('hidden')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium flex items-center shadow transition">
+                        <button onclick="openNewProductForm()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium flex items-center shadow transition">
                             <i data-lucide="plus" class="w-4 h-4 mr-2"></i> Nuevo Producto
                         </button>
                     </div>
 
                     <!-- Formulario Productos -->
                     <form id="form-add-product" class="hidden bg-white p-6 rounded-xl border shadow-sm mb-6">
-                        <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-4">
+                        <h3 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2">Detalles del Producto / Servicio</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
                             <div><label class="block text-xs font-semibold text-gray-600 mb-1">Tipo *</label><select id="prod-type" class="w-full border rounded-lg px-3 py-2"><option value="producto">Producto</option><option value="servicio">Servicio</option></select></div>
-                            <div class="md:col-span-2"><label class="block text-xs font-semibold text-gray-600 mb-1">Nombre *</label><input required type="text" id="prod-name" class="w-full border rounded-lg px-3 py-2"></div>
+                            <div class="lg:col-span-2"><label class="block text-xs font-semibold text-gray-600 mb-1">Nombre *</label><input required type="text" id="prod-name" class="w-full border rounded-lg px-3 py-2"></div>
                             <div><label class="block text-xs font-semibold text-gray-600 mb-1">Código / SKU *</label><input required type="text" id="prod-code" class="w-full border rounded-lg px-3 py-2"></div>
-                            <div><label class="block text-xs font-semibold text-gray-600 mb-1">Tasa Compra ($)</label><input type="number" id="prod-buy" class="w-full border rounded-lg px-3 py-2" value="0"></div>
-                            <div><label class="block text-xs font-semibold text-gray-600 mb-1">Tasa Venta ($) *</label><input required type="number" id="prod-sell" class="w-full border rounded-lg px-3 py-2"></div>
-                            <div class="md:col-span-4 flex justify-end gap-3 mt-2">
+                            
+                            <div><label class="block text-xs font-semibold text-gray-600 mb-1">Unidad (Ej. Kg, Litros)</label><input type="text" id="prod-unit" placeholder="Unidad" class="w-full border rounded-lg px-3 py-2"></div>
+                            <div><label class="block text-xs font-semibold text-gray-600 mb-1">Categoría</label><input type="text" id="prod-category" placeholder="General" class="w-full border rounded-lg px-3 py-2"></div>
+                            <div class="lg:col-span-2"><label class="block text-xs font-semibold text-gray-600 mb-1">Descripción Breve</label><input type="text" id="prod-desc" class="w-full border rounded-lg px-3 py-2"></div>
+
+                            <div class="lg:col-span-2"><label class="block text-xs font-semibold text-gray-600 mb-1">Imagen URL</label><input type="url" id="prod-image" placeholder="https://..." class="w-full border rounded-lg px-3 py-2"></div>
+                            <div class="lg:col-span-2"><label class="block text-xs font-semibold text-gray-600 mb-1">Proveedor Predeterminado</label><select id="prod-provider" class="w-full border rounded-lg px-3 py-2"><option value="">Sin proveedor</option></select></div>
+
+                            <div><label class="block text-xs font-semibold text-gray-600 mb-1">Tasa Compra ($)</label><input type="number" step="0.01" id="prod-buy" class="w-full border rounded-lg px-3 py-2" value="0"></div>
+                            <div><label class="block text-xs font-semibold text-gray-600 mb-1">Tasa Venta ($) *</label><input required type="number" step="0.01" id="prod-sell" class="w-full border rounded-lg px-3 py-2"></div>
+                            <div><label class="block text-xs font-semibold text-gray-600 mb-1">Impuesto (%)</label><input type="number" step="0.01" id="prod-tax" class="w-full border rounded-lg px-3 py-2" value="18"></div>
+                            
+                            <div class="lg:col-span-4 flex items-center justify-start mt-4 pl-1">
+                                <input type="checkbox" id="prod-track-stock" class="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 cursor-pointer">
+                                <label for="prod-track-stock" class="ml-2 block text-sm font-medium text-gray-700 cursor-pointer select-none">Activar control de stock</label>
+                            </div>
+
+                            <!-- Contenedor de cantidades de stock (Oculto por defecto) -->
+                            <div id="stock-fields-container" class="lg:col-span-4 grid grid-cols-1 md:grid-cols-3 gap-4 hidden bg-slate-50 p-4 rounded-lg border border-slate-200 mt-2">
+                                <div><label class="block text-xs font-semibold text-gray-600 mb-1">Stock Inicial</label><input type="number" id="prod-stock-initial" class="w-full border rounded-lg px-3 py-2" value="0"></div>
+                                <div><label class="block text-xs font-semibold text-gray-600 mb-1">Stock Actual</label><input type="number" id="prod-stock-current" class="w-full border rounded-lg px-3 py-2" value="0"></div>
+                                <div><label class="block text-xs font-semibold text-gray-600 mb-1">Stock Mínimo (Alerta)</label><input type="number" id="prod-stock-min" class="w-full border rounded-lg px-3 py-2" value="0" title="Si el stock actual es igual o menor a este, se generará una alerta"></div>
+                            </div>
+                            
+                            <div class="lg:col-span-4 flex justify-end gap-3 mt-4 pt-4 border-t">
                                 <button type="button" onclick="document.getElementById('form-add-product').classList.add('hidden')" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg">Cancelar</button>
-                                <button type="submit" class="px-4 py-2 bg-indigo-600 text-white font-medium rounded-lg">Guardar Producto</button>
+                                <button type="submit" id="btn-submit-product" class="px-4 py-2 bg-indigo-600 text-white font-medium rounded-lg">Guardar Producto</button>
                             </div>
                         </div>
                     </form>
@@ -256,6 +279,7 @@
                                     <th class="p-4 font-semibold text-gray-600">Tipo</th>
                                     <th class="p-4 font-semibold text-gray-600">Compra</th>
                                     <th class="p-4 font-semibold text-gray-600">Venta</th>
+                                    <th class="p-4 font-semibold text-gray-600 text-center">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody id="products-table-body" class="divide-y">
@@ -374,7 +398,6 @@
     <script type="module">
         // Importaciones de Firebase v11 (vía CDN Oficial)
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        // Ahora importamos métodos para autenticación con Email y Password real
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, query, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
@@ -403,10 +426,16 @@
         let currentUser = null;
         let companyProfile = null;
         let currentView = 'dashboard';
-        let isRegistering = false; // Bandera para evitar conflictos al registrar
+        let isRegistering = false;
+        
+        // Estado para Clientes
         let allClients = [];
         let currentEditingClientId = null;
         let currentViewClient = null;
+
+        // Estado para Productos
+        let allProducts = [];
+        let currentEditingProductId = null;
         
         const menuItems = [
             { id: 'dashboard', icon: 'layout-dashboard', label: '1. Dashboard' },
@@ -446,7 +475,6 @@
                 if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
                     await signInWithCustomToken(auth, __initial_auth_token);
                 } else {
-                    // Inicio anónimo como respaldo inicial
                     await signInAnonymously(auth);
                 }
             } catch (error) {
@@ -454,7 +482,6 @@
             }
         }
 
-        // Cargar lista de empresas en el login
         function loadLoginCompanies() {
             const q = query(collection(db, 'artifacts', APP_ID, 'public'));
             onSnapshot(q, (snapshot) => {
@@ -471,7 +498,6 @@
                     const div = document.createElement('div');
                     div.className = "cursor-pointer border rounded-lg p-3 flex items-center space-x-3 hover:border-indigo-500 hover:bg-indigo-50 transition bg-white";
                     
-                    // Al hacer clic, seleccionamos la empresa
                     div.onclick = () => {
                         document.querySelectorAll('#login-companies-grid > div').forEach(el => {
                             el.classList.remove('border-indigo-500', 'bg-indigo-50', 'ring-2', 'ring-indigo-200');
@@ -481,7 +507,6 @@
                         const emailInput = document.getElementById('login-email');
                         emailInput.value = c.email;
                         
-                        // Pequeña animación visual
                         emailInput.classList.add('bg-indigo-50');
                         setTimeout(() => emailInput.classList.remove('bg-indigo-50'), 500);
                         
@@ -515,7 +540,6 @@
             });
         }
 
-        // Observador de estado de autenticación
         onAuthStateChanged(auth, async (user) => {
             currentUser = user;
             if (user && !isRegistering) {
@@ -526,9 +550,8 @@
         });
 
         initAuth();
-        loadLoginCompanies(); // Inicializar la lista del login al cargar
+        loadLoginCompanies();
 
-        // 5. Lógica de Empresa (Validación)
         async function checkCompanyStatus(uid) {
             try {
                 const companyRef = doc(db, 'artifacts', APP_ID, 'public', `companies_${uid}`);
@@ -551,7 +574,6 @@
             }
         }
 
-        // --- MANEJO DE PESTAÑAS (LOGIN / REGISTRO) ---
         const tabLogin = document.getElementById('tab-login');
         const tabRegister = document.getElementById('tab-register');
         const formLogin = document.getElementById('form-login-company');
@@ -571,7 +593,6 @@
             tabLogin.className = 'px-6 py-3 font-bold text-gray-500 hover:text-indigo-600 transition';
         });
 
-        // --- EVENTO: INGRESAR A LA EMPRESA ---
         formLogin.addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('btn-submit-login');
@@ -582,7 +603,6 @@
 
             try {
                 await signInWithEmailAndPassword(auth, email, pin);
-                // onAuthStateChanged se encargará de redirigir a la app
             } catch (error) {
                 console.error(error);
                 alert("Credenciales incorrectas. Verifique su correo y que el PIN tenga 6 dígitos.");
@@ -590,22 +610,19 @@
             }
         });
 
-        // --- EVENTO: REGISTRO DE EMPRESA ---
         formRegister.addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('btn-submit-register');
             btn.innerHTML = "Guardando..."; btn.disabled = true;
-            isRegistering = true; // Bloqueamos momentáneamente onAuthStateChanged
+            isRegistering = true; 
 
             const email = document.getElementById('reg-email').value;
             const pin = document.getElementById('reg-pin').value;
 
             try {
-                // 1. Crear el usuario real con correo y contraseña
                 const userCredential = await createUserWithEmailAndPassword(auth, email, pin);
                 const newUid = userCredential.user.uid;
 
-                // 2. Guardar los datos de la empresa vinculados a su nuevo UID seguro
                 const data = {
                     uid: newUid,
                     logo: document.getElementById('reg-logo').value,
@@ -630,7 +647,6 @@
             }
         });
 
-        // Eventos para Cerrar Sesión
         document.getElementById('btn-logout-main').addEventListener('click', async () => {
             await signOut(auth);
         });
@@ -638,7 +654,6 @@
             await signOut(auth);
         });
 
-        // 6. Lógica de Administrador
         document.getElementById('btn-goto-admin').addEventListener('click', () => showScreen('adminLogin'));
         document.getElementById('btn-back-from-admin').addEventListener('click', () => showScreen('welcome'));
         
@@ -687,7 +702,6 @@
             await updateDoc(doc(db, 'artifacts', APP_ID, 'public', companyId), { status: 'approved' });
         };
 
-        // 7. LÓGICA DE LA APLICACIÓN PRINCIPAL (ERP)
         function setupMainApp() {
             document.getElementById('header-user-name').innerText = `👤 ${companyProfile.representative}`;
             document.getElementById('sidebar-company-name').innerText = companyProfile.companyName;
@@ -739,25 +753,120 @@
             }
         }
 
-        // -- MÓDULO: PRODUCTOS --
+        // ==========================================
+        // -- MÓDULO: PRODUCTOS (CREAR, LEER, ACTUALIZAR)
+        // ==========================================
+        
+        // Mostrar/Ocultar campos de stock al marcar el checkbox
+        document.getElementById('prod-track-stock').addEventListener('change', function() {
+            const container = document.getElementById('stock-fields-container');
+            if(this.checked) {
+                container.classList.remove('hidden');
+            } else {
+                container.classList.add('hidden');
+            }
+        });
+
+        // Función para cargar los proveedores en el select
+        function populateProvidersDropdown(selectedValue = '') {
+            const select = document.getElementById('prod-provider');
+            select.innerHTML = '<option value="">Sin proveedor</option>';
+            const providers = allClients.filter(c => c.type === 'proveedor');
+            
+            providers.forEach(p => {
+                const opt = document.createElement('option');
+                opt.value = p.id;
+                opt.text = p.orgName;
+                if(p.id === selectedValue) opt.selected = true;
+                select.appendChild(opt);
+            });
+        }
+
         document.getElementById('form-add-product').addEventListener('submit', async (e) => {
             e.preventDefault();
+            
+            const trackStock = document.getElementById('prod-track-stock').checked;
+            
             const data = {
                 type: document.getElementById('prod-type').value,
                 name: document.getElementById('prod-name').value,
                 code: document.getElementById('prod-code').value,
+                unit: document.getElementById('prod-unit').value,
+                category: document.getElementById('prod-category').value,
+                description: document.getElementById('prod-desc').value,
+                image: document.getElementById('prod-image').value,
+                providerId: document.getElementById('prod-provider').value,
+                trackStock: trackStock,
+                stockInitial: trackStock ? parseInt(document.getElementById('prod-stock-initial').value || 0) : 0,
+                stockCurrent: trackStock ? parseInt(document.getElementById('prod-stock-current').value || 0) : 0,
+                stockMin: trackStock ? parseInt(document.getElementById('prod-stock-min').value || 0) : 0,
                 buyRate: parseFloat(document.getElementById('prod-buy').value || 0),
                 sellRate: parseFloat(document.getElementById('prod-sell').value || 0),
-                createdAt: serverTimestamp()
+                tax: parseFloat(document.getElementById('prod-tax').value || 0)
             };
+            
             try {
-                await addDoc(collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'products'), data);
+                if(currentEditingProductId) {
+                    await updateDoc(doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'products', currentEditingProductId), data);
+                    currentEditingProductId = null;
+                } else {
+                    data.createdAt = serverTimestamp();
+                    await addDoc(collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'products'), data);
+                }
+                
                 e.target.reset();
+                document.getElementById('stock-fields-container').classList.add('hidden'); // Ocultar stock fields al guardar
                 e.target.classList.add('hidden');
+                document.getElementById('btn-submit-product').innerText = "Guardar Producto";
             } catch (error) {
                 alert("Error guardando producto.");
             }
         });
+
+        window.openNewProductForm = function() {
+            document.getElementById('form-add-product').reset();
+            populateProvidersDropdown(); // Cargar la lista de proveedores
+            document.getElementById('stock-fields-container').classList.add('hidden'); // Ocultar contenedor de stock
+            currentEditingProductId = null;
+            document.getElementById('btn-submit-product').innerText = "Guardar Producto";
+            document.getElementById('form-add-product').classList.remove('hidden');
+        }
+
+        window.editProduct = function(productId) {
+            const product = allProducts.find(p => p.id === productId);
+            if(!product) return;
+
+            document.getElementById('prod-type').value = product.type || 'producto';
+            document.getElementById('prod-name').value = product.name || '';
+            document.getElementById('prod-code').value = product.code || '';
+            document.getElementById('prod-unit').value = product.unit || '';
+            document.getElementById('prod-category').value = product.category || '';
+            document.getElementById('prod-desc').value = product.description || '';
+            document.getElementById('prod-image').value = product.image || '';
+            
+            populateProvidersDropdown(product.providerId || ''); // Cargar y seleccionar el proveedor
+            
+            const trackStockCheckbox = document.getElementById('prod-track-stock');
+            trackStockCheckbox.checked = product.trackStock || false;
+            
+            document.getElementById('prod-stock-initial').value = product.stockInitial || 0;
+            document.getElementById('prod-stock-current').value = product.stockCurrent || 0;
+            document.getElementById('prod-stock-min').value = product.stockMin || 0;
+            
+            // Disparar evento para mostrar u ocultar campos de stock
+            trackStockCheckbox.dispatchEvent(new Event('change'));
+
+            document.getElementById('prod-buy').value = product.buyRate || 0;
+            document.getElementById('prod-sell').value = product.sellRate || 0;
+            document.getElementById('prod-tax').value = product.tax || 0;
+
+            currentEditingProductId = product.id;
+            document.getElementById('btn-submit-product').innerText = "Actualizar Producto";
+            
+            const form = document.getElementById('form-add-product');
+            form.classList.remove('hidden');
+            form.scrollIntoView({ behavior: 'smooth' });
+        }
 
         function loadProducts() {
             if(!currentUser) return;
@@ -766,24 +875,64 @@
                 const tbody = document.getElementById('products-table-body');
                 tbody.innerHTML = '';
                 document.getElementById('dash-product-count').innerText = snapshot.size;
+                
+                allProducts = [];
 
                 snapshot.forEach(docSnap => {
-                    const p = docSnap.data();
+                    const p = {id: docSnap.id, ...docSnap.data()};
+                    allProducts.push(p);
+
+                    const imgHtml = p.image 
+                        ? `<img src="${p.image}" class="w-8 h-8 rounded-lg object-cover border mr-3 shrink-0">` 
+                        : `<div class="w-8 h-8 rounded-lg bg-gray-100 border mr-3 flex items-center justify-center text-gray-400 shrink-0"><i data-lucide="image" class="w-4 h-4"></i></div>`;
+
+                    let stockBadge = '';
+                    if (p.trackStock) {
+                        const currentStock = p.stockCurrent || 0;
+                        const minStock = p.stockMin || 0;
+                        if (currentStock <= minStock) {
+                            stockBadge = `<span class="bg-red-50 text-red-600 px-1.5 py-0.5 rounded text-[10px] ml-2 border border-red-100 font-bold" title="Stock por debajo del mínimo">Stock: ${currentStock}</span>`;
+                        } else {
+                            stockBadge = `<span class="bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded text-[10px] ml-2 border border-blue-100 font-bold">Stock: ${currentStock}</span>`;
+                        }
+                    }
+
                     const tr = document.createElement('tr');
-                    tr.className = 'hover:bg-slate-50';
+                    tr.className = 'hover:bg-slate-50 transition-colors';
                     tr.innerHTML = `
                         <td class="p-4 font-mono text-sm text-gray-500">${p.code}</td>
-                        <td class="p-4 font-bold text-gray-800">${p.name}</td>
-                        <td class="p-4 capitalize text-sm">${p.type}</td>
+                        <td class="p-4">
+                            <div class="flex items-center">
+                                ${imgHtml}
+                                <div>
+                                    <span class="font-bold text-gray-800">${p.name}</span>
+                                    <div class="text-xs font-normal text-gray-400 mt-0.5">
+                                        ${p.category || 'Sin categoría'}
+                                        ${stockBadge}
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="p-4 capitalize text-sm">
+                            <span class="bg-gray-100 text-gray-600 px-2 py-1 rounded-md text-xs font-medium border">${p.type}</span>
+                        </td>
                         <td class="p-4 text-gray-600">$${p.buyRate.toFixed(2)}</td>
                         <td class="p-4 font-black text-green-600">$${p.sellRate.toFixed(2)}</td>
+                        <td class="p-4 text-center">
+                            <button onclick="editProduct('${p.id}')" class="text-indigo-600 hover:text-indigo-900 bg-indigo-50 p-2 rounded-lg transition" title="Editar Producto / Gestionar Tasas">
+                                <i data-lucide="edit-3" class="w-4 h-4"></i>
+                            </button>
+                        </td>
                     `;
                     tbody.appendChild(tr);
                 });
+                lucide.createIcons();
             });
         }
 
-        // -- MÓDULO: CLIENTES --
+        // ==========================================
+        // -- MÓDULO: CLIENTES
+        // ==========================================
         document.getElementById('form-add-client').addEventListener('submit', async (e) => {
             e.preventDefault();
             const data = {
@@ -798,12 +947,10 @@
             };
             try {
                 if (currentEditingClientId) {
-                    // Actualizar documento existente
                     await updateDoc(doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'clients', currentEditingClientId), data);
                     currentEditingClientId = null;
                     document.getElementById('btn-submit-client').innerText = "Guardar";
                 } else {
-                    // Crear nuevo documento
                     data.createdAt = serverTimestamp();
                     await addDoc(collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'clients'), data);
                 }
@@ -824,7 +971,6 @@
         window.editCurrentClient = function() {
             if(!currentViewClient) return;
             
-            // Llenar el formulario con los datos actuales
             document.getElementById('cli-type').value = currentViewClient.type;
             document.getElementById('cli-org').value = currentViewClient.orgName;
             document.getElementById('cli-name').value = currentViewClient.contactName || '';
@@ -834,11 +980,9 @@
             document.getElementById('cli-shipping').value = currentViewClient.shippingAddress || '';
             document.getElementById('cli-credit').value = currentViewClient.creditLimit || 0;
             
-            // Establecer el estado de edición
             currentEditingClientId = currentViewClient.id;
             document.getElementById('btn-submit-client').innerText = "Actualizar";
 
-            // Cambiar a la vista principal de clientes y abrir formulario
             document.querySelectorAll('.app-view').forEach(v => v.classList.add('hidden-screen'));
             document.getElementById('view-clientes').classList.remove('hidden-screen');
             document.getElementById('form-add-client').classList.remove('hidden');
@@ -877,14 +1021,11 @@
             });
         }
         
-        // Mostrar detalles del cliente
         window.showClientDetails = function(client) {
-            currentViewClient = client; // Guardamos la referencia globalmente
+            currentViewClient = client; 
             
-            // Ocultar vistas
             document.querySelectorAll('.app-view').forEach(v => v.classList.add('hidden-screen'));
             
-            // Llenar datos
             document.getElementById('cd-initial').innerText = client.orgName.charAt(0);
             document.getElementById('cd-org').innerText = client.orgName;
             document.getElementById('cd-name').innerText = client.contactName || 'Sin contacto asociado';
@@ -898,7 +1039,6 @@
             }
             
             document.getElementById('cd-credit-limit').innerText = `$${client.creditLimit.toFixed(2)}`;
-            // En el futuro, el balance restante se calculará restando las facturas a crédito no pagadas
             document.getElementById('cd-credit-remaining').innerText = `$${client.creditLimit.toFixed(2)}`;
             
             document.getElementById('cd-email').innerText = client.email || 'N/A';
@@ -906,7 +1046,6 @@
             document.getElementById('cd-address').innerText = client.address || 'N/A';
             document.getElementById('cd-shipping').innerText = client.shippingAddress || 'N/A';
             
-            // Mostrar la vista de detalles
             document.getElementById('view-clientes-detalles').classList.remove('hidden-screen');
             lucide.createIcons();
         }
