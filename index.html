@@ -1,55 +1,325 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="do">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LorHels ERP - Enterprise Management</title>
-    
+    <title>LorHels ERP</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- React & ReactDOM -->
-    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    
-    <!-- jsPDF & AutoTable para Reportes y Facturas -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
-    
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; color: #1f2937; overflow: hidden; }
-        .glass-nav { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(229, 231, 235, 0.5); }
-        .animate-fade-in { animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
-        .animate-slide-up { animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        /* Scrollbar styling */
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-        .app-shadow { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03); }
+        body { font-family: 'Inter', sans-serif; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #475569; border-radius: 10px; }
+        .hidden-screen { display: none !important; }
     </style>
 </head>
-<body>
-    <div id="root"></div>
+<body class="bg-gray-50 text-gray-800 h-screen overflow-hidden">
 
-    <script type="text/babel" data-type="module">
-        const { useState, useEffect, useMemo, useRef } = React;
+    <!-- 1. PANTALLA DE CARGA -->
+    <div id="screen-loading" class="h-screen w-screen flex flex-col items-center justify-center bg-slate-50 z-50 fixed inset-0">
+        <i data-lucide="loader-2" class="w-12 h-12 text-indigo-600 animate-spin mb-4"></i>
+        <p class="text-gray-600 font-medium">Iniciando LorHels ERP...</p>
+    </div>
 
-        // --- FIREBASE CONFIGURATION ---
+    <!-- 2. PANTALLA DE BIENVENIDA (LOGIN / REGISTRO) -->
+    <div id="screen-welcome" class="hidden-screen h-screen w-screen bg-slate-100 flex items-center justify-center p-6 z-40 fixed inset-0 overflow-y-auto">
+        <div class="bg-white w-full max-w-4xl rounded-2xl shadow-2xl overflow-hidden flex flex-col md:flex-row my-8">
+            <div class="w-full md:w-1/3 bg-slate-900 p-8 text-white flex flex-col justify-between">
+                <div>
+                    <i data-lucide="building-2" class="w-16 h-16 mb-6 text-indigo-400"></i>
+                    <h2 class="text-3xl font-bold mb-2">LorHels ERP</h2>
+                    <p class="text-slate-400 text-sm mt-4">Sistema Integral de Planificación de Recursos Empresariales.</p>
+                </div>
+                <button id="btn-goto-admin" class="text-sm text-slate-500 hover:text-white text-left flex items-center transition mt-8">
+                    <i data-lucide="shield-check" class="w-4 h-4 mr-2"></i> Acceso Admin
+                </button>
+            </div>
+            
+            <div class="w-full md:w-2/3 p-8">
+                <!-- Pestañas de Navegación -->
+                <div class="flex border-b border-gray-200 mb-6">
+                    <button id="tab-login" class="px-6 py-3 font-bold text-indigo-600 border-b-2 border-indigo-600 transition">Ingresar</button>
+                    <button id="tab-register" class="px-6 py-3 font-bold text-gray-500 hover:text-indigo-600 transition">Crear Empresa</button>
+                </div>
+
+                <!-- FORMULARIO DE INGRESO (LOGIN) -->
+                <form id="form-login-company" class="space-y-4">
+                    <h3 class="text-2xl font-bold text-gray-800 mb-6">Acceso a mi Empresa</h3>
+                    
+                    <!-- Lista de Empresas para Seleccionar -->
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 uppercase mb-2">Selecciona tu Empresa</label>
+                        <div id="login-companies-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-48 overflow-y-auto custom-scrollbar p-2 border rounded-lg bg-slate-50">
+                            <div class="p-4 text-center text-sm text-gray-500 col-span-full">Cargando empresas...</div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">Correo Electrónico *</label>
+                        <input required type="email" id="login-email" class="w-full border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500 transition-colors">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">PIN de Acceso (6 dígitos) *</label>
+                        <input required type="password" id="login-pin" minlength="6" maxlength="6" class="w-full border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500 tracking-widest">
+                    </div>
+                    <button type="submit" id="btn-submit-login" class="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700 transition flex justify-center items-center mt-6">
+                        Ingresar
+                    </button>
+                </form>
+
+                <!-- FORMULARIO DE REGISTRO -->
+                <form id="form-register-company" class="space-y-4 hidden">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">Registro de Nueva Empresa</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="md:col-span-2">
+                            <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">URL del Logo (Opcional)</label>
+                            <input type="url" id="reg-logo" placeholder="https://ejemplo.com/logo.png" class="w-full border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">Nombre de Empresa *</label>
+                            <input required type="text" id="reg-name" class="w-full border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">RNC *</label>
+                            <input required type="text" id="reg-rnc" class="w-full border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">Representante *</label>
+                            <input required type="text" id="reg-rep" class="w-full border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">Email (Usuario) *</label>
+                            <input required type="email" id="reg-email" class="w-full border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">Dirección Física</label>
+                            <input type="text" id="reg-address" class="w-full border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">Crea un PIN de Acceso (6 dígitos) *</label>
+                            <input required type="password" id="reg-pin" minlength="6" maxlength="6" placeholder="Ej: 123456" class="w-full border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500 tracking-widest">
+                        </div>
+                    </div>
+                    <button type="submit" id="btn-submit-register" class="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700 transition flex justify-center items-center mt-6">
+                        Registrar Empresa
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. PANTALLA PENDIENTE DE APROBACIÓN -->
+    <div id="screen-pending" class="hidden-screen h-screen w-screen bg-slate-50 flex flex-col items-center justify-center p-6 text-center z-40 fixed inset-0">
+        <div class="bg-white p-10 rounded-2xl shadow-xl border max-w-md w-full relative">
+            <button id="btn-logout-pending" class="absolute top-4 right-4 text-sm text-gray-500 hover:text-red-500"><i data-lucide="log-out" class="w-5 h-5"></i></button>
+            <i data-lucide="shield-alert" class="w-20 h-20 text-indigo-500 mx-auto mb-6"></i>
+            <h2 class="text-2xl font-bold text-gray-800 mb-2">Aprobación Pendiente</h2>
+            <p class="text-gray-600 mb-8">Tu empresa ha sido registrada. El administrador está validando tus datos para habilitar tu acceso al ERP.</p>
+            <button onclick="window.location.reload()" class="w-full bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold py-3 px-6 rounded-lg transition">
+                Verificar Estado Actual
+            </button>
+        </div>
+    </div>
+
+    <!-- 4. LOGIN ADMINISTRADOR -->
+    <div id="screen-admin-login" class="hidden-screen h-screen w-screen bg-slate-900 flex items-center justify-center p-6 z-50 fixed inset-0">
+        <div class="bg-white p-8 rounded-2xl shadow-2xl max-w-sm w-full">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">Admin LorHels</h2>
+            <form id="form-admin-login" class="space-y-4">
+                <input required type="text" id="admin-user" placeholder="Usuario" class="w-full border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500">
+                <input required type="password" id="admin-pass" placeholder="Contraseña" class="w-full border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500">
+                <button type="submit" class="w-full bg-indigo-600 text-white font-bold py-2 rounded-lg">Entrar</button>
+            </form>
+            <button id="btn-back-from-admin" class="w-full mt-4 text-sm text-gray-500">Volver</button>
+        </div>
+    </div>
+
+    <!-- 5. PANEL DE ADMINISTRADOR (Aprobar Empresas) -->
+    <div id="screen-admin-dashboard" class="hidden-screen h-screen w-screen bg-slate-100 p-8 z-40 fixed inset-0 overflow-y-auto">
+        <div class="max-w-6xl mx-auto">
+            <div class="flex justify-between items-center mb-8">
+                <h1 class="text-3xl font-bold text-slate-800">Panel de Administración</h1>
+                <button id="btn-admin-logout" class="text-red-600 font-bold hover:underline">Cerrar Sesión</button>
+            </div>
+            <div class="bg-white rounded-xl shadow border overflow-hidden">
+                <table class="w-full text-left">
+                    <thead class="bg-slate-50 border-b">
+                        <tr>
+                            <th class="p-4">Empresa / RNC</th>
+                            <th class="p-4">Contacto</th>
+                            <th class="p-4">Estado</th>
+                            <th class="p-4">Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admin-companies-list" class="divide-y">
+                        <!-- Llenado por JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 6. APLICACIÓN PRINCIPAL (LorHels ERP) -->
+    <div id="screen-main" class="hidden-screen h-screen w-screen flex">
+        
+        <!-- Sidebar -->
+        <aside class="w-64 bg-slate-900 text-slate-300 flex flex-col hidden md:flex h-screen overflow-y-auto custom-scrollbar shadow-xl z-20 shrink-0">
+            <div class="p-6 border-b border-slate-800 sticky top-0 bg-slate-900 z-10 flex flex-col items-center text-center">
+                <div id="sidebar-logo-container"></div>
+                <h1 id="sidebar-company-name" class="text-lg font-bold text-white leading-tight mt-3">LorHels ERP</h1>
+                <p id="sidebar-company-rnc" class="text-xs text-slate-400 mt-1">RNC: ...</p>
+            </div>
+            
+            <nav class="flex-1 px-3 py-4 space-y-1" id="main-nav">
+                <!-- Generado por JS para manejar estados activos -->
+            </nav>
+        </aside>
+
+        <!-- Contenido Principal -->
+        <main class="flex-1 flex flex-col h-screen overflow-hidden bg-slate-50">
+            <!-- Header -->
+            <header class="bg-white shadow-sm h-16 flex items-center px-6 justify-between border-b z-10 shrink-0">
+                <h2 id="header-title" class="text-xl font-bold text-gray-800 capitalize">Dashboard</h2>
+                <div class="flex items-center space-x-4">
+                    <span id="header-user-name" class="text-sm font-medium text-gray-600 hidden md:block">👤 Usuario</span>
+                    <button id="btn-logout-main" class="w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-red-600 transition" title="Cerrar Sesión">
+                        <i data-lucide="log-out" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Vistas Dinámicas -->
+            <div class="flex-1 overflow-auto p-6" id="main-content-area">
+                
+                <!-- VISTA: DASHBOARD -->
+                <div id="view-dashboard" class="app-view space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div class="p-6 rounded-xl border bg-indigo-50 text-indigo-700 border-indigo-100 relative shadow-sm">
+                            <h3 class="text-xs font-bold uppercase tracking-wider mb-2 opacity-80">Ventas Netas</h3>
+                            <div class="text-3xl font-black mb-1">$0.00</div>
+                            <div class="text-sm font-medium opacity-80">Este mes</div>
+                        </div>
+                        <div class="p-6 rounded-xl border bg-red-50 text-red-700 border-red-100 relative shadow-sm">
+                            <h3 class="text-xs font-bold uppercase tracking-wider mb-2 opacity-80">Gastos Totales</h3>
+                            <div class="text-3xl font-black mb-1">$0.00</div>
+                            <div class="text-sm font-medium opacity-80">Este mes</div>
+                        </div>
+                        <div class="p-6 rounded-xl border bg-orange-50 text-orange-700 border-orange-100 relative shadow-sm">
+                            <h3 class="text-xs font-bold uppercase tracking-wider mb-2 opacity-80">Cotizaciones</h3>
+                            <div class="text-3xl font-black mb-1">0</div>
+                            <div class="text-sm font-medium opacity-80">Pendientes</div>
+                        </div>
+                        <div class="p-6 rounded-xl border bg-green-50 text-green-700 border-green-100 relative shadow-sm">
+                            <h3 class="text-xs font-bold uppercase tracking-wider mb-2 opacity-80">Productos</h3>
+                            <div class="text-3xl font-black mb-1" id="dash-product-count">0</div>
+                            <div class="text-sm font-medium opacity-80">En catálogo</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VISTA: PRODUCTOS -->
+                <div id="view-productos" class="app-view hidden-screen">
+                    <div class="flex justify-between items-center mb-6">
+                        <button onclick="document.getElementById('form-container-products').classList.toggle('hidden')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium flex items-center shadow transition">
+                            <i data-lucide="plus" class="w-4 h-4 mr-2"></i> Nuevo Producto
+                        </button>
+                    </div>
+
+                    <!-- Formulario Productos -->
+                    <form id="form-add-product" class="hidden bg-white p-6 rounded-xl border shadow-sm mb-6">
+                        <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-4">
+                            <div><label class="block text-xs font-semibold text-gray-600 mb-1">Tipo *</label><select id="prod-type" class="w-full border rounded-lg px-3 py-2"><option value="producto">Producto</option><option value="servicio">Servicio</option></select></div>
+                            <div class="md:col-span-2"><label class="block text-xs font-semibold text-gray-600 mb-1">Nombre *</label><input required type="text" id="prod-name" class="w-full border rounded-lg px-3 py-2"></div>
+                            <div><label class="block text-xs font-semibold text-gray-600 mb-1">Código / SKU *</label><input required type="text" id="prod-code" class="w-full border rounded-lg px-3 py-2"></div>
+                            <div><label class="block text-xs font-semibold text-gray-600 mb-1">Tasa Compra ($)</label><input type="number" id="prod-buy" class="w-full border rounded-lg px-3 py-2" value="0"></div>
+                            <div><label class="block text-xs font-semibold text-gray-600 mb-1">Tasa Venta ($) *</label><input required type="number" id="prod-sell" class="w-full border rounded-lg px-3 py-2"></div>
+                            <div class="md:col-span-4 flex justify-end gap-3 mt-2">
+                                <button type="button" onclick="document.getElementById('form-add-product').classList.add('hidden')" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg">Cancelar</button>
+                                <button type="submit" class="px-4 py-2 bg-indigo-600 text-white font-medium rounded-lg">Guardar Producto</button>
+                            </div>
+                        </div>
+                    </form>
+
+                    <!-- Lista de Productos -->
+                    <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
+                        <table class="w-full text-left">
+                            <thead class="bg-slate-50 border-b">
+                                <tr>
+                                    <th class="p-4 font-semibold text-gray-600">Cód</th>
+                                    <th class="p-4 font-semibold text-gray-600">Nombre</th>
+                                    <th class="p-4 font-semibold text-gray-600">Tipo</th>
+                                    <th class="p-4 font-semibold text-gray-600">Compra</th>
+                                    <th class="p-4 font-semibold text-gray-600">Venta</th>
+                                </tr>
+                            </thead>
+                            <tbody id="products-table-body" class="divide-y">
+                                <!-- Generado por JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- VISTA: CLIENTES -->
+                <div id="view-clientes" class="app-view hidden-screen">
+                    <div class="flex justify-between items-center mb-6">
+                        <button onclick="document.getElementById('form-add-client').classList.toggle('hidden')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium flex items-center shadow transition">
+                            <i data-lucide="plus" class="w-4 h-4 mr-2"></i> Nuevo Contacto
+                        </button>
+                    </div>
+
+                    <!-- Formulario Clientes -->
+                    <form id="form-add-client" class="hidden bg-white p-6 rounded-xl border shadow-sm mb-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <div><label class="block text-xs font-semibold text-gray-600 mb-1">Tipo *</label><select id="cli-type" class="w-full border rounded-lg px-3 py-2"><option value="cliente">Cliente</option><option value="proveedor">Proveedor</option></select></div>
+                            <div><label class="block text-xs font-semibold text-gray-600 mb-1">Organización *</label><input required type="text" id="cli-org" class="w-full border rounded-lg px-3 py-2"></div>
+                            <div><label class="block text-xs font-semibold text-gray-600 mb-1">Contacto Personal</label><input type="text" id="cli-name" class="w-full border rounded-lg px-3 py-2"></div>
+                            <div><label class="block text-xs font-semibold text-gray-600 mb-1">Teléfono</label><input type="tel" id="cli-phone" class="w-full border rounded-lg px-3 py-2"></div>
+                            <div><label class="block text-xs font-semibold text-gray-600 mb-1">Límite de Crédito ($)</label><input type="number" id="cli-credit" class="w-full border rounded-lg px-3 py-2" value="0"></div>
+                            <div class="md:col-span-3 flex justify-end gap-3 mt-2">
+                                <button type="button" onclick="document.getElementById('form-add-client').classList.add('hidden')" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg">Cancelar</button>
+                                <button type="submit" class="px-4 py-2 bg-indigo-600 text-white font-medium rounded-lg">Guardar</button>
+                            </div>
+                        </div>
+                    </form>
+
+                    <!-- Lista de Clientes -->
+                    <div id="clients-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <!-- Generado por JS -->
+                    </div>
+                </div>
+
+                <!-- VISTA: PLACEHOLDER (Para módulos en desarrollo) -->
+                <div id="view-placeholder" class="app-view hidden-screen h-full flex items-center justify-center">
+                    <div class="bg-white border border-dashed border-gray-300 rounded-2xl p-12 text-center max-w-lg">
+                        <i data-lucide="settings" class="w-16 h-16 text-gray-300 mx-auto mb-4 animate-spin" style="animation-duration: 3s;"></i>
+                        <h3 id="placeholder-title" class="text-2xl font-bold text-gray-700 capitalize mb-2">Módulo en Construcción</h3>
+                        <p class="text-gray-500">Según las especificaciones de LorHels ERP, aquí se gestionarán los registros correspondientes próximamente.</p>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- SCRIPT PRINCIPAL: FIREBASE Y LÓGICA DE LA APP -->
+    <script type="module">
+        // Importaciones de Firebase v11 (vía CDN Oficial)
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, doc, deleteDoc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        // Ahora importamos métodos para autenticación con Email y Password real
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, query, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        const firebaseConfig = {
+        // Inicializar Iconos
+        lucide.createIcons();
+
+        // 1. Configuración de Firebase
+        const myFirebaseConfig = {
             apiKey: "AIzaSyDkQ95muJR8bNBHSjRXxEGNbiknTj4wKpo",
             authDomain: "lorhels-systems-a1ad4.firebaseapp.com",
             databaseURL: "https://lorhels-systems-a1ad4-default-rtdb.firebaseio.com",
@@ -59,1278 +329,439 @@
             appId: "1:387342109322:web:be3973a4f95e82881afb73",
             measurementId: "G-MPVX6KW40J"
         };
-
+        
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : myFirebaseConfig;
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
+        const APP_ID = typeof __app_id !== 'undefined' ? __app_id : 'lorhels-erp';
+
+        // 2. Variables de Estado Globales
+        let currentUser = null;
+        let companyProfile = null;
+        let currentView = 'dashboard';
+        let isRegistering = false; // Bandera para evitar conflictos al registrar
         
-        // Uso de variables de entorno para la configuración global de la app
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'lorhels-erp-v2';
+        const menuItems = [
+            { id: 'dashboard', icon: 'layout-dashboard', label: '1. Dashboard' },
+            { id: 'facturas', icon: 'file-text', label: '2. Facturas' },
+            { id: 'cotizaciones', icon: 'file-spreadsheet', label: '3. Cotizaciones' },
+            { id: 'compras', icon: 'shopping-cart', label: '4. Compras' },
+            { id: 'orden_compra', icon: 'clipboard-list', label: '5. Orden de Compra' },
+            { id: 'gastos', icon: 'receipt', label: '6. Gastos' },
+            { id: 'pagos', icon: 'credit-card', label: '7. Pagos' },
+            { id: 'nota_credito', icon: 'file-minus', label: '8. Nota de Crédito' },
+            { id: 'inventario', icon: 'boxes', label: '9. Inventario' },
+            { id: 'clientes', icon: 'users', label: '10. Clientes/Prov.' },
+            { id: 'comisiones', icon: 'percent', label: '11. Comisiones' },
+            { id: 'productos', icon: 'package', label: '12. Productos' },
+            { id: 'informes', icon: 'bar-chart-3', label: '13. Informes' },
+            { id: 'ajustes', icon: 'settings', label: '14. Ajustes' },
+        ];
 
-        // --- UTILS & COMPONENTS ---
-        const formatMoney = (amount, currency = 'DOP') => {
-            return new Intl.NumberFormat('es-DO', { style: 'currency', currency: currency }).format(amount || 0);
+        // 3. Controladores de Pantalla (UI)
+        const screens = {
+            loading: document.getElementById('screen-loading'),
+            welcome: document.getElementById('screen-welcome'),
+            pending: document.getElementById('screen-pending'),
+            adminLogin: document.getElementById('screen-admin-login'),
+            adminDashboard: document.getElementById('screen-admin-dashboard'),
+            mainApp: document.getElementById('screen-main')
         };
 
-        const formatDate = (dateStr) => {
-            if (!dateStr) return '-';
-            const d = new Date(dateStr);
-            return d.toLocaleDateString('es-DO', { year: 'numeric', month: 'short', day: '2-digit' });
-        };
-
-        function Icon({ name, size = 20, className = "" }) {
-            const iconRef = useRef(null);
-            useEffect(() => {
-                if (window.lucide && iconRef.current) {
-                    const kebabName = name.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
-                    iconRef.current.innerHTML = `<i data-lucide="${kebabName}" style="width: ${size}px; height: ${size}px;"></i>`;
-                    window.lucide.createIcons({ attrs: { class: className, 'stroke-width': 1.5 }, nameAttr: 'data-lucide' });
-                }
-            }, [name, size, className]);
-            return <span ref={iconRef} className="inline-flex items-center justify-center" />;
+        function showScreen(screenName) {
+            Object.values(screens).forEach(s => s.classList.add('hidden-screen'));
+            if(screens[screenName]) screens[screenName].classList.remove('hidden-screen');
         }
 
-        const Card = ({ children, className = "", onClick }) => (
-            <div onClick={onClick} className={`bg-white rounded-xl border border-gray-200 app-shadow ${className}`}>{children}</div>
-        );
+        // 4. Inicialización de Autenticación
+        async function initAuth() {
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    // Inicio anónimo como respaldo inicial
+                    await signInAnonymously(auth);
+                }
+            } catch (error) {
+                console.error("Error al autenticar:", error);
+            }
+        }
 
-        const Button = ({ children, onClick, variant = 'primary', icon, type = "button", disabled = false, className = "" }) => {
-            const styles = {
-                primary: 'bg-blue-600 text-white hover:bg-blue-700 shadow-sm',
-                secondary: 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50',
-                danger: 'bg-red-50 text-red-600 hover:bg-red-100 border border-red-100',
-                success: 'bg-emerald-500 text-white hover:bg-emerald-600 shadow-sm'
-            };
-            return (
-                <button type={type} onClick={onClick} disabled={disabled} className={`px-4 py-2 rounded-lg font-medium text-sm flex items-center justify-center gap-2 transition-all disabled:opacity-50 ${styles[variant]} ${className}`}>
-                    {icon && <Icon name={icon} size={16} />}
-                    {children}
-                </button>
-            );
-        };
+        // Cargar lista de empresas en el login
+        function loadLoginCompanies() {
+            const q = query(collection(db, 'artifacts', APP_ID, 'public'));
+            onSnapshot(q, (snapshot) => {
+                const grid = document.getElementById('login-companies-grid');
+                if(!grid) return;
+                grid.innerHTML = '';
+                let hasCompanies = false;
+                
+                snapshot.forEach(docSnap => {
+                    if(!docSnap.id.startsWith('companies_')) return;
+                    const c = docSnap.data();
+                    hasCompanies = true;
+                    
+                    const div = document.createElement('div');
+                    div.className = "cursor-pointer border rounded-lg p-3 flex items-center space-x-3 hover:border-indigo-500 hover:bg-indigo-50 transition bg-white";
+                    
+                    // Al hacer clic, seleccionamos la empresa
+                    div.onclick = () => {
+                        document.querySelectorAll('#login-companies-grid > div').forEach(el => {
+                            el.classList.remove('border-indigo-500', 'bg-indigo-50', 'ring-2', 'ring-indigo-200');
+                        });
+                        div.classList.add('border-indigo-500', 'bg-indigo-50', 'ring-2', 'ring-indigo-200');
+                        
+                        const emailInput = document.getElementById('login-email');
+                        emailInput.value = c.email;
+                        
+                        // Pequeña animación visual
+                        emailInput.classList.add('bg-indigo-50');
+                        setTimeout(() => emailInput.classList.remove('bg-indigo-50'), 500);
+                        
+                        document.getElementById('login-pin').focus();
+                    };
+                    
+                    const logoHtml = c.logo 
+                        ? `<img src="${c.logo}" class="w-10 h-10 rounded-lg object-cover border shadow-sm shrink-0">`
+                        : `<div class="w-10 h-10 rounded-lg bg-indigo-100 text-indigo-600 font-bold flex items-center justify-center text-sm shadow-sm shrink-0">${c.companyName.charAt(0)}</div>`;
+                    
+                    const statusBadge = c.status === 'approved' 
+                        ? `<span class="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full font-medium">Aprobada</span>` 
+                        : `<span class="text-[10px] bg-yellow-100 text-yellow-700 px-1.5 py-0.5 rounded-full font-medium">Pendiente</span>`;
 
-        const Badge = ({ children, variant = 'gray' }) => {
-            const styles = {
-                green: 'bg-green-100 text-green-700', red: 'bg-red-100 text-red-700',
-                blue: 'bg-blue-100 text-blue-700', yellow: 'bg-yellow-100 text-yellow-800',
-                gray: 'bg-gray-100 text-gray-700', purple: 'bg-purple-100 text-purple-700'
-            };
-            return <span className={`px-2.5 py-1 rounded-full text-xs font-semibold uppercase tracking-wide ${styles[variant] || styles.gray}`}>{children}</span>;
-        };
-
-        const Modal = ({ isOpen, onClose, title, children, maxWidth = "max-w-2xl" }) => {
-            if (!isOpen) return null;
-            return (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-gray-900/50 backdrop-blur-sm" onClick={onClose}></div>
-                    <div className={`relative w-full ${maxWidth} bg-white rounded-2xl shadow-2xl animate-slide-up flex flex-col max-h-[90vh]`}>
-                        <div className="flex justify-between items-center p-6 border-b border-gray-100">
-                            <h3 className="text-lg font-bold text-gray-900">{title}</h3>
-                            <button onClick={onClose} className="text-gray-400 hover:text-gray-600"><Icon name="X" /></button>
+                    div.innerHTML = `
+                        ${logoHtml}
+                        <div class="overflow-hidden flex-1">
+                            <p class="text-sm font-bold text-gray-800 truncate leading-tight">${c.companyName}</p>
+                            <div class="flex items-center justify-between mt-1">
+                                <p class="text-[11px] text-gray-500 truncate mr-2">RNC: ${c.rnc}</p>
+                                ${statusBadge}
+                            </div>
                         </div>
-                        <div className="p-6 overflow-y-auto">{children}</div>
-                    </div>
-                </div>
-            );
-        };
-
-        // --- PDF GENERATORS ---
-        const generateInvoicePDF = (company, invoice, client) => {
-            const { jsPDF } = window.jspdf;
-            const pdf = new jsPDF();
-            
-            pdf.setFontSize(22); pdf.setTextColor(37, 99, 235); pdf.setFont("helvetica", "bold");
-            pdf.text(company.name, 20, 25);
-            pdf.setFontSize(10); pdf.setTextColor(100); pdf.setFont("helvetica", "normal");
-            pdf.text(`RNC: ${company.rnc} | Tel: ${company.phone || '-'}`, 20, 32);
-            pdf.text(company.address || '', 20, 38);
-            pdf.text(`${company.email || ''} ${company.website ? '| ' + company.website : ''}`, 20, 44);
-
-            pdf.setFillColor(243, 244, 246); pdf.roundedRect(120, 15, 70, 30, 3, 3, 'F');
-            pdf.setTextColor(31, 41, 55); pdf.setFont("helvetica", "bold");
-            pdf.text(invoice.type === 'quote' ? 'COTIZACIÓN' : 'FACTURA', 125, 22);
-            pdf.setFont("helvetica", "normal");
-            pdf.text(`N°: ${invoice.number || invoice.id.substring(0,8).toUpperCase()}`, 125, 29);
-            pdf.text(`Fecha: ${formatDate(invoice.date)}`, 125, 36);
-            if(invoice.dueDate) pdf.text(`Vence: ${formatDate(invoice.dueDate)}`, 125, 43);
-
-            pdf.setFont("helvetica", "bold"); pdf.text("Facturar a:", 20, 55);
-            pdf.setFont("helvetica", "normal");
-            pdf.text(client?.name || 'Cliente Genérico', 20, 62);
-            pdf.text(`RNC/Cédula: ${client?.rnc || 'N/A'}`, 20, 68);
-            pdf.text(`Dirección: ${client?.address || 'N/A'}`, 20, 74);
-
-            const rows = invoice.items.map(item => [
-                item.name, item.qty, formatMoney(item.price, invoice.currency), formatMoney(item.price * item.qty, invoice.currency)
-            ]);
-            
-            pdf.autoTable({
-                startY: 85,
-                head: [['Descripción', 'Cant.', 'Precio Unit.', 'Total']],
-                body: rows,
-                theme: 'striped',
-                headStyles: { fillColor: [37, 99, 235] },
-                styles: { fontSize: 9 }
+                    `;
+                    grid.appendChild(div);
+                });
+                
+                if(!hasCompanies) {
+                    grid.innerHTML = '<div class="p-4 text-center text-sm text-gray-500 col-span-full">No hay empresas registradas aún.</div>';
+                }
             });
+        }
 
-            const finalY = pdf.lastAutoTable.finalY + 10;
-            pdf.setFont("helvetica", "normal");
-            pdf.text("Subtotal:", 140, finalY); pdf.text(formatMoney(invoice.subtotal, invoice.currency), 190, finalY, { align: 'right' });
-            pdf.text(`Impuesto (${invoice.taxRate || 0}%):`, 140, finalY + 7); pdf.text(formatMoney(invoice.taxAmount, invoice.currency), 190, finalY + 7, { align: 'right' });
-            
-            pdf.setFont("helvetica", "bold"); pdf.setFontSize(12);
-            pdf.text("TOTAL:", 140, finalY + 17); pdf.text(formatMoney(invoice.total, invoice.currency), 190, finalY + 17, { align: 'right' });
+        // Observador de estado de autenticación
+        onAuthStateChanged(auth, async (user) => {
+            currentUser = user;
+            if (user && !isRegistering) {
+                await checkCompanyStatus(user.uid);
+            } else if (!user) {
+                showScreen('welcome');
+            }
+        });
 
-            pdf.save(`${invoice.type === 'quote' ? 'Cotizacion' : 'Factura'}_${invoice.number || 'DOC'}.pdf`);
-        };
+        initAuth();
+        loadLoginCompanies(); // Inicializar la lista del login al cargar
 
-        const generateStatementPDF = (company, client, transactions) => {
-            const { jsPDF } = window.jspdf;
-            const pdf = new jsPDF();
-            
-            pdf.setFontSize(22); pdf.setTextColor(37, 99, 235); pdf.setFont("helvetica", "bold");
-            pdf.text(company.name, 20, 25);
-            pdf.setFontSize(10); pdf.setTextColor(100); pdf.setFont("helvetica", "normal");
-            pdf.text(`RNC: ${company.rnc} | Tel: ${company.phone || '-'}`, 20, 32);
-            pdf.text(company.address || '', 20, 38);
-            
-            pdf.setFillColor(243, 244, 246); pdf.roundedRect(20, 45, 170, 30, 3, 3, 'F');
-            pdf.setTextColor(31, 41, 55); pdf.setFont("helvetica", "bold");
-            pdf.text("ESTADO DE CUENTA", 25, 53);
-            pdf.setFont("helvetica", "normal");
-            pdf.text(`Cliente: ${client.name}`, 25, 60);
-            pdf.text(`RNC/Cédula: ${client.rnc}`, 25, 67);
-            
-            const clientInvoices = transactions.filter(t => t.type === 'invoice' && t.clientId === client.id).sort((a,b)=>a.timestamp - b.timestamp);
-            
-            let balance = 0;
-            const rows = clientInvoices.map(inv => {
-                if(inv.status === 'pendiente') balance += inv.total;
-                return [formatDate(inv.date), inv.number, formatMoney(inv.total), inv.status.toUpperCase()];
-            });
-            
-            pdf.autoTable({
-                startY: 80,
-                head: [['Fecha', 'Factura N°', 'Monto Total', 'Estado']],
-                body: rows,
-                theme: 'striped',
-                headStyles: { fillColor: [37, 99, 235] }
-            });
-            
-            const finalY = pdf.lastAutoTable.finalY + 10;
-            pdf.setFontSize(12); pdf.setFont("helvetica", "bold");
-            pdf.text(`Balance Pendiente de Pago: ${formatMoney(balance)}`, 190, finalY, { align: 'right' });
-            
-            pdf.save(`Estado_Cuenta_${client.name}.pdf`);
-        };
+        // 5. Lógica de Empresa (Validación)
+        async function checkCompanyStatus(uid) {
+            try {
+                const companyRef = doc(db, 'artifacts', APP_ID, 'public', `companies_${uid}`);
+                const companySnap = await getDoc(companyRef);
+                
+                if (companySnap.exists()) {
+                    companyProfile = companySnap.data();
+                    if (companyProfile.status === 'approved') {
+                        setupMainApp();
+                        showScreen('mainApp');
+                    } else {
+                        showScreen('pending');
+                    }
+                } else {
+                    showScreen('welcome');
+                }
+            } catch (error) {
+                console.error("Error verificando empresa", error);
+                showScreen('welcome');
+            }
+        }
 
-        // --- MAIN APP COMPONENT ---
-        function App() {
-            const [user, setUser] = useState(null);
-            const [globalLoading, setGlobalLoading] = useState(true);
-            const [view, setView] = useState('login'); // login, admin, app
-            const [activeTab, setActiveTab] = useState('dashboard');
-            
-            // App Data State (Aislada por sesión de empresa)
-            const [currentCompany, setCurrentCompany] = useState(null);
-            const [data, setData] = useState({
-                companies: [], contacts: [], items: [], transactions: [], taxes: [], expenses: []
-            });
+        // --- MANEJO DE PESTAÑAS (LOGIN / REGISTRO) ---
+        const tabLogin = document.getElementById('tab-login');
+        const tabRegister = document.getElementById('tab-register');
+        const formLogin = document.getElementById('form-login-company');
+        const formRegister = document.getElementById('form-register-company');
 
-            // Firebase Auth Setup (Soporte robusto inter-sesión)
-            useEffect(() => {
-                const initAuth = async () => {
-                    try {
-                        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                            await signInWithCustomToken(auth, __initial_auth_token);
-                        } else {
-                            await signInAnonymously(auth);
-                        }
-                    } catch (error) { console.error("Auth error", error); }
+        tabLogin.addEventListener('click', () => {
+            formRegister.classList.add('hidden');
+            formLogin.classList.remove('hidden');
+            tabLogin.className = 'px-6 py-3 font-bold text-indigo-600 border-b-2 border-indigo-600 transition';
+            tabRegister.className = 'px-6 py-3 font-bold text-gray-500 hover:text-indigo-600 transition';
+        });
+
+        tabRegister.addEventListener('click', () => {
+            formLogin.classList.add('hidden');
+            formRegister.classList.remove('hidden');
+            tabRegister.className = 'px-6 py-3 font-bold text-indigo-600 border-b-2 border-indigo-600 transition';
+            tabLogin.className = 'px-6 py-3 font-bold text-gray-500 hover:text-indigo-600 transition';
+        });
+
+        // --- EVENTO: INGRESAR A LA EMPRESA ---
+        formLogin.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btn-submit-login');
+            btn.innerHTML = "Verificando..."; btn.disabled = true;
+
+            const email = document.getElementById('login-email').value;
+            const pin = document.getElementById('login-pin').value;
+
+            try {
+                await signInWithEmailAndPassword(auth, email, pin);
+                // onAuthStateChanged se encargará de redirigir a la app
+            } catch (error) {
+                console.error(error);
+                alert("Credenciales incorrectas. Verifique su correo y que el PIN tenga 6 dígitos.");
+                btn.innerHTML = "Ingresar"; btn.disabled = false;
+            }
+        });
+
+        // --- EVENTO: REGISTRO DE EMPRESA ---
+        formRegister.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btn-submit-register');
+            btn.innerHTML = "Guardando..."; btn.disabled = true;
+            isRegistering = true; // Bloqueamos momentáneamente onAuthStateChanged
+
+            const email = document.getElementById('reg-email').value;
+            const pin = document.getElementById('reg-pin').value;
+
+            try {
+                // 1. Crear el usuario real con correo y contraseña
+                const userCredential = await createUserWithEmailAndPassword(auth, email, pin);
+                const newUid = userCredential.user.uid;
+
+                // 2. Guardar los datos de la empresa vinculados a su nuevo UID seguro
+                const data = {
+                    uid: newUid,
+                    logo: document.getElementById('reg-logo').value,
+                    companyName: document.getElementById('reg-name').value,
+                    rnc: document.getElementById('reg-rnc').value,
+                    representative: document.getElementById('reg-rep').value,
+                    email: email,
+                    address: document.getElementById('reg-address').value,
+                    status: 'pending',
+                    createdAt: serverTimestamp()
                 };
-                initAuth();
+
+                const companyRef = doc(db, 'artifacts', APP_ID, 'public', `companies_${newUid}`);
+                await setDoc(companyRef, data);
                 
-                const unsubscribe = onAuthStateChanged(auth, (u) => {
-                    setUser(u);
-                    setGlobalLoading(false);
+                showScreen('pending');
+            } catch (error) {
+                alert("Error al registrar: Es posible que este correo ya esté registrado, o el PIN no sea válido.");
+            } finally {
+                btn.innerHTML = "Registrar Empresa"; btn.disabled = false;
+                isRegistering = false;
+            }
+        });
+
+        // Eventos para Cerrar Sesión
+        document.getElementById('btn-logout-main').addEventListener('click', async () => {
+            await signOut(auth);
+        });
+        document.getElementById('btn-logout-pending').addEventListener('click', async () => {
+            await signOut(auth);
+        });
+
+        // 6. Lógica de Administrador
+        document.getElementById('btn-goto-admin').addEventListener('click', () => showScreen('adminLogin'));
+        document.getElementById('btn-back-from-admin').addEventListener('click', () => showScreen('welcome'));
+        
+        document.getElementById('form-admin-login').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const u = document.getElementById('admin-user').value;
+            const p = document.getElementById('admin-pass').value;
+            if(u === 'Handhels' && p === 'HandhelsV21') {
+                showScreen('adminDashboard');
+                loadAdminData();
+            } else {
+                alert('Credenciales incorrectas');
+            }
+        });
+
+        document.getElementById('btn-admin-logout').addEventListener('click', () => {
+            document.getElementById('form-admin-login').reset();
+            showScreen('welcome');
+        });
+
+        let adminUnsubscribe = null;
+        function loadAdminData() {
+            if(adminUnsubscribe) adminUnsubscribe();
+            const q = query(collection(db, 'artifacts', APP_ID, 'public'));
+            adminUnsubscribe = onSnapshot(q, (snapshot) => {
+                const tbody = document.getElementById('admin-companies-list');
+                tbody.innerHTML = '';
+                snapshot.forEach(docSnap => {
+                    if(!docSnap.id.startsWith('companies_')) return;
+                    const c = docSnap.data();
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td class="p-4"><strong>${c.companyName}</strong><br/><span class="text-xs text-gray-500">${c.rnc}</span></td>
+                        <td class="p-4">${c.representative}<br/><span class="text-xs text-gray-500">${c.email}</span></td>
+                        <td class="p-4">${c.status === 'approved' ? '✅ Aprobado' : '⏳ Pendiente'}</td>
+                        <td class="p-4">
+                            ${c.status !== 'approved' ? `<button onclick="approveCompany('${docSnap.id}')" class="bg-indigo-600 text-white px-3 py-1 rounded text-sm hover:bg-indigo-700">Aprobar</button>` : ''}
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
                 });
-                return () => unsubscribe();
-            }, []);
-
-            // Data Fetching: Empresas Públicas Registradas
-            useEffect(() => {
-                if (!user) return;
-                
-                const unsubCompanies = onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'companies'), (snapshot) => {
-                    const comps = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-                    setData(prev => ({ ...prev, companies: comps }));
-                    
-                    if (currentCompany) {
-                        const updated = comps.find(c => c.id === currentCompany.id);
-                        if (updated) setCurrentCompany(updated);
-                    }
-                }, (error) => console.error("Error cargando empresas:", error));
-
-                return () => unsubCompanies();
-            }, [user, currentCompany]);
-
-            // Data Fetching: Datos Físicamente Aislados por Empresa
-            useEffect(() => {
-                if (!user || !currentCompany) return;
-                
-                const cid = currentCompany.id;
-                const unsubs = [];
-
-                const collections = ['contacts', 'items', 'transactions', 'taxes', 'expenses'];
-                collections.forEach(colName => {
-                    // MÚLTIPLES USUARIOS: Todos leen de la colección base y se filtra por empresa para garantizar sincronización total
-                    const unsub = onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', colName), (snapshot) => {
-                        const items = snapshot.docs
-                            .map(d => ({ id: d.id, ...d.data() }))
-                            .filter(doc => doc.companyId === cid);
-                        setData(prev => ({ ...prev, [colName]: items }));
-                    }, (error) => console.error(`Error cargando ${colName}:`, error));
-                    unsubs.push(unsub);
-                });
-
-                return () => unsubs.forEach(u => u());
-            }, [user, currentCompany]);
-
-            // Database Handlers (Sincronización multi-usuario por empresa)
-            const dbOps = {
-                add: async (colName, payload) => {
-                    // Trackeo de quién lo creó y a qué empresa pertenece
-                    const finalPayload = { ...payload, timestamp: Date.now(), companyId: currentCompany?.id || null, createdBy: user.uid };
-                    await addDoc(collection(db, 'artifacts', appId, 'public', 'data', colName), finalPayload);
-                },
-                update: async (colName, id, payload) => {
-                    await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', colName, id), { ...payload, lastUpdatedBy: user.uid });
-                },
-                delete: async (colName, id) => {
-                    if(confirm("¿Eliminar registro permanentemente?")) {
-                        await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', colName, id));
-                    }
-                }
-            };
-
-            // Global Actions
-            const loginAsAdmin = () => setView('admin');
-            
-            const loginToCompany = (company) => {
-                if (company.status !== 'approved') return alert("Esta empresa aún no ha sido aprobada por el administrador.");
-                // Limpieza estricta de estado local anterior
-                setData(prev => ({ ...prev, contacts: [], items: [], transactions: [], taxes: [], expenses: [] }));
-                setCurrentCompany(company);
-                setView('app');
-                setActiveTab('dashboard');
-            };
-            
-            const logout = () => { 
-                setData(prev => ({ ...prev, contacts: [], items: [], transactions: [], taxes: [], expenses: [] }));
-                setCurrentCompany(null); 
-                setView('login'); 
-            };
-
-            if (globalLoading) return <div className="h-screen flex items-center justify-center bg-gray-50"><div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div></div>;
-
-            // --- RENDER VIEWS ---
-            if (view === 'login') return <LoginScreen companies={data.companies} onLogin={loginToCompany} onAdminClick={loginAsAdmin} dbOps={dbOps} />;
-            if (view === 'admin') return <AdminPanel companies={data.companies} onBack={() => setView('login')} dbOps={dbOps} />;
-
-            // --- APP LAYOUT ---
-            return (
-                <div className="flex h-screen bg-gray-50 overflow-hidden font-sans">
-                    {/* Sidebar */}
-                    <aside className="w-64 bg-slate-900 text-slate-300 flex flex-col z-20">
-                        <div className="h-16 flex items-center px-6 bg-slate-950 border-b border-slate-800">
-                            <div className="w-8 h-8 bg-blue-600 text-white rounded-lg flex items-center justify-center font-bold mr-3 shadow-lg shadow-blue-900/50 overflow-hidden">
-                                {currentCompany?.logo ? <img src={currentCompany.logo} alt="Logo" className="w-full h-full object-cover" /> : 'L'}
-                            </div>
-                            <span className="text-white font-bold text-lg tracking-tight">LorHels ERP</span>
-                        </div>
-                        <div className="px-6 py-4 border-b border-slate-800">
-                            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Empresa Activa</p>
-                            <p className="text-white font-medium truncate">{currentCompany.name}</p>
-                            <Badge variant="blue">{currentCompany.plan} Plan</Badge>
-                        </div>
-                        <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-1">
-                            {[
-                                { id: 'dashboard', label: 'Dashboard', icon: 'LayoutDashboard' },
-                                { id: 'billing', label: 'Facturación', icon: 'Receipt' },
-                                { id: 'finances', label: 'Finanzas & Cuentas', icon: 'Wallet' },
-                                { id: 'inventory', label: 'Inventario', icon: 'Package' },
-                                { id: 'contacts', label: 'Clientes / Prov.', icon: 'Users' },
-                                { id: 'reports', label: 'Reportes', icon: 'BarChart3' },
-                                { id: 'settings', label: 'Configuración', icon: 'Settings' }
-                            ].map(item => (
-                                <button key={item.id} onClick={() => setActiveTab(item.id)} 
-                                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-sm font-medium ${activeTab === item.id ? 'bg-blue-600 text-white' : 'hover:bg-slate-800 hover:text-white'}`}>
-                                    <Icon name={item.icon} size={18} /> {item.label}
-                                </button>
-                            ))}
-                        </nav>
-                        <div className="p-4 border-t border-slate-800">
-                            <button onClick={logout} className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors text-sm w-full p-2 rounded-lg hover:bg-slate-800">
-                                <Icon name="LogOut" size={18} /> Cerrar Sesión
-                            </button>
-                        </div>
-                    </aside>
-
-                    {/* Main Content Area */}
-                    <main className="flex-1 flex flex-col relative overflow-hidden">
-                        <header className="h-16 glass-nav flex items-center justify-between px-8 z-10">
-                            <h1 className="text-xl font-bold text-gray-800 capitalize">{activeTab.replace('_', ' ')}</h1>
-                            <div className="flex items-center gap-4">
-                                <span className="text-sm font-medium text-gray-500">{new Date().toLocaleDateString('es-DO', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
-                                <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold overflow-hidden shadow-sm border border-blue-200">
-                                    {currentCompany?.logo ? <img src={currentCompany.logo} alt="Logo" className="w-full h-full object-cover" /> : currentCompany?.name?.charAt(0)}
-                                </div>
-                            </div>
-                        </header>
-                        <div className="flex-1 overflow-y-auto p-8 animate-fade-in relative">
-                            <div className="max-w-7xl mx-auto pb-20">
-                                {activeTab === 'dashboard' && <DashboardView data={data} />}
-                                {activeTab === 'billing' && <BillingView data={data} dbOps={dbOps} currentCompany={currentCompany} />}
-                                {activeTab === 'finances' && <FinanceView data={data} dbOps={dbOps} />}
-                                {activeTab === 'inventory' && <InventoryView data={data} dbOps={dbOps} />}
-                                {activeTab === 'contacts' && <ContactsView data={data} dbOps={dbOps} currentCompany={currentCompany} />}
-                                {activeTab === 'reports' && <ReportsView data={data} />}
-                                {activeTab === 'settings' && <SettingsView data={data} dbOps={dbOps} currentCompany={currentCompany} />}
-                            </div>
-                        </div>
-                    </main>
-                </div>
-            );
+            });
         }
 
-        // ==========================================
-        // MODULE VIEWS
-        // ==========================================
-
-        // --- 1. LOGIN & ONBOARDING ---
-        const LoginScreen = ({ companies, onLogin, onAdminClick, dbOps }) => {
-            const [mode, setMode] = useState('select');
-            const [selected, setSelected] = useState(null);
-            const [pin, setPin] = useState('');
-
-            const handleCreate = async (e) => {
-                e.preventDefault();
-                const fd = new FormData(e.target);
-                const payload = Object.fromEntries(fd.entries());
-                
-                try {
-                    await dbOps.add('companies', {
-                        ...payload,
-                        status: 'pending',
-                        nextInvoiceNum: 1, nextQuoteNum: 1
-                    });
-                    alert("Solicitud enviada. Un administrador revisará la cuenta.");
-                    setMode('select');
-                } catch (err) { alert(err.message); }
-            };
-
-            const doLogin = (e) => {
-                e.preventDefault();
-                if(selected.staticPin === pin) onLogin(selected);
-                else { alert("PIN Incorrecto"); setPin(''); }
-            };
-
-            return (
-                <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 relative">
-                    <button onClick={onAdminClick} className="absolute top-6 right-8 text-gray-400 hover:text-gray-900 transition flex gap-2 items-center text-sm font-medium">
-                        <Icon name="Shield" size={16} /> Admin
-                    </button>
-                    
-                    <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
-                        <div className="mx-auto w-16 h-16 bg-blue-600 rounded-2xl shadow-xl flex items-center justify-center text-white text-3xl font-black mb-6">LH</div>
-                        <h2 className="text-center text-3xl font-extrabold text-gray-900 tracking-tight">LorHels Systems</h2>
-                        <p className="mt-2 text-center text-sm text-gray-600">Enterprise Resource Planning</p>
-                    </div>
-
-                    <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md animate-slide-up">
-                        <Card className="p-8">
-                            {mode === 'select' && (
-                                <div className="space-y-6">
-                                    <div>
-                                        <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">Empresas Activas</h3>
-                                        <div className="space-y-3 max-h-64 overflow-y-auto">
-                                            {companies.filter(c => c.status === 'approved').map(c => (
-                                                <button key={c.id} onClick={() => { setSelected(c); setMode('pin'); }} className="w-full flex items-center justify-between p-4 border border-gray-200 rounded-xl hover:border-blue-500 hover:bg-blue-50 transition text-left group">
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center overflow-hidden border border-gray-200">
-                                                            {c.logo ? <img src={c.logo} alt="Logo" className="w-full h-full object-cover" /> : <span className="font-bold text-gray-500">{c.name.charAt(0)}</span>}
-                                                        </div>
-                                                        <div><p className="font-bold text-gray-900">{c.name}</p><p className="text-xs text-gray-500">RNC: {c.rnc}</p></div>
-                                                    </div>
-                                                    <Icon name="ChevronRight" className="text-gray-400 group-hover:text-blue-500" />
-                                                </button>
-                                            ))}
-                                            {companies.filter(c => c.status === 'approved').length === 0 && <p className="text-sm text-gray-500 italic text-center py-4">No hay empresas aprobadas aún.</p>}
-                                        </div>
-                                    </div>
-                                    <Button variant="secondary" className="w-full" onClick={() => setMode('create')}>Crear Solicitud de Empresa</Button>
-                                </div>
-                            )}
-
-                            {mode === 'pin' && (
-                                <form onSubmit={doLogin} className="space-y-6 text-center">
-                                    <h3 className="text-lg font-bold text-gray-900">{selected?.name}</h3>
-                                    <p className="text-sm text-gray-500 mb-4">Ingrese su PIN de seguridad de 4 dígitos</p>
-                                    <input type="password" maxLength="4" autoFocus value={pin} onChange={e=>setPin(e.target.value)} className="w-full text-center text-4xl tracking-[1em] p-4 bg-gray-50 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" required />
-                                    <div className="flex gap-3">
-                                        <Button variant="secondary" className="flex-1" onClick={() => {setMode('select'); setPin('');}}>Volver</Button>
-                                        <Button type="submit" className="flex-1">Entrar</Button>
-                                    </div>
-                                </form>
-                            )}
-
-                            {mode === 'create' && (
-                                <form onSubmit={handleCreate} className="space-y-4">
-                                    <h3 className="text-lg font-bold text-gray-900 border-b pb-2">Nueva Empresa</h3>
-                                    <input name="name" placeholder="Nombre Comercial" required className="w-full p-3 border border-gray-300 rounded-lg text-sm" />
-                                    <input name="rep" placeholder="Nombre del Representante" required className="w-full p-3 border border-gray-300 rounded-lg text-sm" />
-                                    <input name="rnc" placeholder="RNC / Identificación" required className="w-full p-3 border border-gray-300 rounded-lg text-sm" />
-                                    <input name="email" type="email" placeholder="Correo Electrónico" required className="w-full p-3 border border-gray-300 rounded-lg text-sm" />
-                                    <input name="phone" placeholder="Número de Contacto" required className="w-full p-3 border border-gray-300 rounded-lg text-sm" />
-                                    <input name="address" placeholder="Dirección Física" required className="w-full p-3 border border-gray-300 rounded-lg text-sm" />
-                                    <input name="website" placeholder="Sitio Web (Opcional)" className="w-full p-3 border border-gray-300 rounded-lg text-sm" />
-                                    <input name="logo" placeholder="URL del Logo (Opcional)" className="w-full p-3 border border-gray-300 rounded-lg text-sm" />
-                                    
-                                    <select name="plan" className="w-full p-3 border border-gray-300 rounded-lg text-sm bg-white" required>
-                                        <option value="">Seleccione un Plan...</option>
-                                        <option value="Basico">Plan Básico (15 Días Prueba)</option>
-                                        <option value="Pro">Plan Profesional (3 Meses)</option>
-                                        <option value="Enterprise">Plan Empresarial (Anual)</option>
-                                    </select>
-                                    <input name="staticPin" type="password" maxLength="4" placeholder="Cree un PIN (4 dígitos)" required className="w-full p-3 border border-blue-300 bg-blue-50 rounded-lg text-sm tracking-widest text-center font-bold" />
-                                    <div className="flex gap-3 pt-2">
-                                        <Button variant="secondary" className="flex-1" onClick={() => setMode('select')}>Cancelar</Button>
-                                        <Button type="submit" className="flex-1">Enviar Solicitud</Button>
-                                    </div>
-                                </form>
-                            )}
-                        </Card>
-                    </div>
-                </div>
-            );
+        window.approveCompany = async (companyId) => {
+            await updateDoc(doc(db, 'artifacts', APP_ID, 'public', companyId), { status: 'approved' });
         };
 
-        // --- 2. ADMIN PANEL ---
-        const AdminPanel = ({ companies, onBack, dbOps }) => {
-            const [logged, setLogged] = useState(false);
-
-            const handleLogin = (e) => {
-                e.preventDefault();
-                if (e.target.user.value === 'Handhels' && e.target.pass.value === 'Handhels01') setLogged(true);
-                else alert("Credenciales incorrectas");
-            };
-
-            const approve = async (c) => {
-                let days = 15;
-                if(c.plan === 'Pro') days = 90;
-                if(c.plan === 'Enterprise') days = 365;
-                const expiry = new Date(); expiry.setDate(expiry.getDate() + days);
-                
-                await dbOps.update('companies', c.id, {
-                    status: 'approved', expiryDate: expiry.toISOString()
-                });
-            };
-
-            const reject = async (id) => {
-                await dbOps.delete('companies', id);
-            };
-
-            if (!logged) return (
-                <div className="h-screen flex items-center justify-center bg-slate-900">
-                    <Card className="p-8 w-full max-w-md bg-white">
-                        <div className="text-center mb-6">
-                            <Icon name="ShieldCheck" size={48} className="mx-auto text-slate-800 mb-4" />
-                            <h2 className="text-2xl font-bold text-gray-900">Acceso Master</h2>
-                        </div>
-                        <form onSubmit={handleLogin} className="space-y-4">
-                            <input name="user" placeholder="Usuario" className="w-full p-3 border border-gray-300 rounded-lg" required />
-                            <input name="pass" type="password" placeholder="Contraseña" className="w-full p-3 border border-gray-300 rounded-lg" required />
-                            <div className="flex gap-3 pt-4">
-                                <Button variant="secondary" onClick={onBack} className="flex-1">Volver</Button>
-                                <Button type="submit" className="flex-1 bg-slate-800 hover:bg-slate-900 text-white">Entrar</Button>
-                            </div>
-                        </form>
-                    </Card>
-                </div>
-            );
-
-            return (
-                <div className="min-h-screen bg-gray-50 p-8">
-                    <div className="max-w-5xl mx-auto space-y-6">
-                        <div className="flex justify-between items-center bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
-                            <div><h1 className="text-2xl font-bold text-gray-900">Panel de Administración</h1><p className="text-gray-500">Gestión de licencias y empresas</p></div>
-                            <Button variant="secondary" onClick={onBack} icon="LogOut">Salir</Button>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <Card className="p-6">
-                                <h3 className="font-bold text-lg mb-4 flex items-center gap-2"><Icon name="Clock" className="text-yellow-500"/> Solicitudes Pendientes</h3>
-                                <div className="space-y-3">
-                                    {companies.filter(c => c.status === 'pending').map(c => (
-                                        <div key={c.id} className="p-4 bg-yellow-50 border border-yellow-200 rounded-xl">
-                                            <div className="flex justify-between items-start mb-3">
-                                                <div><p className="font-bold text-gray-900">{c.name}</p><p className="text-xs text-gray-600">RNC: {c.rnc} | Plan: {c.plan}</p></div>
-                                                <Badge variant="yellow">Pendiente</Badge>
-                                            </div>
-                                            <div className="flex gap-2">
-                                                <Button variant="danger" className="flex-1 py-1 text-xs" onClick={()=>reject(c.id)}>Rechazar</Button>
-                                                <Button variant="success" className="flex-1 py-1 text-xs" onClick={()=>approve(c)}>Aprobar ({c.plan})</Button>
-                                            </div>
-                                        </div>
-                                    ))}
-                                    {companies.filter(c=>c.status==='pending').length === 0 && <p className="text-sm text-gray-500 italic">No hay solicitudes nuevas.</p>}
-                                </div>
-                            </Card>
-
-                            <Card className="p-6">
-                                <h3 className="font-bold text-lg mb-4 flex items-center gap-2"><Icon name="CheckCircle" className="text-green-500"/> Empresas Activas</h3>
-                                <div className="space-y-3 max-h-[60vh] overflow-y-auto">
-                                    {companies.filter(c => c.status === 'approved').map(c => (
-                                        <div key={c.id} className="p-3 bg-white border border-gray-200 rounded-xl flex justify-between items-center">
-                                            <div>
-                                                <p className="font-bold text-gray-800 text-sm">{c.name}</p>
-                                                <p className="text-[10px] text-gray-500">Vence: {formatDate(c.expiryDate)}</p>
-                                            </div>
-                                            <Button variant="secondary" className="px-2 py-1 text-red-500 hover:text-red-700 hover:bg-red-50" onClick={()=>reject(c.id)}><Icon name="Trash" size={14}/></Button>
-                                        </div>
-                                    ))}
-                                </div>
-                            </Card>
-                        </div>
-                    </div>
-                </div>
-            );
-        };
-
-        // --- 3. DASHBOARD ---
-        const DashboardView = ({ data }) => {
-            const currentMonth = new Date().getMonth();
-            const currentYear = new Date().getFullYear();
-
-            // Calculate metrics
-            const metrics = useMemo(() => {
-                let sales = 0, expenses = 0, ar = 0;
-                
-                data.transactions.forEach(t => {
-                    if (t.type === 'invoice' && t.status !== 'anulada') {
-                        const tDate = new Date(t.date);
-                        if (tDate.getMonth() === currentMonth && tDate.getFullYear() === currentYear) sales += t.total;
-                        if (t.status === 'pendiente') ar += t.total; // AR = facturas pendientes
-                    }
-                });
-
-                data.expenses.forEach(e => {
-                    const eDate = new Date(e.date);
-                    if (eDate.getMonth() === currentMonth && eDate.getFullYear() === currentYear) expenses += e.amount;
-                });
-
-                return { sales, expenses, profit: sales - expenses, ar };
-            }, [data]);
-
-            return (
-                <div className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        <Card className="p-6 border-l-4 border-l-blue-500"><p className="text-sm font-semibold text-gray-500 mb-1">Ventas (Mes Actual)</p><h3 className="text-2xl font-bold text-gray-900">{formatMoney(metrics.sales)}</h3></Card>
-                        <Card className="p-6 border-l-4 border-l-red-500"><p className="text-sm font-semibold text-gray-500 mb-1">Gastos (Mes Actual)</p><h3 className="text-2xl font-bold text-gray-900">{formatMoney(metrics.expenses)}</h3></Card>
-                        <Card className="p-6 border-l-4 border-l-emerald-500"><p className="text-sm font-semibold text-gray-500 mb-1">Beneficio Neto</p><h3 className="text-2xl font-bold text-emerald-600">{formatMoney(metrics.profit)}</h3></Card>
-                        <Card className="p-6 border-l-4 border-l-yellow-500"><p className="text-sm font-semibold text-gray-500 mb-1">Cuentas por Cobrar</p><h3 className="text-2xl font-bold text-yellow-600">{formatMoney(metrics.ar)}</h3></Card>
-                    </div>
-
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        <Card className="p-6">
-                            <h3 className="font-bold text-gray-900 mb-4">Últimas Facturas</h3>
-                            <div className="space-y-3">
-                                {data.transactions.filter(t=>t.type==='invoice').sort((a,b)=>b.timestamp - a.timestamp).slice(0,5).map(i => (
-                                    <div key={i.id} className="flex justify-between items-center p-3 hover:bg-gray-50 rounded-lg">
-                                        <div><p className="font-medium text-sm text-gray-800">{i.clientName}</p><p className="text-xs text-gray-500">N° {i.number} • {formatDate(i.date)}</p></div>
-                                        <div className="text-right"><p className="font-bold text-sm">{formatMoney(i.total)}</p><Badge variant={i.status === 'pagada' ? 'green' : 'yellow'}>{i.status}</Badge></div>
-                                    </div>
-                                ))}
-                            </div>
-                        </Card>
-                        <Card className="p-6">
-                            <h3 className="font-bold text-gray-900 mb-4">Stock Bajo (Productos)</h3>
-                            <div className="space-y-3">
-                                {data.items.filter(i=>i.type==='product' && i.trackStock && parseInt(i.stock) <= parseInt(i.minStock)).map(p => (
-                                    <div key={p.id} className="flex justify-between items-center p-3 border border-red-100 bg-red-50 rounded-lg">
-                                        <div><p className="font-medium text-sm text-gray-800">{p.name}</p><p className="text-xs text-gray-500">Mínimo: {p.minStock}</p></div>
-                                        <div className="text-right"><p className="font-black text-red-600 text-lg">{p.stock}</p><p className="text-[10px] uppercase font-bold text-red-400">En Stock</p></div>
-                                    </div>
-                                ))}
-                                {data.items.filter(i=>i.type==='product' && i.trackStock && parseInt(i.stock) <= parseInt(i.minStock)).length === 0 && <p className="text-sm text-gray-500 italic">No hay alertas de inventario.</p>}
-                            </div>
-                        </Card>
-                    </div>
-                </div>
-            );
-        };
-
-        // --- 4. BILLING ---
-        const BillingView = ({ data, dbOps, currentCompany }) => {
-            const [tab, setTab] = useState('invoice'); // invoice, quote
-            const [isModalOpen, setModalOpen] = useState(false);
-            const [form, setForm] = useState(null);
-
-            const openNewDoc = (type) => {
-                setForm({
-                    type, status: 'pendiente', date: new Date().toISOString().split('T')[0], dueDate: '',
-                    clientId: '', clientName: '', currency: 'DOP', taxId: '', items: [], note: ''
-                });
-                setModalOpen(true);
-            };
-
-            const calculateTotals = (items, taxId) => {
-                const subtotal = items.reduce((sum, item) => sum + (item.price * item.qty), 0);
-                const taxDef = data.taxes.find(t => t.id === taxId);
-                const taxRate = taxDef ? parseFloat(taxDef.rate) : 0;
-                const taxAmount = subtotal * (taxRate / 100);
-                return { subtotal, taxAmount, total: subtotal + taxAmount, taxRate };
-            };
-
-            const saveDoc = async (e) => {
-                e.preventDefault();
-                if(form.items.length === 0) return alert("Agregue al menos un artículo.");
-                if(!form.clientId) return alert("Seleccione un cliente.");
-                
-                const client = data.contacts.find(c => c.id === form.clientId);
-                const { subtotal, taxAmount, total, taxRate } = calculateTotals(form.items, form.taxId);
-                
-                let docNumber = form.number;
-                if (!form.id) {
-                    const numField = form.type === 'invoice' ? 'nextInvoiceNum' : 'nextQuoteNum';
-                    const currentNum = currentCompany[numField] || 1;
-                    docNumber = `${form.type === 'invoice' ? 'FAC' : 'COT'}-${currentNum.toString().padStart(5, '0')}`;
-                    await dbOps.update('companies', currentCompany.id, { [numField]: currentNum + 1 });
-                }
-
-                const payload = { ...form, clientName: client.name, subtotal, taxAmount, taxRate, total, number: docNumber };
-
-                if (form.id) await dbOps.update('transactions', form.id, payload);
-                else {
-                    await dbOps.add('transactions', payload);
-                    if (form.type === 'invoice') {
-                        for (const item of form.items) {
-                            if (item.trackStock) {
-                                const dbItem = data.items.find(i => i.id === item.itemId);
-                                if (dbItem) await dbOps.update('items', dbItem.id, { stock: parseInt(dbItem.stock) - item.qty });
-                            }
-                        }
-                    }
-                }
-                setModalOpen(false);
-            };
-
-            const convertQuoteToInvoice = async (quote) => {
-                if(!confirm("¿Convertir en Factura?")) return;
-                const num = currentCompany.nextInvoiceNum || 1;
-                const docNumber = `FAC-${num.toString().padStart(5, '0')}`;
-                await dbOps.update('companies', currentCompany.id, { nextInvoiceNum: num + 1 });
-                
-                const newInv = { ...quote, type: 'invoice', status: 'pendiente', number: docNumber, quoteId: quote.id };
-                delete newInv.id;
-                await dbOps.add('transactions', newInv);
-                await dbOps.update('transactions', quote.id, { status: 'facturada' });
-                setTab('invoice');
-            };
-
-            return (
-                <div className="space-y-6">
-                    <div className="flex justify-between items-center">
-                        <div className="flex gap-2 bg-white p-1 rounded-lg border border-gray-200">
-                            <button onClick={()=>setTab('invoice')} className={`px-4 py-1.5 rounded-md text-sm font-medium ${tab==='invoice'?'bg-blue-50 text-blue-700':'text-gray-500 hover:text-gray-700'}`}>Facturas</button>
-                            <button onClick={()=>setTab('quote')} className={`px-4 py-1.5 rounded-md text-sm font-medium ${tab==='quote'?'bg-blue-50 text-blue-700':'text-gray-500 hover:text-gray-700'}`}>Cotizaciones</button>
-                        </div>
-                        <Button icon="Plus" onClick={() => openNewDoc(tab)}>Crear {tab === 'invoice' ? 'Factura' : 'Cotización'}</Button>
-                    </div>
-
-                    <Card className="overflow-hidden">
-                        <table className="w-full text-left text-sm">
-                            <thead className="bg-gray-50 border-b border-gray-200 text-gray-500">
-                                <tr><th className="p-4 font-semibold">Documento</th><th className="p-4 font-semibold">Fecha</th><th className="p-4 font-semibold">Cliente</th><th className="p-4 font-semibold">Total</th><th className="p-4 font-semibold text-center">Estado</th><th className="p-4 font-semibold text-center">Acciones</th></tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-100">
-                                {data.transactions.filter(t => t.type === tab).sort((a,b)=>b.timestamp - a.timestamp).map(doc => (
-                                    <tr key={doc.id} className="hover:bg-gray-50">
-                                        <td className="p-4 font-medium text-gray-900">{doc.number}</td>
-                                        <td className="p-4 text-gray-500">{formatDate(doc.date)}</td>
-                                        <td className="p-4">{doc.clientName}</td>
-                                        <td className="p-4 font-bold">{formatMoney(doc.total, doc.currency)}</td>
-                                        <td className="p-4 text-center">
-                                            <Badge variant={doc.status==='pagada'||doc.status==='facturada' ? 'green' : doc.status==='anulada'?'red':'yellow'}>{doc.status}</Badge>
-                                        </td>
-                                        <td className="p-4 text-center space-x-2">
-                                            <button onClick={()=>generateInvoicePDF(currentCompany, doc, data.contacts.find(c=>c.id===doc.clientId))} className="text-gray-400 hover:text-blue-600"><Icon name="FileDown" size={18}/></button>
-                                            {tab === 'quote' && doc.status === 'pendiente' && (
-                                                <button onClick={()=>convertQuoteToInvoice(doc)} className="text-gray-400 hover:text-green-600" title="Convertir a Factura"><Icon name="ArrowRightLeft" size={18}/></button>
-                                            )}
-                                        </td>
-                                    </tr>
-                                ))}
-                                {data.transactions.filter(t => t.type === tab).length === 0 && <tr><td colSpan="6" className="p-8 text-center text-gray-500 italic">No hay documentos registrados.</td></tr>}
-                            </tbody>
-                        </table>
-                    </Card>
-
-                    {/* CREATE DOC MODAL */}
-                    <Modal isOpen={isModalOpen} onClose={() => setModalOpen(false)} title={`Nueva ${form?.type === 'invoice' ? 'Factura' : 'Cotización'}`} maxWidth="max-w-4xl">
-                        {form && (
-                            <form onSubmit={saveDoc} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                                <div className="lg:col-span-2 space-y-4">
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div><label className="text-xs font-bold text-gray-500 uppercase">Cliente</label>
-                                            <select value={form.clientId} onChange={e=>setForm({...form, clientId: e.target.value})} className="w-full p-2 border rounded-lg mt-1 text-sm" required>
-                                                <option value="">Seleccionar...</option>
-                                                {data.contacts.filter(c=>c.type==='client').map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                                            </select>
-                                        </div>
-                                        <div><label className="text-xs font-bold text-gray-500 uppercase">Fecha</label>
-                                            <input type="date" value={form.date} onChange={e=>setForm({...form, date: e.target.value})} className="w-full p-2 border rounded-lg mt-1 text-sm" required/>
-                                        </div>
-                                    </div>
-                                    
-                                    {/* Item Selector */}
-                                    <div className="border rounded-xl p-4 bg-gray-50">
-                                        <h4 className="text-sm font-bold text-gray-700 mb-2">Añadir Artículos</h4>
-                                        <div className="max-h-40 overflow-y-auto space-y-1">
-                                            {data.items.map(item => (
-                                                <div key={item.id} className="flex justify-between items-center bg-white p-2 rounded border border-gray-100 shadow-sm">
-                                                    <div><p className="text-sm font-medium">{item.name}</p><p className="text-xs text-gray-500">{formatMoney(item.price)} | Disp: {item.trackStock?item.stock:'∞'}</p></div>
-                                                    <Button variant="secondary" className="px-2 py-1" onClick={() => {
-                                                        const existing = form.items.find(i=>i.itemId === item.id);
-                                                        if(existing) setForm({...form, items: form.items.map(i=>i.itemId===item.id ? {...i, qty: i.qty+1}:i)});
-                                                        else setForm({...form, items: [...form.items, {itemId: item.id, name: item.name, price: item.price, qty: 1, trackStock: item.trackStock}]});
-                                                    }}><Icon name="Plus" size={14}/></Button>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-
-                                    {/* Added Items List */}
-                                    <div className="space-y-2">
-                                        {form.items.map((item, idx) => (
-                                            <div key={idx} className="flex items-center gap-3 p-3 bg-white border border-gray-200 rounded-lg">
-                                                <span className="flex-1 font-medium text-sm">{item.name}</span>
-                                                <input type="number" min="1" value={item.qty} onChange={e=>{
-                                                    const nItems = [...form.items]; nItems[idx].qty = parseInt(e.target.value)||1; setForm({...form, items: nItems});
-                                                }} className="w-20 p-1 border rounded text-center text-sm" />
-                                                <span className="w-24 text-right font-bold text-sm">{formatMoney(item.price * item.qty)}</span>
-                                                <button type="button" onClick={()=>{
-                                                    setForm({...form, items: form.items.filter((_,i)=>i!==idx)});
-                                                }} className="text-red-400 hover:text-red-600"><Icon name="Trash2" size={16}/></button>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                                
-                                <div className="space-y-4 bg-gray-50 p-6 rounded-xl border border-gray-200 h-fit">
-                                    <h4 className="font-bold text-gray-900 border-b pb-2">Resumen</h4>
-                                    <div><label className="text-xs font-bold text-gray-500 uppercase">Impuesto</label>
-                                        <select value={form.taxId} onChange={e=>setForm({...form, taxId: e.target.value})} className="w-full p-2 border rounded-lg mt-1 text-sm">
-                                            <option value="">Ninguno</option>
-                                            {data.taxes.map(t => <option key={t.id} value={t.id}>{t.name} ({t.rate}%)</option>)}
-                                        </select>
-                                    </div>
-                                    <div className="space-y-2 pt-4 border-t text-sm">
-                                        {(() => {
-                                            const {subtotal, taxAmount, total} = calculateTotals(form.items, form.taxId);
-                                            return (
-                                                <>
-                                                    <div className="flex justify-between text-gray-600"><span>Subtotal</span><span>{formatMoney(subtotal)}</span></div>
-                                                    <div className="flex justify-between text-gray-600"><span>Impuestos</span><span>{formatMoney(taxAmount)}</span></div>
-                                                    <div className="flex justify-between font-bold text-lg text-gray-900 pt-2 border-t mt-2"><span>Total</span><span>{formatMoney(total)}</span></div>
-                                                </>
-                                            )
-                                        })()}
-                                    </div>
-                                    <Button type="submit" className="w-full py-3 mt-4" icon="Save">Guardar Documento</Button>
-                                </div>
-                            </form>
-                        )}
-                    </Modal>
-                </div>
-            );
-        };
-
-        // --- 5. INVENTORY ---
-        const InventoryView = ({ data, dbOps }) => {
-            const [isModalOpen, setModalOpen] = useState(false);
-            const [form, setForm] = useState(null);
-
-            const openForm = (item = null) => {
-                setForm(item || { type: 'product', code: '', name: '', cost: 0, price: 0, stock: 0, minStock: 5, trackStock: true });
-                setModalOpen(true);
-            };
-
-            const saveItem = async (e) => {
-                e.preventDefault();
-                const payload = { ...form, cost: parseFloat(form.cost), price: parseFloat(form.price), stock: parseInt(form.stock), minStock: parseInt(form.minStock) };
-                if (form.id) await dbOps.update('items', form.id, payload);
-                else await dbOps.add('items', payload);
-                setModalOpen(false);
-            };
-
-            return (
-                <div className="space-y-6">
-                    <div className="flex justify-between items-center">
-                        <h2 className="text-2xl font-bold text-gray-800">Catálogo e Inventario</h2>
-                        <Button icon="Plus" onClick={() => openForm()}>Nuevo Artículo</Button>
-                    </div>
-
-                    <Card className="overflow-hidden">
-                        <table className="w-full text-left text-sm">
-                            <thead className="bg-gray-50 border-b border-gray-200 text-gray-500">
-                                <tr><th className="p-4 font-semibold">Cód.</th><th className="p-4 font-semibold">Nombre</th><th className="p-4 font-semibold">Tipo</th><th className="p-4 font-semibold text-right">Precio Venta</th><th className="p-4 font-semibold text-center">Stock</th><th className="p-4 font-semibold text-center">Acciones</th></tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-100">
-                                {data.items.map(item => (
-                                    <tr key={item.id} className="hover:bg-gray-50">
-                                        <td className="p-4 text-xs font-mono text-gray-500">{item.code || '-'}</td>
-                                        <td className="p-4 font-medium text-gray-900">{item.name}</td>
-                                        <td className="p-4"><Badge variant={item.type==='product'?'blue':'purple'}>{item.type==='product'?'Producto':'Servicio'}</Badge></td>
-                                        <td className="p-4 text-right font-medium">{formatMoney(item.price)}</td>
-                                        <td className="p-4 text-center">
-                                            {item.trackStock ? (
-                                                <span className={`font-bold ${item.stock <= item.minStock ? 'text-red-600' : 'text-green-600'}`}>{item.stock}</span>
-                                            ) : <span className="text-gray-400">N/A</span>}
-                                        </td>
-                                        <td className="p-4 text-center space-x-2">
-                                            <button onClick={()=>openForm(item)} className="text-gray-400 hover:text-blue-600"><Icon name="Edit2" size={16}/></button>
-                                            <button onClick={()=>dbOps.delete('items', item.id)} className="text-gray-400 hover:text-red-600"><Icon name="Trash2" size={16}/></button>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </Card>
-
-                    <Modal isOpen={isModalOpen} onClose={() => setModalOpen(false)} title={form?.id ? 'Editar Artículo' : 'Nuevo Artículo'}>
-                        {form && (
-                            <form onSubmit={saveItem} className="space-y-4">
-                                <div className="flex gap-4 mb-4">
-                                    <label className="flex items-center gap-2 text-sm font-medium"><input type="radio" name="type" checked={form.type==='product'} onChange={()=>setForm({...form, type:'product', trackStock:true})} /> Producto Físico</label>
-                                    <label className="flex items-center gap-2 text-sm font-medium"><input type="radio" name="type" checked={form.type==='service'} onChange={()=>setForm({...form, type:'service', trackStock:false})} /> Servicio</label>
-                                </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div><label className="text-xs font-bold text-gray-500 uppercase">Código</label><input value={form.code} onChange={e=>setForm({...form, code: e.target.value})} className="w-full p-2 border rounded-lg mt-1 text-sm" /></div>
-                                    <div><label className="text-xs font-bold text-gray-500 uppercase">Nombre</label><input value={form.name} onChange={e=>setForm({...form, name: e.target.value})} required className="w-full p-2 border rounded-lg mt-1 text-sm" /></div>
-                                    <div><label className="text-xs font-bold text-gray-500 uppercase">Costo Unitario</label><input type="number" step="0.01" value={form.cost} onChange={e=>setForm({...form, cost: e.target.value})} className="w-full p-2 border rounded-lg mt-1 text-sm" /></div>
-                                    <div><label className="text-xs font-bold text-gray-500 uppercase">Precio Venta</label><input type="number" step="0.01" value={form.price} onChange={e=>setForm({...form, price: e.target.value})} required className="w-full p-2 border rounded-lg mt-1 text-sm text-blue-700 font-bold" /></div>
-                                </div>
-                                {form.type === 'product' && (
-                                    <div className="grid grid-cols-2 gap-4 pt-4 border-t">
-                                        <div><label className="text-xs font-bold text-gray-500 uppercase">Stock Actual</label><input type="number" value={form.stock} onChange={e=>setForm({...form, stock: e.target.value})} className="w-full p-2 border rounded-lg mt-1 text-sm" /></div>
-                                        <div><label className="text-xs font-bold text-gray-500 uppercase">Alerta Stock Bajo</label><input type="number" value={form.minStock} onChange={e=>setForm({...form, minStock: e.target.value})} className="w-full p-2 border rounded-lg mt-1 text-sm text-red-600" /></div>
-                                    </div>
-                                )}
-                                <div className="pt-4 flex justify-end gap-2"><Button variant="secondary" onClick={()=>setModalOpen(false)}>Cancelar</Button><Button type="submit">Guardar</Button></div>
-                            </form>
-                        )}
-                    </Modal>
-                </div>
-            );
-        };
-
-        // --- 6. CONTACTS & CLIENT PROFILE ---
-        const ContactsView = ({ data, dbOps, currentCompany }) => {
-            const [viewMode, setViewMode] = useState('list'); // list or detail
-            const [selectedContact, setSelectedContact] = useState(null);
-            const [tab, setTab] = useState('client');
-            const [isModalOpen, setModalOpen] = useState(false);
-            const [form, setForm] = useState(null);
-
-            const openForm = (contact = null) => {
-                setForm(contact || { type: tab, name: '', rnc: '', email: '', phone: '', address: '', creditLimit: 0 });
-                setModalOpen(true);
-            };
-
-            const saveContact = async (e) => {
-                e.preventDefault();
-                const payload = { ...form, creditLimit: parseFloat(form.creditLimit) };
-                if (form.id) await dbOps.update('contacts', form.id, payload);
-                else await dbOps.add('contacts', payload);
-                setModalOpen(false);
-            };
-
-            const handleClientClick = (client) => {
-                if(tab === 'client') {
-                    setSelectedContact(client);
-                    setViewMode('detail');
-                }
-            };
-
-            // VISTA DE PERFIL DE CLIENTE
-            if (viewMode === 'detail' && selectedContact) {
-                const clientInvs = data.transactions.filter(t => t.type === 'invoice' && t.clientId === selectedContact.id).sort((a,b)=>b.timestamp - a.timestamp);
-                const totalBilled = clientInvs.reduce((sum, inv) => sum + inv.total, 0);
-                const pendingBalance = clientInvs.filter(i => i.status === 'pendiente').reduce((sum, inv) => sum + inv.total, 0);
-
-                return (
-                    <div className="space-y-6 animate-fade-in">
-                        <div className="flex items-center gap-4">
-                            <Button variant="secondary" onClick={() => setViewMode('list')} icon="ArrowLeft">Volver</Button>
-                            <h2 className="text-2xl font-bold text-gray-800">{selectedContact.name}</h2>
-                            <Badge variant="blue">INFO 360</Badge>
-                            <div className="flex-1 text-right">
-                                <Button icon="FileDown" onClick={() => generateStatementPDF(currentCompany, selectedContact, data.transactions)}>Estado de Cuenta (PDF)</Button>
-                            </div>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            <Card className="p-6 border-l-4 border-red-500">
-                                <p className="text-sm font-semibold text-gray-500">Balance Pendiente</p>
-                                <h3 className="text-2xl font-bold text-red-600">{formatMoney(pendingBalance)}</h3>
-                            </Card>
-                            <Card className="p-6 border-l-4 border-blue-500">
-                                <p className="text-sm font-semibold text-gray-500">Total Facturado</p>
-                                <h3 className="text-2xl font-bold text-gray-900">{formatMoney(totalBilled)}</h3>
-                            </Card>
-                            <Card className="p-6 border-l-4 border-emerald-500">
-                                <p className="text-sm font-semibold text-gray-500">Límite de Crédito</p>
-                                <h3 className="text-2xl font-bold text-emerald-600">{formatMoney(selectedContact.creditLimit)}</h3>
-                            </Card>
-                        </div>
-
-                        <Card className="overflow-hidden">
-                            <div className="p-4 border-b border-gray-100 bg-gray-50">
-                                <h3 className="font-bold text-gray-900">Historial de Facturas</h3>
-                            </div>
-                            <table className="w-full text-left text-sm">
-                                <thead className="bg-gray-50 text-gray-500">
-                                    <tr><th className="p-4 font-semibold">Factura</th><th className="p-4 font-semibold">Fecha</th><th className="p-4 font-semibold text-right">Monto</th><th className="p-4 font-semibold text-center">Estado</th></tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-100">
-                                    {clientInvs.map(inv => (
-                                        <tr key={inv.id} className="hover:bg-gray-50">
-                                            <td className="p-4 font-medium text-gray-900">{inv.number}</td>
-                                            <td className="p-4 text-gray-500">{formatDate(inv.date)}</td>
-                                            <td className="p-4 font-bold text-right">{formatMoney(inv.total)}</td>
-                                            <td className="p-4 text-center"><Badge variant={inv.status === 'pagada' ? 'green' : 'yellow'}>{inv.status}</Badge></td>
-                                        </tr>
-                                    ))}
-                                    {clientInvs.length === 0 && <tr><td colSpan="4" className="p-8 text-center text-gray-500 italic">No hay facturas registradas.</td></tr>}
-                                </tbody>
-                            </table>
-                        </Card>
-                    </div>
-                );
+        // 7. LÓGICA DE LA APLICACIÓN PRINCIPAL (ERP)
+        function setupMainApp() {
+            document.getElementById('header-user-name').innerText = `👤 ${companyProfile.representative}`;
+            document.getElementById('sidebar-company-name').innerText = companyProfile.companyName;
+            document.getElementById('sidebar-company-rnc').innerText = `RNC: ${companyProfile.rnc}`;
+            
+            const logoContainer = document.getElementById('sidebar-logo-container');
+            if(companyProfile.logo) {
+                logoContainer.innerHTML = `<img src="${companyProfile.logo}" alt="Logo" class="w-16 h-16 rounded-xl object-cover mb-3 bg-white" />`;
+            } else {
+                logoContainer.innerHTML = `<div class="w-16 h-16 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-2xl mb-3 shadow-lg">${companyProfile.companyName.charAt(0)}</div>`;
             }
 
-            // VISTA NORMAL (LISTA)
-            return (
-                <div className="space-y-6">
-                    <div className="flex justify-between items-center">
-                        <div className="flex gap-2 bg-white p-1 rounded-lg border border-gray-200">
-                            <button onClick={()=>setTab('client')} className={`px-4 py-1.5 rounded-md text-sm font-medium ${tab==='client'?'bg-blue-50 text-blue-700':'text-gray-500'}`}>Clientes</button>
-                            <button onClick={()=>setTab('provider')} className={`px-4 py-1.5 rounded-md text-sm font-medium ${tab==='provider'?'bg-blue-50 text-blue-700':'text-gray-500'}`}>Proveedores</button>
-                        </div>
-                        <Button icon="Plus" onClick={() => openForm()}>Nuevo {tab === 'client' ? 'Cliente' : 'Proveedor'}</Button>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {data.contacts.filter(c => c.type === tab).map(c => (
-                            <Card key={c.id} onClick={() => handleClientClick(c)} className={`p-6 relative group ${tab==='client'?'cursor-pointer hover:border-blue-400':''}`}>
-                                <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
-                                    <button onClick={(e)=>{e.stopPropagation(); openForm(c);}} className="p-1.5 bg-gray-100 rounded-md text-gray-500 hover:text-blue-600"><Icon name="Edit2" size={14}/></button>
-                                    <button onClick={(e)=>{e.stopPropagation(); dbOps.delete('contacts', c.id);}} className="p-1.5 bg-gray-100 rounded-md text-gray-500 hover:text-red-600"><Icon name="Trash2" size={14}/></button>
-                                </div>
-                                <div className="w-12 h-12 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center font-bold text-lg mb-4">{c.name.charAt(0)}</div>
-                                <h3 className="font-bold text-gray-900 text-lg leading-tight">{c.name}</h3>
-                                <p className="text-xs text-gray-500 mb-4 uppercase tracking-wider">RNC: {c.rnc}</p>
-                                <div className="space-y-1 text-sm text-gray-600">
-                                    <p className="flex items-center gap-2"><Icon name="Mail" size={14}/> {c.email || '-'}</p>
-                                    <p className="flex items-center gap-2"><Icon name="Phone" size={14}/> {c.phone || '-'}</p>
-                                </div>
-                                {tab === 'client' && (
-                                    <div className="mt-4 pt-4 border-t border-gray-100 flex justify-between items-center">
-                                        <span className="text-xs font-bold text-gray-400 uppercase">Límite Crédito</span>
-                                        <span className="font-semibold text-emerald-600">{formatMoney(c.creditLimit)}</span>
-                                    </div>
-                                )}
-                            </Card>
-                        ))}
-                    </div>
-
-                    <Modal isOpen={isModalOpen} onClose={() => setModalOpen(false)} title={`Formulario de ${tab==='client'?'Cliente':'Proveedor'}`}>
-                        {form && (
-                            <form onSubmit={saveContact} className="space-y-4">
-                                <input name="name" value={form.name} onChange={e=>setForm({...form, name: e.target.value})} placeholder="Razón Social / Nombre" required className="w-full p-3 border rounded-lg text-sm" />
-                                <div className="grid grid-cols-2 gap-4">
-                                    <input name="rnc" value={form.rnc} onChange={e=>setForm({...form, rnc: e.target.value})} placeholder="RNC / Cédula" required className="w-full p-3 border rounded-lg text-sm" />
-                                    <input name="phone" value={form.phone} onChange={e=>setForm({...form, phone: e.target.value})} placeholder="Teléfono" className="w-full p-3 border rounded-lg text-sm" />
-                                </div>
-                                <input name="email" type="email" value={form.email} onChange={e=>setForm({...form, email: e.target.value})} placeholder="Correo Electrónico" className="w-full p-3 border rounded-lg text-sm" />
-                                <input name="address" value={form.address} onChange={e=>setForm({...form, address: e.target.value})} placeholder="Dirección Física" className="w-full p-3 border rounded-lg text-sm" />
-                                {tab === 'client' && (
-                                    <div>
-                                        <label className="text-xs font-bold text-gray-500 uppercase ml-1">Límite de Crédito Permitido</label>
-                                        <input type="number" value={form.creditLimit} onChange={e=>setForm({...form, creditLimit: e.target.value})} className="w-full p-3 border rounded-lg text-sm font-bold text-emerald-700 mt-1" />
-                                    </div>
-                                )}
-                                <div className="pt-4 flex justify-end gap-2"><Button variant="secondary" onClick={()=>setModalOpen(false)}>Cancelar</Button><Button type="submit">Guardar</Button></div>
-                            </form>
-                        )}
-                    </Modal>
-                </div>
-            );
-        };
-
-        // --- 7. FINANCES (Gastos & Pagos) ---
-        const FinanceView = ({ data, dbOps }) => {
-            const [isModalOpen, setModalOpen] = useState(false);
-            const [form, setForm] = useState(null);
-
-            const saveExpense = async (e) => {
-                e.preventDefault();
-                await dbOps.add('expenses', { ...form, amount: parseFloat(form.amount) });
-                setModalOpen(false);
-            };
-
-            const markAsPaid = async (invoiceId) => {
-                if(confirm("¿Marcar esta factura como pagada en su totalidad?")) {
-                    await dbOps.update('transactions', invoiceId, { status: 'pagada' });
-                }
-            };
-
-            return (
-                <div className="space-y-8">
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                        {/* Cuentas por Cobrar (AR) */}
-                        <Card className="p-6">
-                            <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2"><Icon name="TrendingUp" className="text-blue-500"/> Cuentas por Cobrar</h3>
-                            <div className="space-y-3">
-                                {data.transactions.filter(t=>t.type==='invoice' && t.status==='pendiente').map(inv => (
-                                    <div key={inv.id} className="p-4 border border-blue-100 bg-blue-50/50 rounded-xl flex justify-between items-center">
-                                        <div><p className="font-bold text-gray-800">{inv.clientName}</p><p className="text-xs text-gray-500">Factura: {inv.number}</p></div>
-                                        <div className="text-right flex items-center gap-4">
-                                            <p className="font-bold text-blue-700">{formatMoney(inv.total)}</p>
-                                            <Button variant="success" className="px-3 py-1 text-xs" onClick={()=>markAsPaid(inv.id)}>Cobrar</Button>
-                                        </div>
-                                    </div>
-                                ))}
-                                {data.transactions.filter(t=>t.type==='invoice' && t.status==='pendiente').length === 0 && <p className="text-sm text-gray-500">No hay cuentas por cobrar.</p>}
-                            </div>
-                        </Card>
-
-                        {/* Registro de Gastos */}
-                        <Card className="p-6">
-                            <div className="flex justify-between items-center mb-4">
-                                <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2"><Icon name="TrendingDown" className="text-red-500"/> Registro de Gastos</h3>
-                                <Button variant="secondary" className="px-3 py-1 text-xs" onClick={()=>{setForm({date: new Date().toISOString().split('T')[0], category:'', description:'', amount:0}); setModalOpen(true);}}><Icon name="Plus" size={14}/> Registrar</Button>
-                            </div>
-                            <div className="space-y-3">
-                                {data.expenses.sort((a,b)=>b.timestamp - a.timestamp).slice(0,10).map(e => (
-                                    <div key={e.id} className="p-4 border border-gray-100 rounded-xl flex justify-between items-center hover:bg-gray-50">
-                                        <div><p className="font-bold text-gray-800">{e.description}</p><p className="text-xs text-gray-500">{formatDate(e.date)} | Cat: {e.category}</p></div>
-                                        <div className="text-right flex items-center gap-4">
-                                            <p className="font-bold text-red-600">-{formatMoney(e.amount)}</p>
-                                            <button onClick={()=>dbOps.delete('expenses', e.id)} className="text-gray-400 hover:text-red-500"><Icon name="Trash2" size={14}/></button>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </Card>
-                    </div>
-
-                    <Modal isOpen={isModalOpen} onClose={()=>setModalOpen(false)} title="Registrar Gasto Operativo">
-                        {form && (
-                            <form onSubmit={saveExpense} className="space-y-4">
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div><label className="text-xs font-bold text-gray-500 uppercase">Fecha</label><input type="date" value={form.date} onChange={e=>setForm({...form, date:e.target.value})} required className="w-full p-2 border rounded-lg mt-1" /></div>
-                                    <div><label className="text-xs font-bold text-gray-500 uppercase">Categoría</label>
-                                        <select value={form.category} onChange={e=>setForm({...form, category:e.target.value})} required className="w-full p-2 border rounded-lg mt-1">
-                                            <option value="">Seleccionar...</option>
-                                            <option value="Nómina">Nómina</option><option value="Servicios">Servicios (Agua, Luz, Internet)</option>
-                                            <option value="Alquiler">Alquiler</option><option value="Mantenimiento">Mantenimiento</option><option value="Otros">Otros</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div><label className="text-xs font-bold text-gray-500 uppercase">Descripción</label><input value={form.description} onChange={e=>setForm({...form, description:e.target.value})} required className="w-full p-2 border rounded-lg mt-1" /></div>
-                                <div><label className="text-xs font-bold text-gray-500 uppercase">Monto Total</label><input type="number" step="0.01" value={form.amount} onChange={e=>setForm({...form, amount:e.target.value})} required className="w-full p-3 border rounded-lg mt-1 font-bold text-red-600 text-lg" /></div>
-                                <div className="pt-4 flex justify-end gap-2"><Button variant="secondary" onClick={()=>setModalOpen(false)}>Cancelar</Button><Button type="submit">Guardar Gasto</Button></div>
-                            </form>
-                        )}
-                    </Modal>
-                </div>
-            );
-        };
-
-        // --- 8. REPORTS ---
-        const ReportsView = ({ data }) => {
-            // Simple aggregate: Sales by Client
-            const salesByClient = useMemo(() => {
-                const map = {};
-                data.transactions.filter(t=>t.type==='invoice' && t.status!=='anulada').forEach(t => {
-                    map[t.clientName] = (map[t.clientName] || 0) + t.total;
-                });
-                return Object.entries(map).map(([name, total]) => ({name, total})).sort((a,b)=>b.total - a.total).slice(0,5);
-            }, [data]);
-
-            return (
-                <div className="space-y-6">
-                    <Card className="p-8 text-center bg-gradient-to-r from-blue-600 to-indigo-700 text-white border-none">
-                        <Icon name="BarChart4" size={48} className="mx-auto mb-4 opacity-80" />
-                        <h2 className="text-2xl font-bold mb-2">Centro de Reportes</h2>
-                        <p className="text-blue-100 text-sm">Resumen analítico de la operativa empresarial.</p>
-                    </Card>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <Card className="p-6">
-                            <h3 className="font-bold text-gray-900 mb-4 border-b pb-2">Top 5 Clientes (Ventas Totales)</h3>
-                            <div className="space-y-4">
-                                {salesByClient.map((c, i) => (
-                                    <div key={i} className="flex justify-between items-center">
-                                        <div className="flex items-center gap-3">
-                                            <span className="w-6 h-6 rounded-full bg-blue-100 text-blue-700 flex justify-center items-center text-xs font-bold">{i+1}</span>
-                                            <span className="font-medium text-gray-700">{c.name}</span>
-                                        </div>
-                                        <span className="font-bold text-gray-900">{formatMoney(c.total)}</span>
-                                    </div>
-                                ))}
-                            </div>
-                        </Card>
-                        <Card className="p-6">
-                            <h3 className="font-bold text-gray-900 mb-4 border-b pb-2">Resumen de Impuestos</h3>
-                            <div className="p-4 bg-gray-50 rounded-xl flex justify-between items-center">
-                                <span className="font-medium text-gray-600">ITBIS / Tax Cobrado (Total Histórico)</span>
-                                <span className="font-black text-blue-600 text-xl">
-                                    {formatMoney(data.transactions.filter(t=>t.type==='invoice').reduce((sum,t)=>sum+(t.taxAmount||0), 0))}
-                                </span>
-                            </div>
-                        </Card>
-                    </div>
-                </div>
-            );
-        };
-
-        // --- 9. SETTINGS ---
-        const SettingsView = ({ data, dbOps, currentCompany }) => {
-            const [taxForm, setTaxForm] = useState({ name: '', rate: 0 });
+            const nav = document.getElementById('main-nav');
+            nav.innerHTML = '';
+            menuItems.forEach(item => {
+                const btn = document.createElement('button');
+                btn.className = `nav-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-all text-sm font-medium ${item.id === currentView ? 'bg-indigo-600 text-white shadow-md shadow-indigo-900/20' : 'text-slate-400 hover:bg-slate-800 hover:text-white'}`;
+                btn.innerHTML = `<i data-lucide="${item.icon}" class="w-5 h-5"></i> <span>${item.label}</span>`;
+                btn.onclick = () => navigateTo(item.id, item.label);
+                nav.appendChild(btn);
+            });
+            lucide.createIcons();
             
-            // Estado controlado para todos los nuevos campos de la empresa
-            const [profileForm, setProfileForm] = useState({
-                name: currentCompany.name || '',
-                rep: currentCompany.rep || '',
-                rnc: currentCompany.rnc || '',
-                email: currentCompany.email || '',
-                phone: currentCompany.phone || '',
-                address: currentCompany.address || '',
-                website: currentCompany.website || '',
-                logo: currentCompany.logo || '',
-                nextInvoiceNum: currentCompany.nextInvoiceNum || 1,
-                nextQuoteNum: currentCompany.nextQuoteNum || 1
+            loadProducts();
+            loadClients();
+        }
+
+        function navigateTo(viewId, viewLabel) {
+            currentView = viewId;
+            document.getElementById('header-title').innerText = viewLabel.replace(/^[0-9]+\.\s/, '');
+            
+            document.querySelectorAll('.nav-btn').forEach((btn, idx) => {
+                if(menuItems[idx].id === viewId) {
+                    btn.className = 'nav-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-all text-sm font-medium bg-indigo-600 text-white shadow-md shadow-indigo-900/20';
+                } else {
+                    btn.className = 'nav-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-all text-sm font-medium text-slate-400 hover:bg-slate-800 hover:text-white';
+                }
             });
 
-            useEffect(() => {
-                setProfileForm({
-                    name: currentCompany.name || '',
-                    rep: currentCompany.rep || '',
-                    rnc: currentCompany.rnc || '',
-                    email: currentCompany.email || '',
-                    phone: currentCompany.phone || '',
-                    address: currentCompany.address || '',
-                    website: currentCompany.website || '',
-                    logo: currentCompany.logo || '',
-                    nextInvoiceNum: currentCompany.nextInvoiceNum || 1,
-                    nextQuoteNum: currentCompany.nextQuoteNum || 1
-                });
-            }, [currentCompany]);
+            document.querySelectorAll('.app-view').forEach(v => v.classList.add('hidden-screen'));
 
-            const saveProfile = async (e) => {
-                e.preventDefault();
-                await dbOps.update('companies', currentCompany.id, {
-                    ...profileForm,
-                    nextInvoiceNum: parseInt(profileForm.nextInvoiceNum),
-                    nextQuoteNum: parseInt(profileForm.nextQuoteNum)
-                });
-                alert("Perfil actualizado correctamente");
+            const targetView = document.getElementById(`view-${viewId}`);
+            if(targetView) {
+                targetView.classList.remove('hidden-screen');
+            } else {
+                document.getElementById('view-placeholder').classList.remove('hidden-screen');
+                document.getElementById('placeholder-title').innerText = `Módulo: ${viewLabel.replace(/^[0-9]+\.\s/, '')}`;
+            }
+        }
+
+        // -- MÓDULO: PRODUCTOS --
+        document.getElementById('form-add-product').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const data = {
+                type: document.getElementById('prod-type').value,
+                name: document.getElementById('prod-name').value,
+                code: document.getElementById('prod-code').value,
+                buyRate: parseFloat(document.getElementById('prod-buy').value || 0),
+                sellRate: parseFloat(document.getElementById('prod-sell').value || 0),
+                createdAt: serverTimestamp()
             };
+            try {
+                await addDoc(collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'products'), data);
+                e.target.reset();
+                e.target.classList.add('hidden');
+            } catch (error) {
+                alert("Error guardando producto.");
+            }
+        });
 
-            const addTax = async (e) => {
-                e.preventDefault();
-                await dbOps.add('taxes', { ...taxForm, rate: parseFloat(taxForm.rate) });
-                setTaxForm({ name: '', rate: 0 });
+        function loadProducts() {
+            if(!currentUser) return;
+            const q = query(collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'products'));
+            onSnapshot(q, (snapshot) => {
+                const tbody = document.getElementById('products-table-body');
+                tbody.innerHTML = '';
+                document.getElementById('dash-product-count').innerText = snapshot.size;
+
+                snapshot.forEach(docSnap => {
+                    const p = docSnap.data();
+                    const tr = document.createElement('tr');
+                    tr.className = 'hover:bg-slate-50';
+                    tr.innerHTML = `
+                        <td class="p-4 font-mono text-sm text-gray-500">${p.code}</td>
+                        <td class="p-4 font-bold text-gray-800">${p.name}</td>
+                        <td class="p-4 capitalize text-sm">${p.type}</td>
+                        <td class="p-4 text-gray-600">$${p.buyRate.toFixed(2)}</td>
+                        <td class="p-4 font-black text-green-600">$${p.sellRate.toFixed(2)}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            });
+        }
+
+        // -- MÓDULO: CLIENTES --
+        document.getElementById('form-add-client').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const data = {
+                type: document.getElementById('cli-type').value,
+                orgName: document.getElementById('cli-org').value,
+                contactName: document.getElementById('cli-name').value,
+                phone: document.getElementById('cli-phone').value,
+                creditLimit: parseFloat(document.getElementById('cli-credit').value || 0),
+                createdAt: serverTimestamp()
             };
+            try {
+                await addDoc(collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'clients'), data);
+                e.target.reset();
+                e.target.classList.add('hidden');
+            } catch (error) {
+                alert("Error guardando contacto.");
+            }
+        });
 
-            return (
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    <Card className="p-6">
-                        <h3 className="text-lg font-bold text-gray-900 mb-6 border-b pb-2">Perfil de Empresa</h3>
-                        <form onSubmit={saveProfile} className="space-y-4">
-                            <div className="grid grid-cols-2 gap-4">
-                                <div><label className="text-xs font-bold text-gray-500 uppercase">Nombre Comercial</label>
-                                    <input value={profileForm.name} onChange={e=>setProfileForm({...profileForm, name: e.target.value})} required className="w-full p-2 border rounded-lg mt-1" />
-                                </div>
-                                <div><label className="text-xs font-bold text-gray-500 uppercase">Representante</label>
-                                    <input value={profileForm.rep} onChange={e=>setProfileForm({...profileForm, rep: e.target.value})} required className="w-full p-2 border rounded-lg mt-1" />
-                                </div>
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div><label className="text-xs font-bold text-gray-500 uppercase">RNC</label>
-                                    <input value={profileForm.rnc} onChange={e=>setProfileForm({...profileForm, rnc: e.target.value})} required className="w-full p-2 border rounded-lg mt-1" />
-                                </div>
-                                <div><label className="text-xs font-bold text-gray-500 uppercase">Teléfono</label>
-                                    <input value={profileForm.phone} onChange={e=>setProfileForm({...profileForm, phone: e.target.value})} required className="w-full p-2 border rounded-lg mt-1" />
-                                </div>
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div><label className="text-xs font-bold text-gray-500 uppercase">Correo Electrónico</label>
-                                    <input value={profileForm.email} type="email" onChange={e=>setProfileForm({...profileForm, email: e.target.value})} required className="w-full p-2 border rounded-lg mt-1" />
-                                </div>
-                                <div><label className="text-xs font-bold text-gray-500 uppercase">Sitio Web</label>
-                                    <input value={profileForm.website} onChange={e=>setProfileForm({...profileForm, website: e.target.value})} placeholder="https://" className="w-full p-2 border rounded-lg mt-1" />
-                                </div>
-                            </div>
-                            <div><label className="text-xs font-bold text-gray-500 uppercase">Dirección Física</label>
-                                <input value={profileForm.address} onChange={e=>setProfileForm({...profileForm, address: e.target.value})} required className="w-full p-2 border rounded-lg mt-1" />
-                            </div>
-                            <div><label className="text-xs font-bold text-gray-500 uppercase">URL del Logo de la Empresa</label>
-                                <input value={profileForm.logo} onChange={e=>setProfileForm({...profileForm, logo: e.target.value})} placeholder="https://ejemplo.com/logo.png" className="w-full p-2 border rounded-lg mt-1" />
-                            </div>
-                            
-                            <h4 className="font-bold text-sm text-gray-700 mt-6 mb-2">Secuencias de Numeración</h4>
-                            <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50 rounded-xl border border-gray-100">
-                                <div><label className="text-xs font-bold text-gray-500 uppercase">Próx. Factura</label>
-                                    <input type="number" value={profileForm.nextInvoiceNum} onChange={e=>setProfileForm({...profileForm, nextInvoiceNum: e.target.value})} required className="w-full p-2 border rounded-lg mt-1 font-mono" />
-                                </div>
-                                <div><label className="text-xs font-bold text-gray-500 uppercase">Próx. Cotización</label>
-                                    <input type="number" value={profileForm.nextQuoteNum} onChange={e=>setProfileForm({...profileForm, nextQuoteNum: e.target.value})} required className="w-full p-2 border rounded-lg mt-1 font-mono" />
-                                </div>
-                            </div>
-
-                            <Button type="submit" className="w-full mt-4">Guardar Cambios</Button>
-                        </form>
-                    </Card>
-
-                    <Card className="p-6 h-fit">
-                        <h3 className="text-lg font-bold text-gray-900 mb-6 border-b pb-2">Gestión de Impuestos</h3>
-                        <form onSubmit={addTax} className="flex gap-2 mb-6">
-                            <input value={taxForm.name} onChange={e=>setTaxForm({...taxForm, name:e.target.value})} placeholder="Nombre (ej. ITBIS)" required className="flex-1 p-2 border rounded-lg text-sm" />
-                            <input type="number" step="0.01" value={taxForm.rate} onChange={e=>setTaxForm({...taxForm, rate:e.target.value})} placeholder="%" required className="w-20 p-2 border rounded-lg text-sm text-center" />
-                            <Button type="submit" icon="Plus">Añadir</Button>
-                        </form>
-                        <div className="space-y-2">
-                            {data.taxes.map(t => (
-                                <div key={t.id} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg border border-gray-100">
-                                    <span className="font-medium text-gray-700">{t.name}</span>
-                                    <div className="flex items-center gap-4">
-                                        <span className="font-bold text-blue-600">{t.rate}%</span>
-                                        <button onClick={()=>dbOps.delete('taxes', t.id)} className="text-red-400 hover:text-red-600"><Icon name="Trash2" size={16}/></button>
-                                    </div>
-                                </div>
-                            ))}
+        function loadClients() {
+            if(!currentUser) return;
+            const q = query(collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'clients'));
+            onSnapshot(q, (snapshot) => {
+                const grid = document.getElementById('clients-grid');
+                grid.innerHTML = '';
+                snapshot.forEach(docSnap => {
+                    const c = docSnap.data();
+                    const card = document.createElement('div');
+                    card.className = "bg-white p-5 rounded-xl border shadow-sm relative group";
+                    card.innerHTML = `
+                        <span class="absolute top-4 right-4 text-[10px] font-bold uppercase px-2 py-1 rounded-full ${c.type === 'cliente' ? 'bg-indigo-100 text-indigo-700' : 'bg-orange-100 text-orange-700'}">
+                            ${c.type}
+                        </span>
+                        <h3 class="font-bold text-lg text-gray-800 mb-1 pr-16 truncate">${c.orgName}</h3>
+                        <p class="text-sm text-gray-500 mb-4">${c.contactName || 'Sin contacto'}</p>
+                        <div class="text-sm text-gray-600 space-y-1">
+                            <p>📞 ${c.phone || 'N/D'}</p>
+                            <p class="font-semibold text-green-600 mt-2">Crédito: $${c.creditLimit.toFixed(2)}</p>
                         </div>
-                    </Card>
-                </div>
-            );
-        };
+                    `;
+                    grid.appendChild(card);
+                });
+            });
+        }
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
     </script>
 </body>
 </html>
