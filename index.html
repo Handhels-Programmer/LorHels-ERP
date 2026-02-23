@@ -10,6 +10,8 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- html2pdf for PDF Generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     
     <style>
         body { font-family: 'Inter', sans-serif; }
@@ -17,6 +19,11 @@
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #475569; border-radius: 10px; }
         .hidden-screen { display: none !important; }
+        
+        /* Estilos específicos para impresión de PDF para evitar cortes raros */
+        .pdf-container { background: white; padding: 40px; color: black; }
+        .pdf-table th, .pdf-table td { padding: 8px; border-bottom: 1px solid #e5e7eb; }
+        .pdf-table th { background-color: #f8fafc; font-weight: 600; text-align: left; }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800 h-screen overflow-hidden">
@@ -182,7 +189,7 @@
         </aside>
 
         <!-- Contenido Principal -->
-        <main class="flex-1 flex flex-col h-screen overflow-hidden bg-slate-50">
+        <main class="flex-1 flex flex-col h-screen overflow-hidden bg-slate-50 relative">
             <!-- Header -->
             <header class="bg-white shadow-sm h-16 flex items-center px-6 justify-between border-b z-10 shrink-0">
                 <h2 id="header-title" class="text-xl font-bold text-gray-800 capitalize">Dashboard</h2>
@@ -202,8 +209,8 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                         <div class="p-6 rounded-xl border bg-indigo-50 text-indigo-700 border-indigo-100 relative shadow-sm">
                             <h3 class="text-xs font-bold uppercase tracking-wider mb-2 opacity-80">Ventas Netas</h3>
-                            <div class="text-3xl font-black mb-1">$0.00</div>
-                            <div class="text-sm font-medium opacity-80">Este mes</div>
+                            <div class="text-3xl font-black mb-1" id="dash-sales">$0.00</div>
+                            <div class="text-sm font-medium opacity-80">Registradas</div>
                         </div>
                         <div class="p-6 rounded-xl border bg-red-50 text-red-700 border-red-100 relative shadow-sm">
                             <h3 class="text-xs font-bold uppercase tracking-wider mb-2 opacity-80">Gastos Totales</h3>
@@ -211,9 +218,9 @@
                             <div class="text-sm font-medium opacity-80">Este mes</div>
                         </div>
                         <div class="p-6 rounded-xl border bg-orange-50 text-orange-700 border-orange-100 relative shadow-sm">
-                            <h3 class="text-xs font-bold uppercase tracking-wider mb-2 opacity-80">Cotizaciones</h3>
-                            <div class="text-3xl font-black mb-1">0</div>
-                            <div class="text-sm font-medium opacity-80">Pendientes</div>
+                            <h3 class="text-xs font-bold uppercase tracking-wider mb-2 opacity-80">Facturas Pendientes</h3>
+                            <div class="text-3xl font-black mb-1" id="dash-pending-inv">0</div>
+                            <div class="text-sm font-medium opacity-80">Por cobrar</div>
                         </div>
                         <div class="p-6 rounded-xl border bg-green-50 text-green-700 border-green-100 relative shadow-sm">
                             <h3 class="text-xs font-bold uppercase tracking-wider mb-2 opacity-80">Productos</h3>
@@ -223,12 +230,236 @@
                     </div>
                 </div>
 
+                <!-- VISTA: FACTURAS LISTA -->
+                <div id="view-facturas" class="app-view hidden-screen">
+                    <div class="flex justify-between items-center mb-6">
+                        <button onclick="openNewInvoiceForm()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium flex items-center shadow transition">
+                            <i data-lucide="plus" class="w-4 h-4 mr-2"></i> Nueva Factura
+                        </button>
+                    </div>
+
+                    <!-- Formulario Factura -->
+                    <form id="form-add-invoice" class="hidden bg-white p-6 rounded-xl border shadow-sm mb-6">
+                        <h3 id="invoice-form-title" class="text-lg font-bold text-gray-800 mb-4 border-b pb-2">Nueva Factura</h3>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                            <div class="md:col-span-2">
+                                <label class="block text-xs font-semibold text-gray-600 mb-1">Cliente *</label>
+                                <select required id="inv-client" class="w-full border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500">
+                                    <!-- Options llenadas por JS -->
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-600 mb-1">Fecha Emisión *</label>
+                                <input required type="date" id="inv-date" class="w-full border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-600 mb-1">Condición *</label>
+                                <select required id="inv-condition" class="w-full border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500">
+                                    <option value="contado">Al Contado</option>
+                                    <option value="credito">A Crédito</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Detalle de Productos -->
+                        <div class="mb-4 border rounded-xl overflow-hidden">
+                            <div class="bg-slate-50 p-3 border-b flex justify-between items-center">
+                                <h4 class="font-bold text-gray-700">Detalle de Productos</h4>
+                                <button type="button" onclick="addInvoiceLine()" class="text-sm bg-white border px-3 py-1 rounded shadow-sm text-indigo-600 hover:text-indigo-800 font-medium flex items-center transition">
+                                    <i data-lucide="plus-circle" class="w-4 h-4 mr-1"></i> Agregar Línea
+                                </button>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left border-collapse">
+                                    <thead>
+                                        <tr class="bg-white border-b text-xs uppercase text-gray-500">
+                                            <th class="p-3 font-semibold w-2/5">Producto / Servicio</th>
+                                            <th class="p-3 font-semibold w-24">Cant.</th>
+                                            <th class="p-3 font-semibold w-32">Precio Und.</th>
+                                            <th class="p-3 font-semibold w-24">Imp. (%)</th>
+                                            <th class="p-3 font-semibold w-32">Total</th>
+                                            <th class="p-3 font-semibold text-center w-12"></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="invoice-lines-container" class="divide-y bg-white">
+                                        <!-- Líneas inyectadas por JS -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Resumen y Totales -->
+                        <div class="flex flex-col md:flex-row justify-between items-start gap-6 mt-6">
+                            <div class="w-full md:w-1/2">
+                                <label class="block text-xs font-semibold text-gray-600 mb-1">Notas / Términos</label>
+                                <textarea id="inv-notes" rows="3" class="w-full border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Añadir notas visibles para el cliente..."></textarea>
+                            </div>
+                            
+                            <div class="w-full md:w-64 bg-slate-50 p-4 rounded-xl border">
+                                <div class="flex justify-between text-sm text-gray-600 mb-2"><span>Subtotal:</span> <span id="inv-subtotal">$0.00</span></div>
+                                <div class="flex justify-between text-sm text-gray-600 mb-2"><span>Impuestos:</span> <span id="inv-tax">$0.00</span></div>
+                                <div class="flex justify-between text-sm text-gray-600 mb-3 pb-3 border-b items-center">
+                                    <span>Costo Envío:</span> 
+                                    <div class="flex items-center">
+                                        <span class="mr-1">$</span>
+                                        <input type="number" id="inv-shipping" step="0.01" value="0" class="w-16 border rounded px-1 py-0.5 text-right outline-none focus:ring-1 focus:ring-indigo-500" oninput="calculateInvoiceTotals()">
+                                    </div>
+                                </div>
+                                <div class="flex justify-between text-lg font-black text-gray-800"><span>Total:</span> <span id="inv-total">$0.00</span></div>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-end gap-3 mt-6 pt-6 border-t">
+                            <button type="button" onclick="document.getElementById('form-add-invoice').classList.add('hidden')" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition">Cancelar</button>
+                            <button type="submit" id="btn-submit-invoice" class="px-6 py-2 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition shadow-md flex items-center">
+                                Guardar Factura
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- Lista de Facturas -->
+                    <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
+                        <table class="w-full text-left">
+                            <thead class="bg-slate-50 border-b">
+                                <tr>
+                                    <th class="p-4 font-semibold text-gray-600">Fecha</th>
+                                    <th class="p-4 font-semibold text-gray-600">Cliente</th>
+                                    <th class="p-4 font-semibold text-gray-600">Condición</th>
+                                    <th class="p-4 font-semibold text-gray-600">Estado</th>
+                                    <th class="p-4 font-semibold text-gray-600 text-right">Total</th>
+                                    <th class="p-4 font-semibold text-gray-600 text-right">Balance</th>
+                                </tr>
+                            </thead>
+                            <tbody id="invoices-table-body" class="divide-y">
+                                <!-- Generado por JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- VISTA: FACTURA DETALLES (PDF y Pagos) -->
+                <div id="view-factura-detalles" class="app-view hidden-screen space-y-6">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-2">
+                        <button onclick="navigateTo('facturas', '2. Facturas')" class="flex items-center text-slate-500 hover:text-indigo-600 font-medium transition">
+                            <i data-lucide="arrow-left" class="w-4 h-4 mr-2"></i> Volver a Facturas
+                        </button>
+                        
+                        <div class="flex flex-wrap gap-2">
+                            <button onclick="openPaymentModal()" id="btn-inv-pay" class="flex items-center bg-green-600 hover:bg-green-700 text-white font-medium px-4 py-2 rounded-lg transition shadow-sm">
+                                <i data-lucide="dollar-sign" class="w-4 h-4 mr-2"></i> Añadir Pago
+                            </button>
+                            <button onclick="openReturnModal()" id="btn-inv-return" class="flex items-center bg-orange-100 text-orange-700 hover:bg-orange-200 font-medium px-4 py-2 rounded-lg transition">
+                                <i data-lucide="corner-down-left" class="w-4 h-4 mr-2"></i> Devolución
+                            </button>
+                            <button onclick="generateInvoicePDF()" class="flex items-center bg-indigo-50 text-indigo-700 hover:bg-indigo-100 font-medium px-4 py-2 rounded-lg transition">
+                                <i data-lucide="file-down" class="w-4 h-4 mr-2"></i> Generar PDF
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <!-- Contenedor del Documento (Para PDF) -->
+                        <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border overflow-hidden">
+                            <div id="invoice-print-area" class="pdf-container font-sans text-sm">
+                                <!-- Cabecera Factura -->
+                                <div class="flex justify-between items-start border-b pb-6 mb-6">
+                                    <div>
+                                        <h1 class="text-3xl font-black text-gray-800 tracking-tight" id="pdf-comp-name">Empresa</h1>
+                                        <p class="text-gray-500 mt-1" id="pdf-comp-rnc">RNC: 0000000</p>
+                                        <p class="text-gray-500" id="pdf-comp-address">Dirección</p>
+                                    </div>
+                                    <div class="text-right">
+                                        <h2 class="text-2xl font-bold text-indigo-600">FACTURA</h2>
+                                        <p class="text-gray-600 mt-1 font-medium">Fecha: <span id="pdf-inv-date"></span></p>
+                                        <p class="text-gray-600">Condición: <span id="pdf-inv-cond" class="uppercase"></span></p>
+                                    </div>
+                                </div>
+                                
+                                <!-- Info Cliente -->
+                                <div class="mb-8">
+                                    <h3 class="text-gray-500 font-semibold mb-1 uppercase text-xs tracking-wider">Facturar a:</h3>
+                                    <p class="text-lg font-bold text-gray-800" id="pdf-cli-name">Cliente Name</p>
+                                    <p class="text-gray-600" id="pdf-cli-email"></p>
+                                    <p class="text-gray-600" id="pdf-cli-phone"></p>
+                                    <p class="text-gray-600 mt-1" id="pdf-cli-address"></p>
+                                </div>
+
+                                <!-- Tabla Productos -->
+                                <table class="w-full text-left border-collapse pdf-table mb-6">
+                                    <thead>
+                                        <tr>
+                                            <th>Descripción</th>
+                                            <th class="text-center">Cant.</th>
+                                            <th class="text-right">Precio</th>
+                                            <th class="text-right">Imp.</th>
+                                            <th class="text-right">Total</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="pdf-inv-lines">
+                                        <!-- Js injects here -->
+                                    </tbody>
+                                </table>
+
+                                <!-- Totales -->
+                                <div class="flex justify-end">
+                                    <div class="w-64">
+                                        <div class="flex justify-between py-1 text-gray-600"><span>Subtotal:</span><span id="pdf-inv-sub"></span></div>
+                                        <div class="flex justify-between py-1 text-gray-600"><span>Impuestos:</span><span id="pdf-inv-tax"></span></div>
+                                        <div class="flex justify-between py-1 text-gray-600" id="pdf-inv-ship-container"><span>Envío:</span><span id="pdf-inv-ship"></span></div>
+                                        <div class="flex justify-between py-2 mt-2 border-t-2 border-gray-800 text-lg font-bold text-gray-800">
+                                            <span>Total:</span><span id="pdf-inv-total"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mt-12 pt-6 border-t text-xs text-gray-500" id="pdf-inv-notes"></div>
+                            </div>
+                        </div>
+
+                        <!-- Panel Lateral (Estado y Pagos) -->
+                        <div class="space-y-6">
+                            <div class="bg-white p-6 rounded-xl shadow-sm border">
+                                <h3 class="font-bold text-gray-800 mb-4">Estado de Cuenta</h3>
+                                <div id="inv-detail-status-badge" class="mb-4 text-center py-2 rounded-lg font-bold text-sm">Estado</div>
+                                
+                                <div class="space-y-2 text-sm">
+                                    <div class="flex justify-between text-gray-600"><span>Total Facturado:</span> <span id="inv-detail-total" class="font-semibold"></span></div>
+                                    <div class="flex justify-between text-gray-600"><span>Pagado:</span> <span id="inv-detail-paid" class="text-green-600 font-semibold"></span></div>
+                                    <div class="flex justify-between text-gray-800 pt-2 border-t font-bold text-lg"><span>Balance:</span> <span id="inv-detail-balance"></span></div>
+                                </div>
+                            </div>
+
+                            <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
+                                <div class="p-4 bg-slate-50 border-b font-bold text-gray-700">Historial de Pagos</div>
+                                <div class="p-0">
+                                    <ul id="inv-payments-list" class="divide-y text-sm">
+                                        <!-- JS injects here -->
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div id="inv-returns-container" class="bg-white rounded-xl shadow-sm border overflow-hidden hidden">
+                                <div class="p-4 bg-orange-50 border-b font-bold text-orange-800">Devoluciones Aplicadas</div>
+                                <div class="p-4 text-sm text-gray-600" id="inv-returns-text">
+                                    <!-- JS info -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- VISTA: PRODUCTOS -->
                 <div id="view-productos" class="app-view hidden-screen">
                     <div class="flex justify-between items-center mb-6">
-                        <button onclick="openNewProductForm()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium flex items-center shadow transition">
-                            <i data-lucide="plus" class="w-4 h-4 mr-2"></i> Nuevo Producto
-                        </button>
+                        <div class="flex items-center space-x-4">
+                            <button onclick="openNewProductForm()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium flex items-center shadow transition">
+                                <i data-lucide="plus" class="w-4 h-4 mr-2"></i> Nuevo Producto
+                            </button>
+                            <select id="filter-prod-category" onchange="window.renderProducts()" class="border border-gray-300 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500 bg-white shadow-sm text-sm">
+                                <option value="">Todas las categorías</option>
+                            </select>
+                        </div>
                     </div>
 
                     <!-- Formulario Productos -->
@@ -347,8 +578,8 @@
                                 </div>
                                 <div class="text-left md:text-right border md:border-none p-4 md:p-0 rounded-lg w-full md:w-auto bg-slate-50 md:bg-transparent">
                                     <p class="text-sm text-gray-500 mb-1">Límite de Crédito</p>
-                                    <p id="cd-credit-limit" class="text-3xl font-black text-green-600">$0.00</p>
-                                    <p class="text-sm text-gray-500 mt-1">Balance Restante: <strong id="cd-credit-remaining">$0.00</strong></p>
+                                    <p id="cd-credit-limit" class="text-3xl font-black text-gray-800">$0.00</p>
+                                    <p class="text-sm text-gray-500 mt-1">Balance Restante: <strong id="cd-credit-remaining" class="text-green-600">$0.00</strong></p>
                                 </div>
                             </div>
                             
@@ -369,13 +600,28 @@
 
                     <div class="bg-white rounded-2xl shadow-sm border overflow-hidden">
                         <div class="p-4 bg-slate-50 border-b flex justify-between items-center">
-                            <h3 class="font-bold text-gray-700">Histórico de Movimientos</h3>
+                            <h3 class="font-bold text-gray-700">Histórico de Facturas</h3>
                             <div class="text-sm text-gray-500">
-                                <span>Facturas: <strong>0</strong></span> | 
-                                <span>Cotizaciones: <strong>0</strong></span>
+                                <span>Total Facturado: <strong id="cd-hist-total">$0.00</strong></span>
                             </div>
                         </div>
-                        <div class="p-12 text-center text-gray-400">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left">
+                                <thead class="bg-white border-b text-xs uppercase text-gray-500">
+                                    <tr>
+                                        <th class="p-4 font-semibold">Fecha</th>
+                                        <th class="p-4 font-semibold">Tipo</th>
+                                        <th class="p-4 font-semibold">Condición</th>
+                                        <th class="p-4 font-semibold text-right">Total</th>
+                                        <th class="p-4 font-semibold text-right">Deuda Pendiente</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="cd-hist-body" class="divide-y text-sm bg-white">
+                                    <!-- Generado por JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                        <div id="cd-hist-empty" class="p-12 text-center text-gray-400 hidden">
                             No hay transacciones registradas para este contacto aún.
                         </div>
                     </div>
@@ -391,17 +637,80 @@
                 </div>
 
             </div>
+            
+            <!-- OVERLAYS / MODALS (Position Absolute) -->
+            
+            <!-- Modal de Pago -->
+            <div id="modal-payment" class="hidden-screen absolute inset-0 bg-slate-900/50 flex items-center justify-center z-50 p-4">
+                <div class="bg-white w-full max-w-md rounded-2xl shadow-xl p-6">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2">Registrar Pago</h3>
+                    <form id="form-add-payment" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 mb-1">Monto a Pagar ($) *</label>
+                            <input required type="number" step="0.01" id="pay-amount" class="w-full border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 mb-1">Fecha del Pago *</label>
+                            <input required type="date" id="pay-date" class="w-full border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 mb-1">Método de Pago *</label>
+                            <select id="pay-method" class="w-full border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500">
+                                <option value="Efectivo">Efectivo</option>
+                                <option value="Transferencia">Transferencia Bancaria</option>
+                                <option value="Tarjeta">Tarjeta Crédito/Débito</option>
+                                <option value="Cheque">Cheque</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 mb-1">Referencia / Notas</label>
+                            <input type="text" id="pay-ref" placeholder="Ej. Depósito #12345" class="w-full border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div class="flex justify-end gap-3 mt-6">
+                            <button type="button" onclick="document.getElementById('modal-payment').classList.add('hidden-screen')" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition">Cancelar</button>
+                            <button type="submit" id="btn-submit-payment" class="px-6 py-2 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 transition">Procesar Pago</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Modal de Devolución de Factura -->
+            <div id="modal-return" class="hidden-screen absolute inset-0 bg-slate-900/50 flex items-center justify-center z-50 p-4">
+                <div class="bg-white w-full max-w-2xl rounded-2xl shadow-xl p-6 flex flex-col max-h-[90vh]">
+                    <h3 class="text-xl font-bold text-orange-600 mb-2">Procesar Devolución</h3>
+                    <p class="text-sm text-gray-500 mb-4 border-b pb-2">Seleccione la cantidad a devolver por producto. El stock será reintegrado automáticamente.</p>
+                    
+                    <div class="overflow-y-auto custom-scrollbar flex-1 mb-4">
+                        <table class="w-full text-left border-collapse">
+                            <thead class="bg-slate-50 text-xs uppercase text-gray-500 sticky top-0">
+                                <tr>
+                                    <th class="p-2">Producto</th>
+                                    <th class="p-2 text-center">Comprado</th>
+                                    <th class="p-2 text-center w-24">A Devolver</th>
+                                </tr>
+                            </thead>
+                            <tbody id="return-lines-body" class="divide-y text-sm">
+                                <!-- Llenado por JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="flex justify-end gap-3 pt-4 border-t shrink-0">
+                        <button type="button" onclick="document.getElementById('modal-return').classList.add('hidden-screen')" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition">Cancelar</button>
+                        <button type="button" id="btn-submit-return" onclick="processReturn()" class="px-6 py-2 bg-orange-600 text-white font-bold rounded-lg hover:bg-orange-700 transition">Aplicar Devolución</button>
+                    </div>
+                </div>
+            </div>
+
         </main>
     </div>
 
     <!-- SCRIPT PRINCIPAL: FIREBASE Y LÓGICA DE LA APP -->
     <script type="module">
-        // Importaciones de Firebase v11 (vía CDN Oficial)
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, query, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, query, doc, setDoc, getDoc, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Inicializar Iconos
         lucide.createIcons();
 
         // 1. Configuración de Firebase
@@ -428,14 +737,16 @@
         let currentView = 'dashboard';
         let isRegistering = false;
         
-        // Estado para Clientes
         let allClients = [];
         let currentEditingClientId = null;
         let currentViewClient = null;
 
-        // Estado para Productos
         let allProducts = [];
         let currentEditingProductId = null;
+        let uniqueProductCategories = new Set();
+
+        let allInvoices = [];
+        let currentViewInvoice = null; // Guardar factura seleccionada
         
         const menuItems = [
             { id: 'dashboard', icon: 'layout-dashboard', label: '1. Dashboard' },
@@ -727,6 +1038,7 @@
             
             loadProducts();
             loadClients();
+            loadInvoices();
         }
 
         window.navigateTo = function(viewId, viewLabel) {
@@ -754,10 +1066,618 @@
         }
 
         // ==========================================
+        // -- MÓDULO: FACTURAS Y DEVOLUCIONES
+        // ==========================================
+
+        window.openNewInvoiceForm = function() {
+            document.getElementById('form-add-invoice').reset();
+            
+            // Llenar select de clientes
+            const clientSelect = document.getElementById('inv-client');
+            clientSelect.innerHTML = '<option value="">Seleccione un cliente...</option>';
+            allClients.filter(c => c.type === 'cliente').forEach(c => {
+                clientSelect.innerHTML += `<option value="${c.id}">${c.orgName}</option>`;
+            });
+
+            // Fecha actual por defecto
+            document.getElementById('inv-date').valueAsDate = new Date();
+
+            // Limpiar líneas y agregar una vacía
+            document.getElementById('invoice-lines-container').innerHTML = '';
+            addInvoiceLine();
+            calculateInvoiceTotals();
+
+            document.getElementById('form-add-invoice').classList.remove('hidden');
+        }
+
+        // Generador de opciones para los selects de productos
+        function getProductOptionsHTML() {
+            let html = '<option value="">Seleccione un producto...</option>';
+            allProducts.forEach(p => {
+                html += `<option value="${p.id}" data-price="${p.sellRate || 0}" data-tax="${p.tax || 0}">${p.name} ($${(p.sellRate || 0).toFixed(2)})</option>`;
+            });
+            return html;
+        }
+
+        window.addInvoiceLine = function() {
+            const tbody = document.getElementById('invoice-lines-container');
+            const tr = document.createElement('tr');
+            tr.className = 'invoice-line group hover:bg-slate-50 transition-colors';
+            tr.innerHTML = `
+                <td class="p-2 border-b">
+                    <select required class="line-product w-full border rounded-lg px-2 py-1.5 text-sm outline-none focus:ring-1 focus:ring-indigo-500" onchange="calculateInvoiceTotals(this)">
+                        ${getProductOptionsHTML()}
+                    </select>
+                </td>
+                <td class="p-2 border-b">
+                    <input type="number" required min="0.01" step="0.01" value="1" class="line-qty w-full border rounded-lg px-2 py-1.5 text-sm outline-none focus:ring-1 focus:ring-indigo-500" oninput="calculateInvoiceTotals()">
+                </td>
+                <td class="p-2 border-b">
+                    <input type="number" required step="0.01" class="line-price w-full border rounded-lg px-2 py-1.5 text-sm outline-none focus:ring-1 focus:ring-indigo-500" oninput="calculateInvoiceTotals()">
+                </td>
+                <td class="p-2 border-b">
+                    <input type="number" required step="0.01" value="18" class="line-tax w-full border rounded-lg px-2 py-1.5 text-sm outline-none focus:ring-1 focus:ring-indigo-500" oninput="calculateInvoiceTotals()">
+                </td>
+                <td class="p-2 border-b">
+                    <span class="line-total font-semibold text-gray-800">$0.00</span>
+                </td>
+                <td class="p-2 border-b text-center">
+                    <button type="button" onclick="removeInvoiceLine(this)" class="text-red-400 hover:text-red-600 transition opacity-0 group-hover:opacity-100">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+            lucide.createIcons();
+        }
+
+        window.removeInvoiceLine = function(btn) {
+            btn.closest('tr').remove();
+            calculateInvoiceTotals();
+        }
+
+        window.calculateInvoiceTotals = function(selectElement = null) {
+            if (selectElement && selectElement.classList.contains('line-product')) {
+                const tr = selectElement.closest('tr');
+                const option = selectElement.options[selectElement.selectedIndex];
+                if(option.value) {
+                    tr.querySelector('.line-price').value = option.dataset.price;
+                    tr.querySelector('.line-tax').value = option.dataset.tax;
+                } else {
+                    tr.querySelector('.line-price').value = '';
+                    tr.querySelector('.line-tax').value = '';
+                }
+            }
+
+            let subtotal = 0;
+            let totalTax = 0;
+
+            document.querySelectorAll('.invoice-line').forEach(tr => {
+                const qty = parseFloat(tr.querySelector('.line-qty').value) || 0;
+                const price = parseFloat(tr.querySelector('.line-price').value) || 0;
+                const taxRate = parseFloat(tr.querySelector('.line-tax').value) || 0;
+
+                const lineBase = qty * price;
+                const lineTax = lineBase * (taxRate / 100);
+                const lineTotal = lineBase + lineTax;
+
+                tr.querySelector('.line-total').innerText = `$${lineTotal.toFixed(2)}`;
+
+                subtotal += lineBase;
+                totalTax += lineTax;
+            });
+
+            const shipping = parseFloat(document.getElementById('inv-shipping').value) || 0;
+            const grandTotal = subtotal + totalTax + shipping;
+
+            document.getElementById('inv-subtotal').innerText = `$${subtotal.toFixed(2)}`;
+            document.getElementById('inv-tax').innerText = `$${totalTax.toFixed(2)}`;
+            document.getElementById('inv-total').innerText = `$${grandTotal.toFixed(2)}`;
+            
+            const form = document.getElementById('form-add-invoice');
+            form.dataset.calcSubtotal = subtotal;
+            form.dataset.calcTax = totalTax;
+            form.dataset.calcShipping = shipping;
+            form.dataset.calcTotal = grandTotal;
+        }
+
+        document.getElementById('form-add-invoice').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btn-submit-invoice');
+            btn.disabled = true;
+            btn.innerHTML = "Guardando...";
+
+            const clientId = document.getElementById('inv-client').value;
+            const client = allClients.find(c => c.id === clientId);
+            const condition = document.getElementById('inv-condition').value;
+
+            const lines = [];
+            document.querySelectorAll('.invoice-line').forEach(tr => {
+                const sel = tr.querySelector('.line-product');
+                if (sel.value) {
+                    lines.push({
+                        productId: sel.value,
+                        productName: sel.options[sel.selectedIndex].text.split(' (')[0], // Limpiar nombre
+                        qty: parseFloat(tr.querySelector('.line-qty').value) || 0,
+                        price: parseFloat(tr.querySelector('.line-price').value) || 0,
+                        tax: parseFloat(tr.querySelector('.line-tax').value) || 0
+                    });
+                }
+            });
+
+            if (lines.length === 0) {
+                alert("Debe agregar al menos un producto a la factura.");
+                btn.disabled = false;
+                btn.innerHTML = "Guardar Factura";
+                return;
+            }
+
+            const totalAmount = parseFloat(e.target.dataset.calcTotal || 0);
+            
+            let paidAmount = 0;
+            let payments = [];
+            if (condition === 'contado') {
+                paidAmount = totalAmount;
+                payments.push({
+                    date: new Date().toISOString().split('T')[0],
+                    amount: totalAmount,
+                    method: 'Efectivo', 
+                    reference: 'Pago al contado (Auto)'
+                });
+            }
+
+            // Aquí guardamos la información completa del cliente en la factura
+            const invoiceData = {
+                type: 'factura',
+                condition: condition,
+                clientId: clientId,
+                clientName: client ? client.orgName : 'Desconocido',
+                clientEmail: client ? client.email : '',
+                clientPhone: client ? client.phone : '',
+                clientAddress: client ? client.address : '', // <- Campo Agregado
+                date: document.getElementById('inv-date').value,
+                notes: document.getElementById('inv-notes').value,
+                subtotal: parseFloat(e.target.dataset.calcSubtotal || 0),
+                tax: parseFloat(e.target.dataset.calcTax || 0),
+                shipping: parseFloat(e.target.dataset.calcShipping || 0),
+                total: totalAmount,
+                paidAmount: paidAmount,
+                payments: payments,
+                returns: [], 
+                lines: lines,
+                createdAt: serverTimestamp()
+            };
+
+            try {
+                await addDoc(collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'invoices'), invoiceData);
+
+                for (const line of lines) {
+                    const product = allProducts.find(p => p.id === line.productId);
+                    if (product && product.trackStock) {
+                        const newStock = (product.stockCurrent || 0) - line.qty; 
+                        await updateDoc(doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'products', product.id), {
+                            stockCurrent: newStock
+                        });
+                    }
+                }
+
+                e.target.reset();
+                e.target.classList.add('hidden');
+            } catch (error) {
+                console.error(error);
+                alert("Error al guardar la factura.");
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = "Guardar Factura";
+            }
+        });
+
+        function loadInvoices() {
+            if(!currentUser) return;
+            const q = query(collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'invoices'));
+            onSnapshot(q, (snapshot) => {
+                const tbody = document.getElementById('invoices-table-body');
+                tbody.innerHTML = '';
+                allInvoices = [];
+                
+                let totalSales = 0;
+                let pendingInvoices = 0;
+
+                const docs = snapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
+                docs.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+                docs.forEach(inv => {
+                    allInvoices.push(inv);
+                    if(inv.type === 'factura') {
+                        totalSales += inv.total;
+                        
+                        const balance = inv.total - (inv.paidAmount || 0);
+                        if (balance > 0.01) pendingInvoices++;
+
+                        let statusBadge = '';
+                        if (balance <= 0.01) {
+                            statusBadge = '<span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-bold">Pagada</span>';
+                        } else if (inv.paidAmount > 0) {
+                            statusBadge = '<span class="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs font-bold">Parcial</span>';
+                        } else {
+                            statusBadge = '<span class="bg-orange-100 text-orange-700 px-2 py-1 rounded text-xs font-bold">Pendiente</span>';
+                        }
+
+                        const tr = document.createElement('tr');
+                        tr.className = 'hover:bg-slate-50 transition-colors cursor-pointer group';
+                        tr.onclick = () => showInvoiceDetails(inv.id);
+                        
+                        tr.innerHTML = `
+                            <td class="p-4 font-medium text-gray-800">${inv.date}</td>
+                            <td class="p-4 font-bold text-gray-600 group-hover:text-indigo-600 transition">${inv.clientName}</td>
+                            <td class="p-4 uppercase text-xs font-semibold text-gray-500">${inv.condition}</td>
+                            <td class="p-4">${statusBadge}</td>
+                            <td class="p-4 text-right font-black text-gray-800">$${inv.total.toFixed(2)}</td>
+                            <td class="p-4 text-right font-bold text-red-500">$${balance.toFixed(2)}</td>
+                        `;
+                        tbody.appendChild(tr);
+                    }
+                });
+
+                document.getElementById('dash-sales').innerText = `$${totalSales.toFixed(2)}`;
+                document.getElementById('dash-pending-inv').innerText = pendingInvoices;
+                
+                // Refrescar el detalle del cliente si está abierto
+                if(currentViewClient && !document.getElementById('view-clientes-detalles').classList.contains('hidden-screen')){
+                    showClientDetails(currentViewClient);
+                }
+            });
+        }
+
+        // ==========================================
+        // -- DETALLES DE FACTURA, PDF Y PAGOS
+        // ==========================================
+        
+        window.showInvoiceDetails = function(invoiceId) {
+            const inv = allInvoices.find(i => i.id === invoiceId);
+            if(!inv) return;
+            currentViewInvoice = inv;
+
+            document.querySelectorAll('.app-view').forEach(v => v.classList.add('hidden-screen'));
+            document.getElementById('view-factura-detalles').classList.remove('hidden-screen');
+
+            const balance = inv.total - (inv.paidAmount || 0);
+
+            // PDF Info
+            document.getElementById('pdf-comp-name').innerText = companyProfile.companyName;
+            document.getElementById('pdf-comp-rnc').innerText = `RNC: ${companyProfile.rnc}`;
+            document.getElementById('pdf-comp-address').innerText = companyProfile.address || '';
+            
+            document.getElementById('pdf-inv-date').innerText = inv.date;
+            document.getElementById('pdf-inv-cond').innerText = inv.condition;
+            
+            // Aquí se inyectan los datos completos del cliente al PDF
+            document.getElementById('pdf-cli-name').innerText = inv.clientName;
+            document.getElementById('pdf-cli-email').innerText = inv.clientEmail || '';
+            document.getElementById('pdf-cli-phone').innerText = inv.clientPhone || '';
+            document.getElementById('pdf-cli-address').innerText = inv.clientAddress || ''; 
+
+            const pdfLines = document.getElementById('pdf-inv-lines');
+            pdfLines.innerHTML = '';
+            inv.lines.forEach(l => {
+                const lTotal = (l.qty * l.price) * (1 + (l.tax/100));
+                pdfLines.innerHTML += `
+                    <tr>
+                        <td class="font-medium">${l.productName}</td>
+                        <td class="text-center">${l.qty}</td>
+                        <td class="text-right">$${l.price.toFixed(2)}</td>
+                        <td class="text-right">${l.tax}%</td>
+                        <td class="text-right font-semibold">$${lTotal.toFixed(2)}</td>
+                    </tr>
+                `;
+            });
+
+            document.getElementById('pdf-inv-sub').innerText = `$${inv.subtotal.toFixed(2)}`;
+            document.getElementById('pdf-inv-tax').innerText = `$${inv.tax.toFixed(2)}`;
+            document.getElementById('pdf-inv-total').innerText = `$${inv.total.toFixed(2)}`;
+            
+            if(inv.shipping > 0) {
+                document.getElementById('pdf-inv-ship-container').classList.remove('hidden');
+                document.getElementById('pdf-inv-ship').innerText = `$${inv.shipping.toFixed(2)}`;
+            } else {
+                document.getElementById('pdf-inv-ship-container').classList.add('hidden');
+            }
+
+            document.getElementById('pdf-inv-notes').innerText = inv.notes ? `Notas: ${inv.notes}` : '';
+
+            // Panel Lateral
+            document.getElementById('inv-detail-total').innerText = `$${inv.total.toFixed(2)}`;
+            document.getElementById('inv-detail-paid').innerText = `$${(inv.paidAmount || 0).toFixed(2)}`;
+            document.getElementById('inv-detail-balance').innerText = `$${balance.toFixed(2)}`;
+
+            const badge = document.getElementById('inv-detail-status-badge');
+            const btnPay = document.getElementById('btn-inv-pay');
+            
+            if (balance <= 0.01) {
+                badge.className = "mb-4 text-center py-2 rounded-lg font-bold text-sm bg-green-100 text-green-700";
+                badge.innerText = "FACTURA PAGADA";
+                btnPay.classList.add('hidden');
+            } else if ((inv.paidAmount || 0) > 0) {
+                badge.className = "mb-4 text-center py-2 rounded-lg font-bold text-sm bg-blue-100 text-blue-700";
+                badge.innerText = "PAGO PARCIAL";
+                btnPay.classList.remove('hidden');
+            } else {
+                badge.className = "mb-4 text-center py-2 rounded-lg font-bold text-sm bg-orange-100 text-orange-700";
+                badge.innerText = "PENDIENTE DE PAGO";
+                btnPay.classList.remove('hidden');
+            }
+
+            const ulPayments = document.getElementById('inv-payments-list');
+            ulPayments.innerHTML = '';
+            if(inv.payments && inv.payments.length > 0) {
+                inv.payments.forEach(pay => {
+                    ulPayments.innerHTML += `
+                        <li class="py-3 flex justify-between items-center">
+                            <div>
+                                <p class="font-semibold text-gray-800">${pay.method}</p>
+                                <p class="text-xs text-gray-500">${pay.date} | ${pay.reference || 'Sin ref'}</p>
+                            </div>
+                            <span class="font-bold text-green-600">+$${pay.amount.toFixed(2)}</span>
+                        </li>
+                    `;
+                });
+            } else {
+                ulPayments.innerHTML = '<li class="py-4 text-center text-gray-400">Sin pagos registrados</li>';
+            }
+
+            const retContainer = document.getElementById('inv-returns-container');
+            if(inv.returns && inv.returns.length > 0) {
+                retContainer.classList.remove('hidden');
+                let retHtml = '<ul class="space-y-2">';
+                inv.returns.forEach(r => {
+                    retHtml += `<li><strong>${r.date}:</strong> Devueltos ${r.qty} unid. de ${r.productName}</li>`;
+                });
+                retHtml += '</ul>';
+                document.getElementById('inv-returns-text').innerHTML = retHtml;
+            } else {
+                retContainer.classList.add('hidden');
+            }
+
+            lucide.createIcons();
+        }
+
+        window.generateInvoicePDF = function() {
+            if(!currentViewInvoice) return;
+            const element = document.getElementById('invoice-print-area');
+            const opt = {
+                margin:       0.5,
+                filename:     `Factura_${companyProfile.companyName.substring(0,5)}_${currentViewInvoice.date}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2 },
+                jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+            };
+            html2pdf().set(opt).from(element).save();
+        }
+
+        window.openPaymentModal = function() {
+            if(!currentViewInvoice) return;
+            const balance = currentViewInvoice.total - (currentViewInvoice.paidAmount || 0);
+            document.getElementById('pay-amount').value = balance.toFixed(2);
+            document.getElementById('pay-date').valueAsDate = new Date();
+            document.getElementById('modal-payment').classList.remove('hidden-screen');
+        }
+
+        document.getElementById('form-add-payment').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if(!currentViewInvoice) return;
+            
+            const btn = document.getElementById('btn-submit-payment');
+            btn.innerHTML = "Procesando..."; btn.disabled = true;
+
+            const amount = parseFloat(document.getElementById('pay-amount').value);
+            const date = document.getElementById('pay-date').value;
+            const method = document.getElementById('pay-method').value;
+            const ref = document.getElementById('pay-ref').value;
+
+            const newPayment = { amount, date, method, reference: ref };
+            const newPaidAmount = (currentViewInvoice.paidAmount || 0) + amount;
+
+            try {
+                const invRef = doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'invoices', currentViewInvoice.id);
+                await updateDoc(invRef, {
+                    paidAmount: newPaidAmount,
+                    payments: arrayUnion(newPayment)
+                });
+                
+                document.getElementById('modal-payment').classList.add('hidden-screen');
+                e.target.reset();
+                
+                setTimeout(() => {
+                    const updatedInv = allInvoices.find(i => i.id === currentViewInvoice.id);
+                    if(updatedInv) showInvoiceDetails(updatedInv.id);
+                }, 500);
+
+            } catch (error) {
+                alert("Error registrando el pago");
+            } finally {
+                btn.innerHTML = "Procesar Pago"; btn.disabled = false;
+            }
+        });
+
+        window.openReturnModal = function() {
+            if(!currentViewInvoice) return;
+            
+            const tbody = document.getElementById('return-lines-body');
+            tbody.innerHTML = '';
+            
+            currentViewInvoice.lines.forEach((line, index) => {
+                let alreadyReturned = 0;
+                if(currentViewInvoice.returns) {
+                    const pastRet = currentViewInvoice.returns.find(r => r.productId === line.productId);
+                    if(pastRet) alreadyReturned = pastRet.qty;
+                }
+                const maxReturn = line.qty - alreadyReturned;
+
+                if (maxReturn > 0) {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td class="p-2 py-3 font-medium">${line.productName}</td>
+                            <td class="p-2 text-center text-gray-500">${line.qty} ${alreadyReturned > 0 ? `(Dev. ${alreadyReturned})` : ''}</td>
+                            <td class="p-2">
+                                <input type="number" class="ret-qty w-full border rounded text-center py-1 outline-none focus:ring-1 focus:ring-orange-500" 
+                                    data-pid="${line.productId}" data-pname="${line.productName}" data-max="${maxReturn}"
+                                    min="0" max="${maxReturn}" value="0">
+                            </td>
+                        </tr>
+                    `;
+                }
+            });
+
+            if (tbody.innerHTML === '') {
+                tbody.innerHTML = '<tr><td colspan="3" class="p-4 text-center text-gray-400">Todos los productos de esta factura ya han sido devueltos.</td></tr>';
+                document.getElementById('btn-submit-return').classList.add('hidden');
+            } else {
+                document.getElementById('btn-submit-return').classList.remove('hidden');
+            }
+
+            document.getElementById('modal-return').classList.remove('hidden-screen');
+        }
+
+        window.processReturn = async function() {
+            if(!currentViewInvoice) return;
+            
+            const btn = document.getElementById('btn-submit-return');
+            btn.innerHTML = "Procesando..."; btn.disabled = true;
+
+            const returnItems = [];
+            document.querySelectorAll('.ret-qty').forEach(input => {
+                const qty = parseInt(input.value || 0);
+                if (qty > 0) {
+                    returnItems.push({
+                        productId: input.dataset.pid,
+                        productName: input.dataset.pname,
+                        qty: qty,
+                        date: new Date().toISOString().split('T')[0]
+                    });
+                }
+            });
+
+            if(returnItems.length === 0) {
+                alert("Debe indicar una cantidad mayor a 0 para devolver.");
+                btn.innerHTML = "Aplicar Devolución"; btn.disabled = false;
+                return;
+            }
+
+            try {
+                const invRef = doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'invoices', currentViewInvoice.id);
+                for (const ret of returnItems) {
+                    await updateDoc(invRef, {
+                        returns: arrayUnion(ret)
+                    });
+                }
+
+                for (const ret of returnItems) {
+                    const product = allProducts.find(p => p.id === ret.productId);
+                    if (product && product.trackStock) {
+                        const newStock = (product.stockCurrent || 0) + ret.qty; 
+                        await updateDoc(doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'products', product.id), {
+                            stockCurrent: newStock
+                        });
+                    }
+                }
+
+                document.getElementById('modal-return').classList.add('hidden-screen');
+                alert("Devolución aplicada y stock restaurado exitosamente.");
+                
+                setTimeout(() => {
+                    const updatedInv = allInvoices.find(i => i.id === currentViewInvoice.id);
+                    if(updatedInv) showInvoiceDetails(updatedInv.id);
+                }, 500);
+
+            } catch (error) {
+                console.error(error);
+                alert("Error procesando devolución.");
+            } finally {
+                btn.innerHTML = "Aplicar Devolución"; btn.disabled = false;
+            }
+        }
+
+
+        // ==========================================
         // -- MÓDULO: PRODUCTOS (CREAR, LEER, ACTUALIZAR)
         // ==========================================
         
-        // Mostrar/Ocultar campos de stock al marcar el checkbox
+        // Actualizar el filtro visual de Categorías
+        function updateCategoryFilterDropdown() {
+            const select = document.getElementById('filter-prod-category');
+            const currentVal = select.value;
+            select.innerHTML = '<option value="">Todas las categorías</option>';
+            
+            Array.from(uniqueProductCategories).sort().forEach(cat => {
+                if(cat) {
+                    select.innerHTML += `<option value="${cat}">${cat}</option>`;
+                }
+            });
+            select.value = currentVal;
+        }
+
+        // Renderizar la tabla con los productos filtrados
+        window.renderProducts = function() {
+            const tbody = document.getElementById('products-table-body');
+            tbody.innerHTML = '';
+            
+            const filterCat = document.getElementById('filter-prod-category').value;
+            let filteredProducts = allProducts;
+            
+            if(filterCat !== "") {
+                filteredProducts = allProducts.filter(p => p.category === filterCat);
+            }
+
+            document.getElementById('dash-product-count').innerText = allProducts.length;
+
+            filteredProducts.forEach(p => {
+                const imgHtml = p.image 
+                    ? `<img src="${p.image}" class="w-8 h-8 rounded-lg object-cover border mr-3 shrink-0">` 
+                    : `<div class="w-8 h-8 rounded-lg bg-gray-100 border mr-3 flex items-center justify-center text-gray-400 shrink-0"><i data-lucide="image" class="w-4 h-4"></i></div>`;
+
+                let stockBadge = '';
+                if (p.trackStock) {
+                    const currentStock = p.stockCurrent || 0;
+                    const minStock = p.stockMin || 0;
+                    if (currentStock <= minStock) {
+                        stockBadge = `<span class="bg-red-50 text-red-600 px-1.5 py-0.5 rounded text-[10px] ml-2 border border-red-100 font-bold" title="Stock por debajo del mínimo">Stock: ${currentStock}</span>`;
+                    } else {
+                        stockBadge = `<span class="bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded text-[10px] ml-2 border border-blue-100 font-bold">Stock: ${currentStock}</span>`;
+                    }
+                }
+
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-slate-50 transition-colors';
+                tr.innerHTML = `
+                    <td class="p-4 font-mono text-sm text-gray-500">${p.code}</td>
+                    <td class="p-4">
+                        <div class="flex items-center">
+                            ${imgHtml}
+                            <div>
+                                <span class="font-bold text-gray-800">${p.name}</span>
+                                <div class="text-xs font-normal text-gray-400 mt-0.5">
+                                    ${p.category || 'Sin categoría'}
+                                    ${stockBadge}
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="p-4 capitalize text-sm">
+                        <span class="bg-gray-100 text-gray-600 px-2 py-1 rounded-md text-xs font-medium border">${p.type}</span>
+                    </td>
+                    <td class="p-4 text-gray-600">$${p.buyRate.toFixed(2)}</td>
+                    <td class="p-4 font-black text-green-600">$${p.sellRate.toFixed(2)}</td>
+                    <td class="p-4 text-center">
+                        <button onclick="editProduct('${p.id}')" class="text-indigo-600 hover:text-indigo-900 bg-indigo-50 p-2 rounded-lg transition" title="Editar Producto / Gestionar Tasas">
+                            <i data-lucide="edit-3" class="w-4 h-4"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+            lucide.createIcons();
+        }
+
         document.getElementById('prod-track-stock').addEventListener('change', function() {
             const container = document.getElementById('stock-fields-container');
             if(this.checked) {
@@ -767,7 +1687,6 @@
             }
         });
 
-        // Función para cargar los proveedores en el select
         function populateProvidersDropdown(selectedValue = '') {
             const select = document.getElementById('prod-provider');
             select.innerHTML = '<option value="">Sin proveedor</option>';
@@ -786,13 +1705,14 @@
             e.preventDefault();
             
             const trackStock = document.getElementById('prod-track-stock').checked;
+            const categoryValue = document.getElementById('prod-category').value.trim();
             
             const data = {
                 type: document.getElementById('prod-type').value,
                 name: document.getElementById('prod-name').value,
                 code: document.getElementById('prod-code').value,
                 unit: document.getElementById('prod-unit').value,
-                category: document.getElementById('prod-category').value,
+                category: categoryValue,
                 description: document.getElementById('prod-desc').value,
                 image: document.getElementById('prod-image').value,
                 providerId: document.getElementById('prod-provider').value,
@@ -815,7 +1735,7 @@
                 }
                 
                 e.target.reset();
-                document.getElementById('stock-fields-container').classList.add('hidden'); // Ocultar stock fields al guardar
+                document.getElementById('stock-fields-container').classList.add('hidden'); 
                 e.target.classList.add('hidden');
                 document.getElementById('btn-submit-product').innerText = "Guardar Producto";
             } catch (error) {
@@ -825,8 +1745,8 @@
 
         window.openNewProductForm = function() {
             document.getElementById('form-add-product').reset();
-            populateProvidersDropdown(); // Cargar la lista de proveedores
-            document.getElementById('stock-fields-container').classList.add('hidden'); // Ocultar contenedor de stock
+            populateProvidersDropdown(); 
+            document.getElementById('stock-fields-container').classList.add('hidden'); 
             currentEditingProductId = null;
             document.getElementById('btn-submit-product').innerText = "Guardar Producto";
             document.getElementById('form-add-product').classList.remove('hidden');
@@ -844,7 +1764,7 @@
             document.getElementById('prod-desc').value = product.description || '';
             document.getElementById('prod-image').value = product.image || '';
             
-            populateProvidersDropdown(product.providerId || ''); // Cargar y seleccionar el proveedor
+            populateProvidersDropdown(product.providerId || ''); 
             
             const trackStockCheckbox = document.getElementById('prod-track-stock');
             trackStockCheckbox.checked = product.trackStock || false;
@@ -853,7 +1773,6 @@
             document.getElementById('prod-stock-current').value = product.stockCurrent || 0;
             document.getElementById('prod-stock-min').value = product.stockMin || 0;
             
-            // Disparar evento para mostrar u ocultar campos de stock
             trackStockCheckbox.dispatchEvent(new Event('change'));
 
             document.getElementById('prod-buy').value = product.buyRate || 0;
@@ -872,61 +1791,25 @@
             if(!currentUser) return;
             const q = query(collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'products'));
             onSnapshot(q, (snapshot) => {
-                const tbody = document.getElementById('products-table-body');
-                tbody.innerHTML = '';
-                document.getElementById('dash-product-count').innerText = snapshot.size;
-                
                 allProducts = [];
+                uniqueProductCategories.clear();
 
                 snapshot.forEach(docSnap => {
                     const p = {id: docSnap.id, ...docSnap.data()};
                     allProducts.push(p);
-
-                    const imgHtml = p.image 
-                        ? `<img src="${p.image}" class="w-8 h-8 rounded-lg object-cover border mr-3 shrink-0">` 
-                        : `<div class="w-8 h-8 rounded-lg bg-gray-100 border mr-3 flex items-center justify-center text-gray-400 shrink-0"><i data-lucide="image" class="w-4 h-4"></i></div>`;
-
-                    let stockBadge = '';
-                    if (p.trackStock) {
-                        const currentStock = p.stockCurrent || 0;
-                        const minStock = p.stockMin || 0;
-                        if (currentStock <= minStock) {
-                            stockBadge = `<span class="bg-red-50 text-red-600 px-1.5 py-0.5 rounded text-[10px] ml-2 border border-red-100 font-bold" title="Stock por debajo del mínimo">Stock: ${currentStock}</span>`;
-                        } else {
-                            stockBadge = `<span class="bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded text-[10px] ml-2 border border-blue-100 font-bold">Stock: ${currentStock}</span>`;
-                        }
-                    }
-
-                    const tr = document.createElement('tr');
-                    tr.className = 'hover:bg-slate-50 transition-colors';
-                    tr.innerHTML = `
-                        <td class="p-4 font-mono text-sm text-gray-500">${p.code}</td>
-                        <td class="p-4">
-                            <div class="flex items-center">
-                                ${imgHtml}
-                                <div>
-                                    <span class="font-bold text-gray-800">${p.name}</span>
-                                    <div class="text-xs font-normal text-gray-400 mt-0.5">
-                                        ${p.category || 'Sin categoría'}
-                                        ${stockBadge}
-                                    </div>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="p-4 capitalize text-sm">
-                            <span class="bg-gray-100 text-gray-600 px-2 py-1 rounded-md text-xs font-medium border">${p.type}</span>
-                        </td>
-                        <td class="p-4 text-gray-600">$${p.buyRate.toFixed(2)}</td>
-                        <td class="p-4 font-black text-green-600">$${p.sellRate.toFixed(2)}</td>
-                        <td class="p-4 text-center">
-                            <button onclick="editProduct('${p.id}')" class="text-indigo-600 hover:text-indigo-900 bg-indigo-50 p-2 rounded-lg transition" title="Editar Producto / Gestionar Tasas">
-                                <i data-lucide="edit-3" class="w-4 h-4"></i>
-                            </button>
-                        </td>
-                    `;
-                    tbody.appendChild(tr);
+                    if(p.category) uniqueProductCategories.add(p.category);
                 });
-                lucide.createIcons();
+                
+                updateCategoryFilterDropdown();
+                renderProducts();
+                
+                if(!document.getElementById('form-add-invoice').classList.contains('hidden')) {
+                    document.querySelectorAll('.line-product').forEach(select => {
+                        const currentVal = select.value;
+                        select.innerHTML = getProductOptionsHTML();
+                        select.value = currentVal;
+                    });
+                }
             });
         }
 
@@ -1013,14 +1896,29 @@
                         <p class="text-sm text-gray-500 mb-4">${c.contactName || 'Sin contacto'}</p>
                         <div class="text-sm text-gray-600 space-y-1">
                             <p>📞 ${c.phone || 'N/D'}</p>
-                            <p class="font-semibold text-green-600 mt-2">Crédito: $${c.creditLimit.toFixed(2)}</p>
+                            <p class="font-semibold text-green-600 mt-2">Límite: $${c.creditLimit.toFixed(2)}</p>
                         </div>
                     `;
                     grid.appendChild(card);
                 });
+
+                if (document.getElementById('inv-client') && !document.getElementById('form-add-invoice').classList.contains('hidden')) {
+                    const currentVal = document.getElementById('inv-client').value;
+                    document.getElementById('inv-client').innerHTML = '<option value="">Seleccione un cliente...</option>';
+                    allClients.filter(c => c.type === 'cliente').forEach(c => {
+                        document.getElementById('inv-client').innerHTML += `<option value="${c.id}">${c.orgName}</option>`;
+                    });
+                    document.getElementById('inv-client').value = currentVal;
+                }
+                
+                if(currentViewClient && !document.getElementById('view-clientes-detalles').classList.contains('hidden-screen')) {
+                    const updatedClient = allClients.find(c => c.id === currentViewClient.id);
+                    if(updatedClient) showClientDetails(updatedClient);
+                }
             });
         }
         
+        // Vista Detallada de Cliente: Con cálculo de crédito consumido y facturas.
         window.showClientDetails = function(client) {
             currentViewClient = client; 
             
@@ -1038,8 +1936,58 @@
                 typeBadge.className = 'inline-block mt-2 px-3 py-1 rounded-full text-xs font-bold uppercase bg-orange-100 text-orange-700';
             }
             
+            // Cargar Historial de Facturas
+            const clientInvoices = allInvoices.filter(i => i.clientId === client.id);
+            const tbody = document.getElementById('cd-hist-body');
+            tbody.innerHTML = '';
+            
+            let totalBilled = 0;
+            let usedCredit = 0;
+
+            if (clientInvoices.length === 0) {
+                document.getElementById('cd-hist-empty').classList.remove('hidden');
+                tbody.parentElement.parentElement.classList.add('hidden');
+            } else {
+                document.getElementById('cd-hist-empty').classList.add('hidden');
+                tbody.parentElement.parentElement.classList.remove('hidden');
+
+                clientInvoices.forEach(inv => {
+                    totalBilled += inv.total;
+                    const balance = inv.total - (inv.paidAmount || 0);
+
+                    // Solo restamos del límite de crédito las facturas a crédito no pagadas
+                    if (inv.condition === 'credito' && balance > 0) {
+                        usedCredit += balance;
+                    }
+
+                    const tr = document.createElement('tr');
+                    tr.className = 'hover:bg-slate-50 transition-colors cursor-pointer';
+                    tr.onclick = () => showInvoiceDetails(inv.id);
+                    
+                    tr.innerHTML = `
+                        <td class="p-4">${inv.date}</td>
+                        <td class="p-4 font-semibold text-indigo-600">Factura</td>
+                        <td class="p-4 uppercase text-xs text-gray-500 font-bold">${inv.condition}</td>
+                        <td class="p-4 text-right font-bold text-gray-800">$${inv.total.toFixed(2)}</td>
+                        <td class="p-4 text-right font-bold ${balance > 0 ? 'text-red-500' : 'text-green-500'}">$${balance.toFixed(2)}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }
+
+            // Cálculos finales para UI
+            document.getElementById('cd-hist-total').innerText = `$${totalBilled.toFixed(2)}`;
             document.getElementById('cd-credit-limit').innerText = `$${client.creditLimit.toFixed(2)}`;
-            document.getElementById('cd-credit-remaining').innerText = `$${client.creditLimit.toFixed(2)}`;
+            
+            const remainingCredit = client.creditLimit - usedCredit;
+            const remainingEl = document.getElementById('cd-credit-remaining');
+            remainingEl.innerText = `$${remainingCredit.toFixed(2)}`;
+            
+            if(remainingCredit < 0) {
+                remainingEl.className = "text-red-600";
+            } else {
+                remainingEl.className = "text-green-600";
+            }
             
             document.getElementById('cd-email').innerText = client.email || 'N/A';
             document.getElementById('cd-phone').innerText = client.phone || 'N/A';
