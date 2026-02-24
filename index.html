@@ -156,7 +156,7 @@
         </div>
     </div>
 
-    <!-- PANEL DE ADMINISTRADOR (Aprobar Empresas) -->
+    <!-- PANEL DE ADMINISTRADOR -->
     <div id="screen-admin-dashboard" class="hidden-screen h-screen w-screen bg-slate-100 p-8 z-40 fixed inset-0 overflow-y-auto">
         <div class="max-w-6xl mx-auto">
             <div class="flex justify-between items-center mb-8">
@@ -174,7 +174,6 @@
                         </tr>
                     </thead>
                     <tbody id="admin-companies-list" class="divide-y">
-                        <!-- Llenado por JS -->
                     </tbody>
                 </table>
             </div>
@@ -268,6 +267,9 @@
                             <i data-lucide="arrow-left" class="w-4 h-4 mr-2"></i> Volver a Cotizaciones
                         </button>
                         <div class="flex flex-wrap gap-2">
+                            <button onclick="window.editQuote()" id="btn-quo-edit" class="flex items-center bg-blue-50 text-blue-700 hover:bg-blue-100 font-medium px-4 py-2 rounded-lg transition hidden">
+                                <i data-lucide="edit" class="w-4 h-4 mr-2"></i> Editar
+                            </button>
                             <button onclick="window.rejectQuote()" id="btn-quo-reject" class="flex items-center bg-red-100 text-red-700 hover:bg-red-200 font-medium px-4 py-2 rounded-lg transition hidden">
                                 <i data-lucide="x-circle" class="w-4 h-4 mr-2"></i> Rechazar
                             </button>
@@ -282,7 +284,7 @@
 
                     <div class="bg-white rounded-xl shadow-sm border overflow-hidden max-w-4xl mx-auto">
                         <div id="quote-print-area" class="pdf-container font-sans text-sm relative">
-                            <!-- Cabecera y datos inyectados por JS -->
+                            <!-- Cabecera -->
                             <div class="flex justify-between items-start border-b pb-6 mb-6">
                                 <div class="flex items-center space-x-4">
                                     <img id="pdf-quo-comp-logo" src="" alt="Logo" class="h-16 w-16 object-contain hidden" />
@@ -301,6 +303,7 @@
                                     <p class="text-gray-600">Válida Hasta: <span id="pdf-quo-expiry"></span></p>
                                 </div>
                             </div>
+                            <!-- Info Cliente -->
                             <div class="mb-8">
                                 <h3 class="text-gray-500 font-semibold mb-1 uppercase text-xs tracking-wider">Cotizar a:</h3>
                                 <p class="text-lg font-bold text-gray-800" id="pdf-quo-cli-name"></p>
@@ -343,7 +346,7 @@
                                 <i data-lucide="plus" class="w-4 h-4 mr-2"></i> Nueva Factura
                             </button>
                             <button onclick="window.openDocumentModal('devolucion')" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-medium flex items-center shadow transition">
-                                <i data-lucide="corner-down-left" class="w-4 h-4 mr-2"></i> Nueva Devolución
+                                <i data-lucide="corner-down-left" class="w-4 h-4 mr-2"></i> Nueva Devolución Libre
                             </button>
                         </div>
                     </div>
@@ -371,6 +374,9 @@
                             <i data-lucide="arrow-left" class="w-4 h-4 mr-2"></i> Volver a Facturas
                         </button>
                         <div class="flex flex-wrap gap-2">
+                            <button onclick="window.editInvoice()" id="btn-inv-edit" class="flex items-center bg-blue-50 text-blue-700 hover:bg-blue-100 font-medium px-4 py-2 rounded-lg transition">
+                                <i data-lucide="edit" class="w-4 h-4 mr-2"></i> Editar
+                            </button>
                             <button onclick="window.openPaymentModal()" id="btn-inv-pay" class="flex items-center bg-green-600 hover:bg-green-700 text-white font-medium px-4 py-2 rounded-lg transition shadow-sm">
                                 <i data-lucide="dollar-sign" class="w-4 h-4 mr-2"></i> Añadir Pago
                             </button>
@@ -472,7 +478,6 @@
                         </div>
                     </div>
 
-                    <!-- Formulario Productos -->
                     <form id="form-add-product" class="hidden bg-white p-6 rounded-xl border shadow-sm mb-6">
                         <h3 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2">Detalles del Producto / Servicio</h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
@@ -540,7 +545,6 @@
                             </div>
                         </div>
                     </form>
-
                     <div id="clients-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
                 </div>
 
@@ -604,7 +608,7 @@
                     </div>
                 </div>
 
-                <!-- VISTA: PLACEHOLDER (Para módulos en desarrollo) -->
+                <!-- VISTA: PLACEHOLDER -->
                 <div id="view-placeholder" class="app-view hidden-screen h-full flex items-center justify-center">
                     <div class="bg-white border border-dashed border-gray-300 rounded-2xl p-12 text-center max-w-lg">
                         <i data-lucide="settings" class="w-16 h-16 text-gray-300 mx-auto mb-4 animate-spin" style="animation-duration: 3s;"></i>
@@ -630,27 +634,10 @@
                             <input type="hidden" id="univ-doc-id">
                             
                             <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <!-- VISTA: COTIZACION DETALLES -->
-                <div id="view-cotizacion-detalles" class="app-view hidden-screen space-y-6">
-                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-2">
-                        <button onclick="window.navigateTo('cotizaciones', '3. Cotizaciones')" class="flex items-center text-slate-500 hover:text-indigo-600 font-medium transition">
-                            <i data-lucide="arrow-left" class="w-4 h-4 mr-2"></i> Volver a Cotizaciones
-                        </button>
-                        <div class="flex flex-wrap gap-2">
-                            <button onclick="window.editQuote()" id="btn-quo-edit" class="flex items-center bg-blue-50 text-blue-700 hover:bg-blue-100 font-medium px-4 py-2 rounded-lg transition hidden">
-                                <i data-lucide="edit" class="w-4 h-4 mr-2"></i> Editar
-                            </button>
-                            <button onclick="window.rejectQuote()" id="btn-quo-reject" class="flex items-center bg-red-100 text-red-700 hover:bg-red-200 font-medium px-4 py-2 rounded-lg transition hidden">
-                                <i data-lucide="x-circle" class="w-4 h-4 mr-2"></i> Rechazar
-                            </button>
-                            <button onclick="window.openConvertQuoteModal()" id="btn-quo-approve" class="flex items-center bg-green-600 hover:bg-green-700 text-white font-medium px-4 py-2 rounded-lg transition shadow-sm hidden">
-                                <i data-lucide="check-circle" class="w-4 h-4 mr-2"></i> Aprobar y Crear Factura
-                            </button>
-                            <button onclick="window.generateQuotePDF()" class="flex items-center bg-indigo-50 text-indigo-700 hover:bg-indigo-100 font-medium px-4 py-2 rounded-lg transition">
-                                <i data-lucide="file-down" class="w-4 h-4 mr-2"></i> Generar PDF
-                            </button>
-                        </div>
-                    </div>
+                                <div class="md:col-span-2">
+                                    <label class="block text-xs font-semibold text-gray-600 mb-1">Cliente *</label>
+                                    <select required id="univ-doc-client" class="w-full border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500"></select>
+                                </div>
                                 <div>
                                     <label class="block text-xs font-semibold text-gray-600 mb-1">Fecha Emisión *</label>
                                     <input required type="date" id="univ-doc-date" class="w-full border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500">
@@ -1145,7 +1132,7 @@
                 conditionCont.classList.add('hidden');
                 expiryCont.classList.remove('hidden');
             } else if (docType === 'devolucion') {
-                title.innerText = "Nueva Devolución (Nota de Crédito Libre)";
+                title.innerText = "Nueva Devolución (Nota Libre)";
                 title.className = "text-xl font-black text-orange-600";
                 submitBtn.innerText = "Guardar Devolución";
                 submitBtn.className = "px-8 py-2.5 bg-orange-600 text-white font-bold rounded-lg hover:bg-orange-700 transition shadow-md flex items-center";
@@ -1322,34 +1309,68 @@
                     baseData.type = docType;
                     baseData.condition = condition;
                     
-                    let paidAmount = 0; let payments = [];
-                    if (condition === 'contado') {
-                        paidAmount = totalAmount;
-                        payments.push({
-                            date: new Date().toISOString().split('T')[0],
-                            amount: totalAmount,
-                            method: 'Efectivo', 
-                            reference: docType === 'devolucion' ? 'Nota de Crédito Automática' : 'Pago al contado'
-                        });
-                    }
+                    if (docId && docType === 'factura') {
+                        // EDITANDO FACTURA EXISTENTE
+                        const originalInv = allInvoices.find(i => i.id === docId);
+                        baseData.paidAmount = originalInv.paidAmount || 0;
+                        baseData.payments = originalInv.payments || [];
+                        baseData.returns = originalInv.returns || [];
 
-                    baseData.paidAmount = paidAmount;
-                    baseData.payments = payments;
-                    baseData.returns = [];
+                        await updateDoc(doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'invoices', docId), baseData);
 
-                    await addDoc(collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'invoices'), baseData);
-
-                    // Afectar Inventario
-                    for (const line of lines) {
-                        const product = allProducts.find(p => p.id === line.productId);
-                        if (product && product.trackStock) {
-                            const change = docType === 'devolucion' ? line.qty : -line.qty; 
-                            const newStock = (product.stockCurrent || 0) + change;
-                            await updateDoc(doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'products', product.id), { stockCurrent: newStock });
+                        // Revertir inventario de la factura vieja
+                        if(originalInv && originalInv.lines) {
+                            for (const oLine of originalInv.lines) {
+                                const prod = allProducts.find(p => p.id === oLine.productId);
+                                if(prod && prod.trackStock) {
+                                    const restoredStock = (prod.stockCurrent || 0) + oLine.qty;
+                                    await updateDoc(doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'products', prod.id), { stockCurrent: restoredStock });
+                                    prod.stockCurrent = restoredStock; // Update local to not overwrite immediately
+                                }
+                            }
                         }
+
+                        // Aplicar nuevo inventario de la factura editada
+                        for (const nLine of lines) {
+                            const prod = allProducts.find(p => p.id === nLine.productId);
+                            if(prod && prod.trackStock) {
+                                const newStock = (prod.stockCurrent || 0) - nLine.qty;
+                                await updateDoc(doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'products', prod.id), { stockCurrent: newStock });
+                                prod.stockCurrent = newStock;
+                            }
+                        }
+                        alert("Factura actualizada y stock ajustado.");
+                    } else {
+                        // CREANDO NUEVA FACTURA / DEVOLUCION
+                        let paidAmount = 0; let payments = [];
+                        if (condition === 'contado') {
+                            paidAmount = totalAmount;
+                            payments.push({
+                                date: new Date().toISOString().split('T')[0],
+                                amount: totalAmount,
+                                method: 'Efectivo', 
+                                reference: docType === 'devolucion' ? 'Nota de Crédito Automática' : 'Pago al contado'
+                            });
+                        }
+
+                        baseData.paidAmount = paidAmount;
+                        baseData.payments = payments;
+                        baseData.returns = [];
+
+                        await addDoc(collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'invoices'), baseData);
+
+                        // Afectar Inventario
+                        for (const line of lines) {
+                            const product = allProducts.find(p => p.id === line.productId);
+                            if (product && product.trackStock) {
+                                const change = docType === 'devolucion' ? line.qty : -line.qty; 
+                                const newStock = (product.stockCurrent || 0) + change;
+                                await updateDoc(doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'products', product.id), { stockCurrent: newStock });
+                            }
+                        }
+                        alert("Documento guardado y stock actualizado.");
                     }
                     
-                    alert("Documento guardado y stock actualizado.");
                     document.getElementById('modal-document').classList.add('hidden-screen');
                     document.getElementById('univ-doc-condition').disabled = false; 
                     window.navigateTo('facturas', '2. Facturas');
@@ -1497,7 +1518,7 @@
             });
             clientSelect.value = quo.clientId;
 
-            document.getElementById('univ-doc-date').value = quo.date;
+            document.getElementById('univ-doc-date').value = quo.date || '';
             document.getElementById('univ-doc-expiry').value = quo.expiryDate || '';
             document.getElementById('univ-doc-notes').value = quo.notes || '';
             document.getElementById('univ-doc-ship').value = quo.shipping || 0;
@@ -1630,7 +1651,8 @@
 
                     let statusBadge = '';
                     if (isReturn) statusBadge = '<span class="bg-orange-100 text-orange-700 px-2 py-1 rounded text-xs font-bold border border-orange-200">DEVOLUCIÓN</span>';
-                    else if (balance <= 0.01) statusBadge = '<span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-bold border border-green-200">Pagada</span>';
+                    else if (balance <= 0.01 && balance >= -0.01) statusBadge = '<span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-bold border border-green-200">Pagada</span>';
+                    else if (balance < -0.01) statusBadge = '<span class="bg-purple-100 text-purple-700 px-2 py-1 rounded text-xs font-bold border border-purple-200">Saldo A Favor</span>';
                     else if (inv.paidAmount > 0) statusBadge = '<span class="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs font-bold border border-blue-200">Parcial</span>';
                     else statusBadge = '<span class="bg-red-50 text-red-600 px-2 py-1 rounded text-xs font-bold border border-red-200">Pendiente</span>';
 
@@ -1644,7 +1666,7 @@
                         <td class="p-4 uppercase text-[10px] font-bold text-gray-500 tracking-wider">${isReturn ? 'N/A' : inv.condition}</td>
                         <td class="p-4">${statusBadge}</td>
                         <td class="p-4 text-right font-black ${isReturn ? 'text-orange-600' : 'text-gray-800'}">${isReturn ? '-' : ''}$${inv.total.toFixed(2)}</td>
-                        <td class="p-4 text-right font-bold text-red-500">${isReturn || balance <= 0 ? '' : '$'+balance.toFixed(2)}</td>
+                        <td class="p-4 text-right font-bold ${balance < -0.01 ? 'text-purple-600' : 'text-red-500'}">${isReturn || balance <= 0.01 && balance >= -0.01 ? '' : (balance < -0.01 ? 'A favor $'+Math.abs(balance).toFixed(2) : '$'+balance.toFixed(2))}</td>
                     `;
                     tbody.appendChild(tr);
                 });
@@ -1686,12 +1708,14 @@
             const condContainer = document.getElementById('pdf-inv-cond-container');
             
             if (isReturn) {
-                pdfStatus.innerText = "DEVOLUCIÓN"; pdfStatus.className = "inline-block px-2 py-1 text-[10px] font-bold uppercase rounded border mb-2 bg-orange-100 text-orange-800 border-orange-300";
+                pdfStatus.innerText = "DEVOLUCIÓN";
+                pdfStatus.className = "inline-block px-2 py-1 text-[10px] font-bold uppercase rounded border mb-2 bg-orange-100 text-orange-800 border-orange-300";
                 condContainer.classList.add('hidden');
             } else {
                 condContainer.classList.remove('hidden');
                 document.getElementById('pdf-inv-cond').innerText = inv.condition;
-                if (balance <= 0.01) { pdfStatus.innerText = "PAGADA"; pdfStatus.className = "inline-block px-2 py-1 text-[10px] font-bold uppercase rounded border mb-2 bg-green-50 text-green-700 border-green-200"; } 
+                if (balance <= 0.01 && balance >= -0.01) { pdfStatus.innerText = "PAGADA"; pdfStatus.className = "inline-block px-2 py-1 text-[10px] font-bold uppercase rounded border mb-2 bg-green-50 text-green-700 border-green-200"; } 
+                else if (balance < -0.01) { pdfStatus.innerText = "SALDO A FAVOR"; pdfStatus.className = "inline-block px-2 py-1 text-[10px] font-bold uppercase rounded border mb-2 bg-purple-50 text-purple-700 border-purple-200"; } 
                 else if ((inv.paidAmount || 0) > 0) { pdfStatus.innerText = "PAGO PARCIAL"; pdfStatus.className = "inline-block px-2 py-1 text-[10px] font-bold uppercase rounded border mb-2 bg-blue-50 text-blue-700 border-blue-200"; } 
                 else { pdfStatus.innerText = "PENDIENTE DE PAGO"; pdfStatus.className = "inline-block px-2 py-1 text-[10px] font-bold uppercase rounded border mb-2 bg-red-50 text-red-700 border-red-200"; }
             }
@@ -1731,12 +1755,17 @@
             const badge = document.getElementById('inv-detail-status-badge');
             const btnPay = document.getElementById('btn-inv-pay');
             const btnReturn = document.getElementById('btn-inv-return');
+            const btnEdit = document.getElementById('btn-inv-edit');
             
             if (isReturn) {
                 badge.className = "mb-4 text-center py-2 rounded-lg font-bold text-sm bg-orange-100 text-orange-800 border border-orange-200"; badge.innerText = "NOTA DE CRÉDITO";
                 btnPay.classList.add('hidden'); btnReturn.classList.add('hidden'); document.getElementById('inv-payments-panel').classList.add('hidden');
+                btnEdit.classList.add('hidden');
             } else {
-                document.getElementById('inv-payments-panel').classList.remove('hidden'); btnReturn.classList.remove('hidden');
+                document.getElementById('inv-payments-panel').classList.remove('hidden'); 
+                btnReturn.classList.remove('hidden');
+                btnEdit.classList.remove('hidden'); // Facturas normales se pueden editar
+
                 if (balance <= 0.01 && balance >= -0.01) { 
                     badge.className = "mb-4 text-center py-2 rounded-lg font-bold text-sm bg-green-100 text-green-700"; badge.innerText = "FACTURA PAGADA"; btnPay.classList.add('hidden'); 
                 } else if (balance < -0.01) {
@@ -1763,6 +1792,73 @@
             } else retContainer.classList.add('hidden');
             lucide.createIcons();
         }
+
+        window.editInvoice = function() {
+            if(!currentViewInvoice) return;
+            const inv = currentViewInvoice;
+
+            document.getElementById('form-universal-document').reset();
+            document.getElementById('univ-doc-type').value = 'factura';
+            document.getElementById('univ-doc-id').value = inv.id;
+            
+            document.getElementById('doc-modal-title').innerText = "Editar Factura";
+            document.getElementById('doc-modal-title').className = "text-xl font-black text-indigo-600";
+            document.getElementById('btn-submit-univ-doc').innerText = "Actualizar Factura";
+            document.getElementById('btn-submit-univ-doc').className = "px-8 py-2.5 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition shadow-md flex items-center";
+            
+            const clientSelect = document.getElementById('univ-doc-client');
+            clientSelect.innerHTML = '<option value="">Seleccione un cliente...</option>';
+            allClients.filter(c => c.type === 'cliente').forEach(c => {
+                clientSelect.innerHTML += `<option value="${c.id}">${c.orgName}</option>`;
+            });
+            clientSelect.value = inv.clientId;
+
+            document.getElementById('univ-doc-date').value = inv.date || '';
+            document.getElementById('univ-doc-notes').value = inv.notes || '';
+            document.getElementById('univ-doc-ship').value = inv.shipping || 0;
+            
+            document.getElementById('univ-doc-condition-container').classList.remove('hidden');
+            document.getElementById('univ-doc-condition').value = inv.condition;
+            document.getElementById('univ-doc-condition').disabled = false;
+            document.getElementById('univ-doc-expiry-container').classList.add('hidden');
+            
+            const tbody = document.getElementById('univ-doc-lines');
+            tbody.innerHTML = '';
+            inv.lines.forEach(line => {
+                const tr = document.createElement('tr');
+                tr.className = 'univ-line group hover:bg-slate-50 transition-colors border-b border-gray-100';
+                tr.innerHTML = `
+                    <td class="p-2">
+                        <select required class="line-product w-full border border-gray-300 rounded-md px-2 py-1.5 text-sm outline-none focus:border-indigo-500" onchange="window.calculateUnivDocTotals(this)">
+                            ${getProductOptionsHTML()}
+                        </select>
+                    </td>
+                    <td class="p-2">
+                        <input type="number" required min="0.01" step="0.01" value="${line.qty}" class="line-qty w-full border border-gray-300 rounded-md px-2 py-1.5 text-sm outline-none focus:border-indigo-500 text-center" oninput="window.calculateUnivDocTotals()">
+                    </td>
+                    <td class="p-2">
+                        <div class="flex items-center"><span class="text-gray-400 mr-1">$</span><input type="number" required step="0.01" value="${line.price}" class="line-price w-full border border-gray-300 rounded-md px-2 py-1.5 text-sm outline-none focus:border-indigo-500 text-right" oninput="window.calculateUnivDocTotals()"></div>
+                    </td>
+                    <td class="p-2">
+                        <div class="flex items-center"><input type="number" required step="0.01" value="${line.tax}" class="line-tax w-full border border-gray-300 rounded-md px-2 py-1.5 text-sm outline-none focus:border-indigo-500 text-right" oninput="window.calculateUnivDocTotals()"><span class="text-gray-400 ml-1">%</span></div>
+                    </td>
+                    <td class="p-2 text-right">
+                        <span class="line-total font-bold text-gray-800">$0.00</span>
+                    </td>
+                    <td class="p-2 text-center">
+                        <button type="button" onclick="window.removeUnivDocLine(this)" class="text-gray-300 hover:text-red-500 transition focus:outline-none">
+                            <i data-lucide="trash-2" class="w-5 h-5 mx-auto"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+                tr.querySelector('.line-product').value = line.productId;
+            });
+            
+            window.calculateUnivDocTotals();
+            lucide.createIcons();
+            document.getElementById('modal-document').classList.remove('hidden-screen');
+        };
 
         window.generateInvoicePDF = function() {
             if(!currentViewInvoice) return;
@@ -1825,42 +1921,28 @@
             try {
                 const invRef = doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'invoices', currentViewInvoice.id);
                 
-                // 1. Recalcular las líneas y totales de la factura original
                 let newLines = JSON.parse(JSON.stringify(currentViewInvoice.lines));
                 returnItems.forEach(ret => {
                     let line = newLines.find(l => l.productId === ret.productId);
-                    if (line) {
-                        line.qty -= ret.qty;
-                    }
+                    if (line) line.qty -= ret.qty;
                 });
                 
-                // Filtrar líneas que se quedaron en 0 (Opcional, pero recomendable para que desaparezcan)
                 newLines = newLines.filter(l => l.qty > 0);
                 
-                let newSubtotal = 0;
-                let newTax = 0;
+                let newSubtotal = 0; let newTax = 0;
                 newLines.forEach(l => {
-                    const base = l.qty * l.price;
-                    const tax = base * (l.tax / 100);
-                    newSubtotal += base;
-                    newTax += tax;
+                    const base = l.qty * l.price; const tax = base * (l.tax / 100);
+                    newSubtotal += base; newTax += tax;
                 });
                 
                 let newTotal = newSubtotal + newTax + (currentViewInvoice.shipping || 0);
 
-                // 2. Guardar el registro de devolución y actualizar la factura modificada
-                for (const ret of returnItems) {
-                    await updateDoc(invRef, { returns: arrayUnion(ret) });
-                }
+                for (const ret of returnItems) await updateDoc(invRef, { returns: arrayUnion(ret) });
 
                 await updateDoc(invRef, {
-                    lines: newLines,
-                    subtotal: newSubtotal,
-                    tax: newTax,
-                    total: newTotal
+                    lines: newLines, subtotal: newSubtotal, tax: newTax, total: newTotal
                 });
 
-                // 3. Restaurar stock en Inventario
                 for (const ret of returnItems) {
                     const product = allProducts.find(p => p.id === ret.productId);
                     if (product && product.trackStock) {
@@ -1874,11 +1956,8 @@
                 setTimeout(() => { const u = allInvoices.find(i => i.id === currentViewInvoice.id); if(u) window.showInvoiceDetails(u.id); }, 500);
 
             } catch (error) { 
-                console.error(error);
-                alert("Error procesando la devolución."); 
-            } finally { 
-                btn.innerHTML = "Aplicar Devolución"; btn.disabled = false; 
-            }
+                console.error(error); alert("Error procesando la devolución."); 
+            } finally { btn.innerHTML = "Aplicar Devolución"; btn.disabled = false; }
         }
 
         // ==========================================
@@ -2023,7 +2102,7 @@
                     const isR = inv.type === 'devolucion'; if (!isR) tBilled += inv.total;
                     const bal = inv.total - (inv.paidAmount || 0); if (!isR && inv.condition === 'credito' && bal > 0) uCredit += bal;
                     const tr = document.createElement('tr'); tr.className = 'hover:bg-slate-50 transition-colors cursor-pointer'; tr.onclick = () => window.showInvoiceDetails(inv.id);
-                    let sL = ''; if (isR) sL = '<span class="text-orange-600 font-bold text-xs uppercase bg-orange-100 px-2 py-0.5 rounded">Devolución</span>'; else if (bal <= 0.01) sL = '<span class="text-green-600 font-bold text-xs uppercase bg-green-100 px-2 py-0.5 rounded">Pagada</span>'; else if (inv.paidAmount > 0) sL = '<span class="text-blue-600 font-bold text-xs uppercase bg-blue-100 px-2 py-0.5 rounded">Parcial</span>'; else sL = '<span class="text-red-600 font-bold text-xs uppercase bg-red-100 px-2 py-0.5 rounded">Pendiente</span>';
+                    let sL = ''; if (isR) sL = '<span class="text-orange-600 font-bold text-xs uppercase bg-orange-100 px-2 py-0.5 rounded">Devolución</span>'; else if (bal <= 0.01 && bal >= -0.01) sL = '<span class="text-green-600 font-bold text-xs uppercase bg-green-100 px-2 py-0.5 rounded">Pagada</span>'; else if (bal < -0.01) sL = '<span class="text-purple-600 font-bold text-xs uppercase bg-purple-100 px-2 py-0.5 rounded">A Favor</span>'; else if (inv.paidAmount > 0) sL = '<span class="text-blue-600 font-bold text-xs uppercase bg-blue-100 px-2 py-0.5 rounded">Parcial</span>'; else sL = '<span class="text-red-600 font-bold text-xs uppercase bg-red-100 px-2 py-0.5 rounded">Pendiente</span>';
                     tr.innerHTML = `<td class="p-4">${inv.date}</td><td class="p-4 font-semibold ${isR ? 'text-orange-600' : 'text-indigo-600'}">${isR ? 'Nota de Crédito' : 'Factura'} <br/> ${sL}</td><td class="p-4 uppercase text-xs text-gray-500 font-bold">${isR ? 'N/A' : inv.condition}</td><td class="p-4 text-right font-bold text-gray-800">${isR ? '-' : ''}$${inv.total.toFixed(2)}</td><td class="p-4 text-right font-bold ${bal > 0 && !isR ? 'text-red-500' : 'text-green-500'}">${isR ? '' : '$'+bal.toFixed(2)}</td>`;
                     tbody.appendChild(tr);
                 });
