@@ -104,9 +104,21 @@
                             <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">Email (Usuario) *</label>
                             <input required type="email" id="reg-email" class="w-full border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500">
                         </div>
-                        <div class="md:col-span-2">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">Teléfono Empresa</label>
+                            <input type="tel" id="reg-phone" class="w-full border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div>
                             <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">Dirección Física</label>
                             <input type="text" id="reg-address" class="w-full border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">Instagram (Opcional)</label>
+                            <input type="text" id="reg-instagram" placeholder="@usuario" class="w-full border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">Facebook (Opcional)</label>
+                            <input type="text" id="reg-facebook" placeholder="Nombre FB" class="w-full border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500">
                         </div>
                         <div class="md:col-span-2">
                             <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">Crea un PIN de Acceso (6 dígitos) *</label>
@@ -233,14 +245,20 @@
                 <!-- VISTA: FACTURAS LISTA -->
                 <div id="view-facturas" class="app-view hidden-screen">
                     <div class="flex justify-between items-center mb-6">
-                        <button onclick="openNewInvoiceForm()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium flex items-center shadow transition">
-                            <i data-lucide="plus" class="w-4 h-4 mr-2"></i> Nueva Factura
-                        </button>
+                        <div class="flex space-x-3">
+                            <button onclick="openNewInvoiceForm(false)" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium flex items-center shadow transition">
+                                <i data-lucide="plus" class="w-4 h-4 mr-2"></i> Nueva Factura
+                            </button>
+                            <button onclick="openNewInvoiceForm(true)" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-medium flex items-center shadow transition">
+                                <i data-lucide="corner-down-left" class="w-4 h-4 mr-2"></i> Devolución
+                            </button>
+                        </div>
                     </div>
 
-                    <!-- Formulario Factura -->
+                    <!-- Formulario Factura / Devolución -->
                     <form id="form-add-invoice" class="hidden bg-white p-6 rounded-xl border shadow-sm mb-6">
                         <h3 id="invoice-form-title" class="text-lg font-bold text-gray-800 mb-4 border-b pb-2">Nueva Factura</h3>
+                        <input type="hidden" id="inv-is-return" value="false">
                         
                         <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
                             <div class="md:col-span-2">
@@ -313,7 +331,7 @@
                         <div class="flex justify-end gap-3 mt-6 pt-6 border-t">
                             <button type="button" onclick="document.getElementById('form-add-invoice').classList.add('hidden')" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition">Cancelar</button>
                             <button type="submit" id="btn-submit-invoice" class="px-6 py-2 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition shadow-md flex items-center">
-                                Guardar Factura
+                                Guardar Documento
                             </button>
                         </div>
                     </form>
@@ -324,6 +342,7 @@
                             <thead class="bg-slate-50 border-b">
                                 <tr>
                                     <th class="p-4 font-semibold text-gray-600">Fecha</th>
+                                    <th class="p-4 font-semibold text-gray-600">Tipo</th>
                                     <th class="p-4 font-semibold text-gray-600">Cliente</th>
                                     <th class="p-4 font-semibold text-gray-600">Condición</th>
                                     <th class="p-4 font-semibold text-gray-600">Estado</th>
@@ -361,18 +380,24 @@
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                         <!-- Contenedor del Documento (Para PDF) -->
                         <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border overflow-hidden">
-                            <div id="invoice-print-area" class="pdf-container font-sans text-sm">
+                            <div id="invoice-print-area" class="pdf-container font-sans text-sm relative">
                                 <!-- Cabecera Factura -->
                                 <div class="flex justify-between items-start border-b pb-6 mb-6">
-                                    <div>
-                                        <h1 class="text-3xl font-black text-gray-800 tracking-tight" id="pdf-comp-name">Empresa</h1>
-                                        <p class="text-gray-500 mt-1" id="pdf-comp-rnc">RNC: 0000000</p>
-                                        <p class="text-gray-500" id="pdf-comp-address">Dirección</p>
+                                    <div class="flex items-center space-x-4">
+                                        <img id="pdf-comp-logo" src="" alt="Logo" class="h-16 w-16 object-contain hidden" crossorigin="anonymous" />
+                                        <div>
+                                            <h1 class="text-3xl font-black text-gray-800 tracking-tight" id="pdf-comp-name">Empresa</h1>
+                                            <p class="text-gray-500 mt-1" id="pdf-comp-rnc">RNC: 0000000</p>
+                                            <p class="text-gray-500" id="pdf-comp-address">Dirección</p>
+                                            <p class="text-gray-500" id="pdf-comp-phone"></p>
+                                            <p class="text-gray-500 font-medium text-xs mt-1" id="pdf-comp-socials"></p>
+                                        </div>
                                     </div>
                                     <div class="text-right">
-                                        <h2 class="text-2xl font-bold text-indigo-600">FACTURA</h2>
-                                        <p class="text-gray-600 mt-1 font-medium">Fecha: <span id="pdf-inv-date"></span></p>
-                                        <p class="text-gray-600">Condición: <span id="pdf-inv-cond" class="uppercase"></span></p>
+                                        <h2 class="text-2xl font-bold text-indigo-600 mb-1" id="pdf-doc-title">FACTURA</h2>
+                                        <div id="pdf-inv-status" class="inline-block px-2 py-1 text-[10px] font-bold uppercase rounded border mb-2">ESTADO</div>
+                                        <p class="text-gray-600 font-medium">Fecha: <span id="pdf-inv-date"></span></p>
+                                        <p class="text-gray-600" id="pdf-inv-cond-container">Condición: <span id="pdf-inv-cond" class="uppercase"></span></p>
                                     </div>
                                 </div>
                                 
@@ -401,9 +426,13 @@
                                     </tbody>
                                 </table>
 
-                                <!-- Totales -->
-                                <div class="flex justify-end">
-                                    <div class="w-64">
+                                <!-- Totales y Términos -->
+                                <div class="flex flex-col sm:flex-row justify-between items-start mt-6">
+                                    <div class="w-full sm:w-1/2 pr-4 mb-4 sm:mb-0">
+                                        <h4 class="text-xs font-bold text-gray-700 uppercase mb-2">Términos y Notas</h4>
+                                        <div class="text-xs text-gray-600 bg-slate-50 p-3 rounded border min-h-[60px] whitespace-pre-line" id="pdf-inv-notes"></div>
+                                    </div>
+                                    <div class="w-full sm:w-64">
                                         <div class="flex justify-between py-1 text-gray-600"><span>Subtotal:</span><span id="pdf-inv-sub"></span></div>
                                         <div class="flex justify-between py-1 text-gray-600"><span>Impuestos:</span><span id="pdf-inv-tax"></span></div>
                                         <div class="flex justify-between py-1 text-gray-600" id="pdf-inv-ship-container"><span>Envío:</span><span id="pdf-inv-ship"></span></div>
@@ -413,24 +442,27 @@
                                     </div>
                                 </div>
                                 
-                                <div class="mt-12 pt-6 border-t text-xs text-gray-500" id="pdf-inv-notes"></div>
+                                <!-- Pie de página -->
+                                <div class="mt-12 pt-6 border-t text-center text-sm text-gray-500 font-medium">
+                                    ¡Gracias por preferirnos!
+                                </div>
                             </div>
                         </div>
 
                         <!-- Panel Lateral (Estado y Pagos) -->
                         <div class="space-y-6">
-                            <div class="bg-white p-6 rounded-xl shadow-sm border">
+                            <div class="bg-white p-6 rounded-xl shadow-sm border" id="inv-state-panel">
                                 <h3 class="font-bold text-gray-800 mb-4">Estado de Cuenta</h3>
                                 <div id="inv-detail-status-badge" class="mb-4 text-center py-2 rounded-lg font-bold text-sm">Estado</div>
                                 
                                 <div class="space-y-2 text-sm">
-                                    <div class="flex justify-between text-gray-600"><span>Total Facturado:</span> <span id="inv-detail-total" class="font-semibold"></span></div>
+                                    <div class="flex justify-between text-gray-600"><span>Total:</span> <span id="inv-detail-total" class="font-semibold"></span></div>
                                     <div class="flex justify-between text-gray-600"><span>Pagado:</span> <span id="inv-detail-paid" class="text-green-600 font-semibold"></span></div>
                                     <div class="flex justify-between text-gray-800 pt-2 border-t font-bold text-lg"><span>Balance:</span> <span id="inv-detail-balance"></span></div>
                                 </div>
                             </div>
 
-                            <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
+                            <div class="bg-white rounded-xl shadow-sm border overflow-hidden" id="inv-payments-panel">
                                 <div class="p-4 bg-slate-50 border-b font-bold text-gray-700">Historial de Pagos</div>
                                 <div class="p-0">
                                     <ul id="inv-payments-list" class="divide-y text-sm">
@@ -600,7 +632,7 @@
 
                     <div class="bg-white rounded-2xl shadow-sm border overflow-hidden">
                         <div class="p-4 bg-slate-50 border-b flex justify-between items-center">
-                            <h3 class="font-bold text-gray-700">Histórico de Facturas</h3>
+                            <h3 class="font-bold text-gray-700">Histórico de Documentos</h3>
                             <div class="text-sm text-gray-500">
                                 <span>Total Facturado: <strong id="cd-hist-total">$0.00</strong></span>
                             </div>
@@ -941,6 +973,9 @@
                     rnc: document.getElementById('reg-rnc').value,
                     representative: document.getElementById('reg-rep').value,
                     email: email,
+                    phone: document.getElementById('reg-phone').value,
+                    instagram: document.getElementById('reg-instagram').value,
+                    facebook: document.getElementById('reg-facebook').value,
                     address: document.getElementById('reg-address').value,
                     status: 'pending',
                     createdAt: serverTimestamp()
@@ -1069,9 +1104,31 @@
         // -- MÓDULO: FACTURAS Y DEVOLUCIONES
         // ==========================================
 
-        window.openNewInvoiceForm = function() {
+        window.openNewInvoiceForm = function(isReturn = false) {
             document.getElementById('form-add-invoice').reset();
             
+            // Establecer si es factura o devolución independiente
+            document.getElementById('inv-is-return').value = isReturn;
+            
+            const title = document.getElementById('invoice-form-title');
+            const submitBtn = document.getElementById('btn-submit-invoice');
+            const conditionSelect = document.getElementById('inv-condition');
+            
+            if(isReturn) {
+                title.innerText = "Nueva Devolución / Nota de Crédito";
+                title.className = "text-lg font-bold text-orange-600 mb-4 border-b pb-2";
+                submitBtn.className = "px-6 py-2 bg-orange-600 text-white font-bold rounded-lg hover:bg-orange-700 transition shadow-md flex items-center";
+                submitBtn.innerText = "Guardar Devolución";
+                conditionSelect.value = "contado"; // Forzar y deshabilitar condición para devoluciones
+                conditionSelect.disabled = true;
+            } else {
+                title.innerText = "Nueva Factura";
+                title.className = "text-lg font-bold text-gray-800 mb-4 border-b pb-2";
+                submitBtn.className = "px-6 py-2 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition shadow-md flex items-center";
+                submitBtn.innerText = "Guardar Factura";
+                conditionSelect.disabled = false;
+            }
+
             // Llenar select de clientes
             const clientSelect = document.getElementById('inv-client');
             clientSelect.innerHTML = '<option value="">Seleccione un cliente...</option>';
@@ -1187,9 +1244,12 @@
             btn.disabled = true;
             btn.innerHTML = "Guardando...";
 
+            const isReturn = document.getElementById('inv-is-return').value === 'true';
             const clientId = document.getElementById('inv-client').value;
             const client = allClients.find(c => c.id === clientId);
-            const condition = document.getElementById('inv-condition').value;
+            
+            // Si es devolución, forzamos contado. Si no, tomamos el valor del select.
+            const condition = isReturn ? 'contado' : document.getElementById('inv-condition').value;
 
             const lines = [];
             document.querySelectorAll('.invoice-line').forEach(tr => {
@@ -1216,25 +1276,26 @@
             
             let paidAmount = 0;
             let payments = [];
+            
+            // Si es contado o devolución, se asume pagado/saldado.
             if (condition === 'contado') {
                 paidAmount = totalAmount;
                 payments.push({
                     date: new Date().toISOString().split('T')[0],
                     amount: totalAmount,
                     method: 'Efectivo', 
-                    reference: 'Pago al contado (Auto)'
+                    reference: isReturn ? 'Devolución procesada' : 'Pago al contado (Auto)'
                 });
             }
 
-            // Aquí guardamos la información completa del cliente en la factura
             const invoiceData = {
-                type: 'factura',
+                type: isReturn ? 'devolucion' : 'factura',
                 condition: condition,
                 clientId: clientId,
                 clientName: client ? client.orgName : 'Desconocido',
                 clientEmail: client ? client.email : '',
                 clientPhone: client ? client.phone : '',
-                clientAddress: client ? client.address : '', // <- Campo Agregado
+                clientAddress: client ? client.address : '',
                 date: document.getElementById('inv-date').value,
                 notes: document.getElementById('inv-notes').value,
                 subtotal: parseFloat(e.target.dataset.calcSubtotal || 0),
@@ -1254,7 +1315,11 @@
                 for (const line of lines) {
                     const product = allProducts.find(p => p.id === line.productId);
                     if (product && product.trackStock) {
-                        const newStock = (product.stockCurrent || 0) - line.qty; 
+                        // Factura RESTA stock. Devolución SUMA stock.
+                        const newStock = isReturn 
+                            ? (product.stockCurrent || 0) + line.qty 
+                            : (product.stockCurrent || 0) - line.qty; 
+                            
                         await updateDoc(doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'products', product.id), {
                             stockCurrent: newStock
                         });
@@ -1263,12 +1328,13 @@
 
                 e.target.reset();
                 e.target.classList.add('hidden');
+                document.getElementById('inv-condition').disabled = false; // Restaurar por si acaso
             } catch (error) {
                 console.error(error);
-                alert("Error al guardar la factura.");
+                alert("Error al guardar el documento.");
             } finally {
                 btn.disabled = false;
-                btn.innerHTML = "Guardar Factura";
+                btn.innerHTML = "Guardar Documento";
             }
         });
 
@@ -1288,35 +1354,40 @@
 
                 docs.forEach(inv => {
                     allInvoices.push(inv);
-                    if(inv.type === 'factura') {
+                    
+                    const isReturn = inv.type === 'devolucion';
+                    
+                    if(!isReturn) {
                         totalSales += inv.total;
-                        
-                        const balance = inv.total - (inv.paidAmount || 0);
-                        if (balance > 0.01) pendingInvoices++;
-
-                        let statusBadge = '';
-                        if (balance <= 0.01) {
-                            statusBadge = '<span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-bold">Pagada</span>';
-                        } else if (inv.paidAmount > 0) {
-                            statusBadge = '<span class="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs font-bold">Parcial</span>';
-                        } else {
-                            statusBadge = '<span class="bg-orange-100 text-orange-700 px-2 py-1 rounded text-xs font-bold">Pendiente</span>';
-                        }
-
-                        const tr = document.createElement('tr');
-                        tr.className = 'hover:bg-slate-50 transition-colors cursor-pointer group';
-                        tr.onclick = () => showInvoiceDetails(inv.id);
-                        
-                        tr.innerHTML = `
-                            <td class="p-4 font-medium text-gray-800">${inv.date}</td>
-                            <td class="p-4 font-bold text-gray-600 group-hover:text-indigo-600 transition">${inv.clientName}</td>
-                            <td class="p-4 uppercase text-xs font-semibold text-gray-500">${inv.condition}</td>
-                            <td class="p-4">${statusBadge}</td>
-                            <td class="p-4 text-right font-black text-gray-800">$${inv.total.toFixed(2)}</td>
-                            <td class="p-4 text-right font-bold text-red-500">$${balance.toFixed(2)}</td>
-                        `;
-                        tbody.appendChild(tr);
                     }
+                    
+                    const balance = inv.total - (inv.paidAmount || 0);
+                    if (!isReturn && balance > 0.01) pendingInvoices++;
+
+                    let statusBadge = '';
+                    if (isReturn) {
+                        statusBadge = '<span class="bg-orange-100 text-orange-700 px-2 py-1 rounded text-xs font-bold border border-orange-200">DEVOLUCIÓN</span>';
+                    } else if (balance <= 0.01) {
+                        statusBadge = '<span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-bold">Pagada</span>';
+                    } else if (inv.paidAmount > 0) {
+                        statusBadge = '<span class="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs font-bold">Parcial</span>';
+                    } else {
+                        statusBadge = '<span class="bg-orange-100 text-orange-700 px-2 py-1 rounded text-xs font-bold">Pendiente</span>';
+                    }
+
+                    const tr = document.createElement('tr');
+                    tr.className = 'hover:bg-slate-50 transition-colors cursor-pointer group';
+                    tr.onclick = () => showInvoiceDetails(inv.id);
+                    
+                    tr.innerHTML = `
+                        <td class="p-4 font-medium text-gray-800">${inv.date}</td>
+                        <td class="p-4 font-bold text-gray-600 group-hover:text-indigo-600 transition">${inv.clientName}</td>
+                        <td class="p-4 uppercase text-xs font-semibold text-gray-500">${isReturn ? 'N/A' : inv.condition}</td>
+                        <td class="p-4">${statusBadge}</td>
+                        <td class="p-4 text-right font-black ${isReturn ? 'text-orange-600' : 'text-gray-800'}">${isReturn ? '-' : ''}$${inv.total.toFixed(2)}</td>
+                        <td class="p-4 text-right font-bold text-red-500">${isReturn ? '' : '$'+balance.toFixed(2)}</td>
+                    `;
+                    tbody.appendChild(tr);
                 });
 
                 document.getElementById('dash-sales').innerText = `$${totalSales.toFixed(2)}`;
@@ -1341,15 +1412,56 @@
             document.querySelectorAll('.app-view').forEach(v => v.classList.add('hidden-screen'));
             document.getElementById('view-factura-detalles').classList.remove('hidden-screen');
 
+            const isReturn = inv.type === 'devolucion';
             const balance = inv.total - (inv.paidAmount || 0);
 
             // PDF Info
+            const logoImg = document.getElementById('pdf-comp-logo');
+            if (companyProfile.logo) {
+                logoImg.src = companyProfile.logo;
+                logoImg.classList.remove('hidden');
+            } else {
+                logoImg.classList.add('hidden');
+            }
+
             document.getElementById('pdf-comp-name').innerText = companyProfile.companyName;
             document.getElementById('pdf-comp-rnc').innerText = `RNC: ${companyProfile.rnc}`;
             document.getElementById('pdf-comp-address').innerText = companyProfile.address || '';
+            document.getElementById('pdf-comp-phone').innerText = companyProfile.phone ? `Tel: ${companyProfile.phone}` : '';
             
+            let socials = [];
+            if (companyProfile.instagram) socials.push(`IG: ${companyProfile.instagram}`);
+            if (companyProfile.facebook) socials.push(`FB: ${companyProfile.facebook}`);
+            document.getElementById('pdf-comp-socials').innerText = socials.join(' | ');
+            
+            // Título PDF
+            document.getElementById('pdf-doc-title').innerText = isReturn ? "NOTA DE CRÉDITO" : "FACTURA";
+
+            // Estado Factura en PDF
+            const pdfStatus = document.getElementById('pdf-inv-status');
+            const condContainer = document.getElementById('pdf-inv-cond-container');
+            
+            if (isReturn) {
+                pdfStatus.innerText = "DEVOLUCIÓN";
+                pdfStatus.className = "inline-block px-2 py-1 text-[10px] font-bold uppercase rounded border mb-2 bg-orange-100 text-orange-800 border-orange-300";
+                condContainer.classList.add('hidden');
+            } else {
+                condContainer.classList.remove('hidden');
+                document.getElementById('pdf-inv-cond').innerText = inv.condition;
+                
+                if (balance <= 0.01) {
+                    pdfStatus.innerText = "PAGADA";
+                    pdfStatus.className = "inline-block px-2 py-1 text-[10px] font-bold uppercase rounded border mb-2 bg-green-50 text-green-700 border-green-200";
+                } else if ((inv.paidAmount || 0) > 0) {
+                    pdfStatus.innerText = "PAGO PARCIAL";
+                    pdfStatus.className = "inline-block px-2 py-1 text-[10px] font-bold uppercase rounded border mb-2 bg-blue-50 text-blue-700 border-blue-200";
+                } else {
+                    pdfStatus.innerText = "PENDIENTE DE PAGO";
+                    pdfStatus.className = "inline-block px-2 py-1 text-[10px] font-bold uppercase rounded border mb-2 bg-orange-50 text-orange-700 border-orange-200";
+                }
+            }
+
             document.getElementById('pdf-inv-date').innerText = inv.date;
-            document.getElementById('pdf-inv-cond').innerText = inv.condition;
             
             // Aquí se inyectan los datos completos del cliente al PDF
             document.getElementById('pdf-cli-name').innerText = inv.clientName;
@@ -1383,7 +1495,7 @@
                 document.getElementById('pdf-inv-ship-container').classList.add('hidden');
             }
 
-            document.getElementById('pdf-inv-notes').innerText = inv.notes ? `Notas: ${inv.notes}` : '';
+            document.getElementById('pdf-inv-notes').innerText = inv.notes ? inv.notes : 'Sin términos o notas adicionales.';
 
             // Panel Lateral
             document.getElementById('inv-detail-total').innerText = `$${inv.total.toFixed(2)}`;
@@ -1392,19 +1504,31 @@
 
             const badge = document.getElementById('inv-detail-status-badge');
             const btnPay = document.getElementById('btn-inv-pay');
+            const btnReturn = document.getElementById('btn-inv-return');
             
-            if (balance <= 0.01) {
-                badge.className = "mb-4 text-center py-2 rounded-lg font-bold text-sm bg-green-100 text-green-700";
-                badge.innerText = "FACTURA PAGADA";
+            if (isReturn) {
+                badge.className = "mb-4 text-center py-2 rounded-lg font-bold text-sm bg-orange-100 text-orange-800 border border-orange-200";
+                badge.innerText = "NOTA DE CRÉDITO (DEVOLUCIÓN)";
                 btnPay.classList.add('hidden');
-            } else if ((inv.paidAmount || 0) > 0) {
-                badge.className = "mb-4 text-center py-2 rounded-lg font-bold text-sm bg-blue-100 text-blue-700";
-                badge.innerText = "PAGO PARCIAL";
-                btnPay.classList.remove('hidden');
+                btnReturn.classList.add('hidden');
+                document.getElementById('inv-payments-panel').classList.add('hidden');
             } else {
-                badge.className = "mb-4 text-center py-2 rounded-lg font-bold text-sm bg-orange-100 text-orange-700";
-                badge.innerText = "PENDIENTE DE PAGO";
-                btnPay.classList.remove('hidden');
+                document.getElementById('inv-payments-panel').classList.remove('hidden');
+                btnReturn.classList.remove('hidden');
+                
+                if (balance <= 0.01) {
+                    badge.className = "mb-4 text-center py-2 rounded-lg font-bold text-sm bg-green-100 text-green-700";
+                    badge.innerText = "FACTURA PAGADA";
+                    btnPay.classList.add('hidden');
+                } else if ((inv.paidAmount || 0) > 0) {
+                    badge.className = "mb-4 text-center py-2 rounded-lg font-bold text-sm bg-blue-100 text-blue-700";
+                    badge.innerText = "PAGO PARCIAL";
+                    btnPay.classList.remove('hidden');
+                } else {
+                    badge.className = "mb-4 text-center py-2 rounded-lg font-bold text-sm bg-orange-100 text-orange-700";
+                    badge.innerText = "PENDIENTE DE PAGO";
+                    btnPay.classList.remove('hidden');
+                }
             }
 
             const ulPayments = document.getElementById('inv-payments-list');
@@ -1448,7 +1572,7 @@
                 margin:       0.5,
                 filename:     `Factura_${companyProfile.companyName.substring(0,5)}_${currentViewInvoice.date}.pdf`,
                 image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2 },
+                html2canvas:  { scale: 2, useCORS: true }, // Esto permite usar logos de URLs externas sin error
                 jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
             };
             html2pdf().set(opt).from(element).save();
@@ -1952,11 +2076,15 @@
                 tbody.parentElement.parentElement.classList.remove('hidden');
 
                 clientInvoices.forEach(inv => {
-                    totalBilled += inv.total;
+                    const isReturn = inv.type === 'devolucion';
+                    if (!isReturn) {
+                        totalBilled += inv.total;
+                    }
+                    
                     const balance = inv.total - (inv.paidAmount || 0);
 
                     // Solo restamos del límite de crédito las facturas a crédito no pagadas
-                    if (inv.condition === 'credito' && balance > 0) {
+                    if (!isReturn && inv.condition === 'credito' && balance > 0) {
                         usedCredit += balance;
                     }
 
@@ -1964,12 +2092,23 @@
                     tr.className = 'hover:bg-slate-50 transition-colors cursor-pointer';
                     tr.onclick = () => showInvoiceDetails(inv.id);
                     
+                    let statusLabel = '';
+                    if (isReturn) {
+                        statusLabel = '<span class="text-orange-600 font-bold text-xs uppercase bg-orange-100 px-2 py-0.5 rounded">Devolución</span>';
+                    } else if (balance <= 0.01) {
+                        statusLabel = '<span class="text-green-600 font-bold text-xs uppercase bg-green-100 px-2 py-0.5 rounded">Pagada</span>';
+                    } else if (inv.paidAmount > 0) {
+                        statusLabel = '<span class="text-blue-600 font-bold text-xs uppercase bg-blue-100 px-2 py-0.5 rounded">Parcial</span>';
+                    } else {
+                        statusLabel = '<span class="text-orange-600 font-bold text-xs uppercase bg-orange-100 px-2 py-0.5 rounded">Pendiente</span>';
+                    }
+                    
                     tr.innerHTML = `
                         <td class="p-4">${inv.date}</td>
-                        <td class="p-4 font-semibold text-indigo-600">Factura</td>
-                        <td class="p-4 uppercase text-xs text-gray-500 font-bold">${inv.condition}</td>
-                        <td class="p-4 text-right font-bold text-gray-800">$${inv.total.toFixed(2)}</td>
-                        <td class="p-4 text-right font-bold ${balance > 0 ? 'text-red-500' : 'text-green-500'}">$${balance.toFixed(2)}</td>
+                        <td class="p-4 font-semibold ${isReturn ? 'text-orange-600' : 'text-indigo-600'}">${isReturn ? 'Nota de Crédito' : 'Factura'} <br/> ${statusLabel}</td>
+                        <td class="p-4 uppercase text-xs text-gray-500 font-bold">${isReturn ? 'N/A' : inv.condition}</td>
+                        <td class="p-4 text-right font-bold text-gray-800">${isReturn ? '-' : ''}$${inv.total.toFixed(2)}</td>
+                        <td class="p-4 text-right font-bold ${balance > 0 && !isReturn ? 'text-red-500' : 'text-green-500'}">${isReturn ? '' : '$'+balance.toFixed(2)}</td>
                     `;
                     tbody.appendChild(tr);
                 });
