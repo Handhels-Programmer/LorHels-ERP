@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="do">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -115,7 +115,7 @@
                             </select>
                             <p class="text-[11px] text-orange-700 mt-1.5 font-medium bg-orange-50 p-2 rounded border border-orange-200">
                                 <i data-lucide="info" class="w-3 h-3 inline-block mr-1"></i>
-                                Envíe comprobante de depósito al <b>1 (829) 913-5723</b>
+                                Envíe comprobante al <b>182991355723</b>
                             </p>
                         </div>
                         <div class="md:col-span-2">
@@ -153,13 +153,34 @@
             
             <div class="bg-orange-50 border border-orange-200 text-orange-800 p-4 rounded-lg mb-6 text-sm">
                 <strong>Paso Final:</strong> Para activar tu plan y habilitar tu cuenta, por favor envía tu comprobante de depósito al siguiente número:<br>
-                <a href="https://wa.me/18299135723" target="_blank" class="inline-flex items-center justify-center font-black text-xl mt-3 text-green-600 hover:text-green-700 transition">
-                    <i data-lucide="phone" class="w-5 h-5 mr-2"></i> 1 (829) 913-5723
+                <a href="https://wa.me/182991355723" target="_blank" class="inline-flex items-center justify-center font-black text-xl mt-3 text-green-600 hover:text-green-700 transition">
+                    <i data-lucide="phone" class="w-5 h-5 mr-2"></i> 182991355723
                 </a>
             </div>
 
             <button onclick="window.location.reload()" class="w-full bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold py-3 px-6 rounded-lg transition">
                 Verificar Estado Actual
+            </button>
+        </div>
+    </div>
+
+    <!-- PANTALLA SUSCRIPCIÓN VENCIDA -->
+    <div id="screen-expired" class="hidden-screen h-screen w-screen bg-slate-50 flex flex-col items-center justify-center p-6 text-center z-40 fixed inset-0">
+        <div class="bg-white p-10 rounded-2xl shadow-xl border max-w-md w-full relative">
+            <button id="btn-logout-expired" class="absolute top-4 right-4 text-sm text-gray-500 hover:text-red-500"><i data-lucide="log-out" class="w-5 h-5"></i></button>
+            <i data-lucide="calendar-x" class="w-20 h-20 text-red-500 mx-auto mb-6"></i>
+            <h2 class="text-2xl font-bold text-gray-800 mb-2">Suscripción Vencida</h2>
+            <p class="text-gray-600 mb-4">El plan de acceso para tu empresa ha caducado.</p>
+            
+            <div class="bg-red-50 border border-red-200 text-red-800 p-4 rounded-lg mb-6 text-sm">
+                <strong>Renovación Requerida:</strong> Para restaurar el acceso al ERP y mantener tus datos seguros, por favor contáctanos y envía tu comprobante de pago de renovación al:<br>
+                <a href="https://wa.me/182991355723" target="_blank" class="inline-flex items-center justify-center font-black text-xl mt-3 text-green-600 hover:text-green-700 transition">
+                    <i data-lucide="phone" class="w-5 h-5 mr-2"></i> 182991355723
+                </a>
+            </div>
+
+            <button onclick="window.location.reload()" class="w-full bg-red-100 hover:bg-red-200 text-red-700 font-bold py-3 px-6 rounded-lg transition">
+                Ya renové (Verificar Estado)
             </button>
         </div>
     </div>
@@ -188,9 +209,9 @@
                 <table class="w-full text-left">
                     <thead class="bg-slate-50 border-b">
                         <tr>
-                            <th class="p-4">Empresa / RNC</th>
+                            <th class="p-4">Empresa / RNC / Plan</th>
                             <th class="p-4">Contacto</th>
-                            <th class="p-4">Estado</th>
+                            <th class="p-4">Estado / Vence</th>
                             <th class="p-4">Acción</th>
                         </tr>
                     </thead>
@@ -210,6 +231,7 @@
                 <div id="sidebar-logo-container"></div>
                 <h1 id="sidebar-company-name" class="text-lg font-bold text-white leading-tight mt-3">LorHels ERP</h1>
                 <p id="sidebar-company-rnc" class="text-xs text-slate-400 mt-1">RNC: ...</p>
+                <div id="sidebar-company-plan" class="mt-2 text-[10px] font-bold uppercase tracking-wider bg-indigo-500/30 text-indigo-200 px-2 py-1 rounded-full inline-block">Plan</div>
             </div>
             <nav class="flex-1 px-3 py-4 space-y-1" id="main-nav">
                 <!-- Generado por JS -->
@@ -261,7 +283,7 @@
                 <!-- VISTA: COTIZACIONES LISTA -->
                 <div id="view-cotizaciones" class="app-view hidden-screen">
                     <div class="flex justify-between items-center mb-6">
-                        <button onclick="window.openDocumentModal('cotizacion')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center shadow transition">
+                        <button id="btn-new-quote" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center shadow transition">
                             <i data-lucide="plus" class="w-4 h-4 mr-2"></i> Nueva Cotización
                         </button>
                     </div>
@@ -284,20 +306,20 @@
                 <!-- VISTA: COTIZACION DETALLES -->
                 <div id="view-cotizacion-detalles" class="app-view hidden-screen space-y-6">
                     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-2">
-                        <button onclick="window.navigateTo('cotizaciones', '3. Cotizaciones')" class="flex items-center text-slate-500 hover:text-indigo-600 font-medium transition">
+                        <button id="btn-back-quotes" class="flex items-center text-slate-500 hover:text-indigo-600 font-medium transition">
                             <i data-lucide="arrow-left" class="w-4 h-4 mr-2"></i> Volver a Cotizaciones
                         </button>
                         <div class="flex flex-wrap gap-2">
-                            <button onclick="window.editQuote()" id="btn-quo-edit" class="flex items-center bg-blue-50 text-blue-700 hover:bg-blue-100 font-medium px-4 py-2 rounded-lg transition hidden">
+                            <button id="btn-quo-edit" class="flex items-center bg-blue-50 text-blue-700 hover:bg-blue-100 font-medium px-4 py-2 rounded-lg transition hidden">
                                 <i data-lucide="edit" class="w-4 h-4 mr-2"></i> Editar
                             </button>
-                            <button onclick="window.rejectQuote()" id="btn-quo-reject" class="flex items-center bg-red-100 text-red-700 hover:bg-red-200 font-medium px-4 py-2 rounded-lg transition hidden">
+                            <button id="btn-quo-reject" class="flex items-center bg-red-100 text-red-700 hover:bg-red-200 font-medium px-4 py-2 rounded-lg transition hidden">
                                 <i data-lucide="x-circle" class="w-4 h-4 mr-2"></i> Rechazar
                             </button>
-                            <button onclick="window.openConvertQuoteModal()" id="btn-quo-approve" class="flex items-center bg-green-600 hover:bg-green-700 text-white font-medium px-4 py-2 rounded-lg transition shadow-sm hidden">
+                            <button id="btn-quo-approve" class="flex items-center bg-green-600 hover:bg-green-700 text-white font-medium px-4 py-2 rounded-lg transition shadow-sm hidden">
                                 <i data-lucide="check-circle" class="w-4 h-4 mr-2"></i> Aprobar y Crear Factura
                             </button>
-                            <button onclick="window.generateQuotePDF()" class="flex items-center bg-indigo-50 text-indigo-700 hover:bg-indigo-100 font-medium px-4 py-2 rounded-lg transition">
+                            <button id="btn-quo-pdf" class="flex items-center bg-indigo-50 text-indigo-700 hover:bg-indigo-100 font-medium px-4 py-2 rounded-lg transition">
                                 <i data-lucide="file-down" class="w-4 h-4 mr-2"></i> Generar PDF
                             </button>
                         </div>
@@ -305,7 +327,7 @@
 
                     <div class="bg-white rounded-xl shadow-sm border overflow-hidden max-w-4xl mx-auto">
                         <div id="quote-print-area" class="pdf-container font-sans text-sm relative">
-                            <!-- Cabecera -->
+                            <!-- Cabecera y datos inyectados por JS -->
                             <div class="flex justify-between items-start border-b pb-6 mb-6">
                                 <div class="flex items-center space-x-4">
                                     <img id="pdf-quo-comp-logo" src="" alt="Logo" class="h-16 w-16 object-contain hidden" />
@@ -324,7 +346,6 @@
                                     <p class="text-gray-600">Válida Hasta: <span id="pdf-quo-expiry"></span></p>
                                 </div>
                             </div>
-                            <!-- Info Cliente -->
                             <div class="mb-8">
                                 <h3 class="text-gray-500 font-semibold mb-1 uppercase text-xs tracking-wider">Cotizar a:</h3>
                                 <p class="text-lg font-bold text-gray-800" id="pdf-quo-cli-name"></p>
@@ -363,10 +384,10 @@
                 <div id="view-facturas" class="app-view hidden-screen">
                     <div class="flex justify-between items-center mb-6">
                         <div class="flex space-x-3">
-                            <button onclick="window.openDocumentModal('factura')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium flex items-center shadow transition">
+                            <button id="btn-new-invoice" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium flex items-center shadow transition">
                                 <i data-lucide="plus" class="w-4 h-4 mr-2"></i> Nueva Factura
                             </button>
-                            <button onclick="window.openDocumentModal('devolucion')" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-medium flex items-center shadow transition">
+                            <button id="btn-new-return" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-medium flex items-center shadow transition">
                                 <i data-lucide="corner-down-left" class="w-4 h-4 mr-2"></i> Nueva Devolución Libre
                             </button>
                         </div>
@@ -391,20 +412,20 @@
                 <!-- VISTA: FACTURA DETALLES (PDF y Pagos) -->
                 <div id="view-factura-detalles" class="app-view hidden-screen space-y-6">
                     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-2">
-                        <button onclick="window.navigateTo('facturas', '2. Facturas')" class="flex items-center text-slate-500 hover:text-indigo-600 font-medium transition">
+                        <button id="btn-back-invoices" class="flex items-center text-slate-500 hover:text-indigo-600 font-medium transition">
                             <i data-lucide="arrow-left" class="w-4 h-4 mr-2"></i> Volver a Facturas
                         </button>
                         <div class="flex flex-wrap gap-2">
-                            <button onclick="window.editInvoice()" id="btn-inv-edit" class="flex items-center bg-blue-50 text-blue-700 hover:bg-blue-100 font-medium px-4 py-2 rounded-lg transition">
+                            <button id="btn-inv-edit" class="flex items-center bg-blue-50 text-blue-700 hover:bg-blue-100 font-medium px-4 py-2 rounded-lg transition">
                                 <i data-lucide="edit" class="w-4 h-4 mr-2"></i> Editar
                             </button>
-                            <button onclick="window.openPaymentModal()" id="btn-inv-pay" class="flex items-center bg-green-600 hover:bg-green-700 text-white font-medium px-4 py-2 rounded-lg transition shadow-sm">
+                            <button id="btn-inv-pay" class="flex items-center bg-green-600 hover:bg-green-700 text-white font-medium px-4 py-2 rounded-lg transition shadow-sm">
                                 <i data-lucide="dollar-sign" class="w-4 h-4 mr-2"></i> Añadir Pago
                             </button>
-                            <button onclick="window.openReturnModal()" id="btn-inv-return" class="flex items-center bg-orange-100 text-orange-700 hover:bg-orange-200 font-medium px-4 py-2 rounded-lg transition">
+                            <button id="btn-inv-return" class="flex items-center bg-orange-100 text-orange-700 hover:bg-orange-200 font-medium px-4 py-2 rounded-lg transition">
                                 <i data-lucide="corner-down-left" class="w-4 h-4 mr-2"></i> Devolución
                             </button>
-                            <button onclick="window.generateInvoicePDF()" class="flex items-center bg-indigo-50 text-indigo-700 hover:bg-indigo-100 font-medium px-4 py-2 rounded-lg transition">
+                            <button id="btn-inv-pdf" class="flex items-center bg-indigo-50 text-indigo-700 hover:bg-indigo-100 font-medium px-4 py-2 rounded-lg transition">
                                 <i data-lucide="file-down" class="w-4 h-4 mr-2"></i> Generar PDF
                             </button>
                         </div>
@@ -490,10 +511,10 @@
                 <div id="view-productos" class="app-view hidden-screen">
                     <div class="flex justify-between items-center mb-6">
                         <div class="flex items-center space-x-4">
-                            <button onclick="window.openNewProductForm()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium flex items-center shadow transition">
+                            <button id="btn-new-product" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium flex items-center shadow transition">
                                 <i data-lucide="plus" class="w-4 h-4 mr-2"></i> Nuevo Producto
                             </button>
-                            <select id="filter-prod-category" onchange="window.renderProducts()" class="border border-gray-300 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500 bg-white shadow-sm text-sm">
+                            <select id="filter-prod-category" class="border border-gray-300 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500 bg-white shadow-sm text-sm">
                                 <option value="">Todas las categorías</option>
                             </select>
                         </div>
@@ -524,7 +545,7 @@
                                 <div><label class="block text-xs font-semibold text-gray-600 mb-1">Stock Mínimo (Alerta)</label><input type="number" id="prod-stock-min" class="w-full border rounded-lg px-3 py-2" value="0" title="Si el stock actual es igual o menor a este, se generará una alerta"></div>
                             </div>
                             <div class="lg:col-span-4 flex justify-end gap-3 mt-4 pt-4 border-t">
-                                <button type="button" onclick="document.getElementById('form-add-product').classList.add('hidden')" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg">Cancelar</button>
+                                <button type="button" id="btn-cancel-product" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg">Cancelar</button>
                                 <button type="submit" id="btn-submit-product" class="px-4 py-2 bg-indigo-600 text-white font-medium rounded-lg">Guardar Producto</button>
                             </div>
                         </div>
@@ -545,7 +566,7 @@
                 <!-- VISTA: CLIENTES LISTA -->
                 <div id="view-clientes" class="app-view hidden-screen">
                     <div class="flex justify-between items-center mb-6">
-                        <button onclick="window.openNewClientForm()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium flex items-center shadow transition">
+                        <button id="btn-new-client" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium flex items-center shadow transition">
                             <i data-lucide="plus" class="w-4 h-4 mr-2"></i> Nuevo Contacto
                         </button>
                     </div>
@@ -561,7 +582,7 @@
                             <div class="md:col-span-2"><label class="block text-xs font-semibold text-gray-600 mb-1">Dirección Envío</label><input type="text" id="cli-shipping" class="w-full border rounded-lg px-3 py-2"></div>
                             <div><label class="block text-xs font-semibold text-gray-600 mb-1">Límite de Crédito ($)</label><input type="number" id="cli-credit" class="w-full border rounded-lg px-3 py-2" value="0"></div>
                             <div class="md:col-span-3 flex justify-end gap-3 mt-2">
-                                <button type="button" onclick="document.getElementById('form-add-client').classList.add('hidden')" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg">Cancelar</button>
+                                <button type="button" id="btn-cancel-client" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg">Cancelar</button>
                                 <button type="submit" id="btn-submit-client" class="px-4 py-2 bg-indigo-600 text-white font-medium rounded-lg">Guardar</button>
                             </div>
                         </div>
@@ -572,10 +593,10 @@
                 <!-- VISTA: CLIENTES DETALLES -->
                 <div id="view-clientes-detalles" class="app-view hidden-screen space-y-6">
                     <div class="flex justify-between items-center mb-4">
-                        <button onclick="window.navigateTo('clientes', '10. Clientes/Prov.')" class="flex items-center text-slate-500 hover:text-indigo-600 font-medium transition">
+                        <button id="btn-back-clients" class="flex items-center text-slate-500 hover:text-indigo-600 font-medium transition">
                             <i data-lucide="arrow-left" class="w-4 h-4 mr-2"></i> Volver a la lista
                         </button>
-                        <button onclick="window.editCurrentClient()" class="flex items-center text-indigo-600 hover:text-indigo-800 font-medium transition bg-indigo-50 px-3 py-1.5 rounded-lg">
+                        <button id="btn-edit-client" class="flex items-center text-indigo-600 hover:text-indigo-800 font-medium transition bg-indigo-50 px-3 py-1.5 rounded-lg">
                             <i data-lucide="edit" class="w-4 h-4 mr-2"></i> Editar Info
                         </button>
                     </div>
@@ -646,7 +667,7 @@
                 <div class="bg-white w-full max-w-5xl rounded-2xl shadow-xl flex flex-col max-h-[95vh] overflow-hidden">
                     <div class="p-6 border-b shrink-0 flex justify-between items-center bg-gray-50">
                         <h3 id="doc-modal-title" class="text-xl font-black text-gray-800">Nuevo Documento</h3>
-                        <button onclick="document.getElementById('modal-document').classList.add('hidden-screen')" class="text-gray-400 hover:text-red-500 transition"><i data-lucide="x" class="w-6 h-6"></i></button>
+                        <button id="btn-close-univ-doc-x" type="button" class="text-gray-400 hover:text-red-500 transition"><i data-lucide="x" class="w-6 h-6"></i></button>
                     </div>
                     
                     <div class="p-6 overflow-y-auto custom-scrollbar flex-1">
@@ -680,7 +701,7 @@
                             <div class="border rounded-xl overflow-hidden shadow-sm">
                                 <div class="bg-slate-100 p-3 border-b flex justify-between items-center">
                                     <h4 class="font-bold text-gray-700">Detalle de Productos</h4>
-                                    <button type="button" onclick="window.addUnivDocLine()" class="text-sm bg-white border px-3 py-1 rounded shadow-sm text-indigo-600 hover:text-indigo-800 font-medium flex items-center transition">
+                                    <button id="btn-add-univ-line" type="button" class="text-sm bg-white border px-3 py-1 rounded shadow-sm text-indigo-600 hover:text-indigo-800 font-medium flex items-center transition">
                                         <i data-lucide="plus-circle" class="w-4 h-4 mr-1"></i> Agregar Línea
                                     </button>
                                 </div>
@@ -714,7 +735,7 @@
                                         <span class="font-medium">Costo Envío:</span> 
                                         <div class="flex items-center">
                                             <span class="mr-1 font-bold text-gray-400">$</span>
-                                            <input type="number" id="univ-doc-ship" step="0.01" value="0" class="w-20 border border-gray-300 rounded px-2 py-1 text-right outline-none focus:ring-2 focus:ring-indigo-500" oninput="window.calculateUnivDocTotals()">
+                                            <input type="number" id="univ-doc-ship" step="0.01" value="0" class="w-20 border border-gray-300 rounded px-2 py-1 text-right outline-none focus:ring-2 focus:ring-indigo-500">
                                         </div>
                                     </div>
                                     <div class="flex justify-between text-2xl font-black text-gray-800 pt-2 border-t border-gray-300">
@@ -726,7 +747,7 @@
                     </div>
                     
                     <div class="p-6 border-t shrink-0 flex justify-end gap-3 bg-gray-50">
-                        <button type="button" onclick="document.getElementById('modal-document').classList.add('hidden-screen')" class="px-6 py-2.5 text-gray-600 hover:bg-gray-200 rounded-lg transition font-medium">Cancelar</button>
+                        <button id="btn-cancel-univ-doc" type="button" class="px-6 py-2.5 text-gray-600 hover:bg-gray-200 rounded-lg transition font-medium">Cancelar</button>
                         <button type="submit" form="form-universal-document" id="btn-submit-univ-doc" class="px-8 py-2.5 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition shadow-md flex items-center">
                             Guardar Documento
                         </button>
@@ -761,7 +782,7 @@
                             <input type="text" id="pay-ref" placeholder="Ej. Depósito #12345" class="w-full border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500">
                         </div>
                         <div class="flex justify-end gap-3 mt-6">
-                            <button type="button" onclick="document.getElementById('modal-payment').classList.add('hidden-screen')" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition">Cancelar</button>
+                            <button id="btn-cancel-payment" type="button" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition">Cancelar</button>
                             <button type="submit" id="btn-submit-payment" class="px-6 py-2 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 transition">Procesar Pago</button>
                         </div>
                     </form>
@@ -788,8 +809,8 @@
                     </div>
                     
                     <div class="flex justify-end gap-3 pt-4 border-t shrink-0">
-                        <button type="button" onclick="document.getElementById('modal-return').classList.add('hidden-screen')" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition">Cancelar</button>
-                        <button type="button" id="btn-submit-return" onclick="window.processReturn()" class="px-6 py-2 bg-orange-600 text-white font-bold rounded-lg hover:bg-orange-700 transition">Aplicar Devolución</button>
+                        <button id="btn-cancel-return-modal" type="button" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition">Cancelar</button>
+                        <button id="btn-submit-return" type="button" class="px-6 py-2 bg-orange-600 text-white font-bold rounded-lg hover:bg-orange-700 transition">Aplicar Devolución</button>
                     </div>
                 </div>
             </div>
@@ -808,7 +829,7 @@
                             </select>
                         </div>
                         <div class="flex justify-end gap-3 mt-6">
-                            <button type="button" onclick="document.getElementById('modal-convert-quote').classList.add('hidden-screen')" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition">Cancelar</button>
+                            <button id="btn-cancel-convert" type="button" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition">Cancelar</button>
                             <button type="submit" id="btn-confirm-convert" class="px-6 py-2 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 transition shadow-sm flex items-center">
                                 <i data-lucide="check-circle" class="w-4 h-4 mr-2"></i> Confirmar
                             </button>
@@ -864,6 +885,9 @@
         let allQuotes = [];
         let currentViewQuote = null;
         
+        let companyStatusUnsubscribe = null;
+        let expirationCheckInterval = null;
+        
         const menuItems = [
             { id: 'dashboard', icon: 'layout-dashboard', label: '1. Dashboard' },
             { id: 'facturas', icon: 'file-text', label: '2. Facturas' },
@@ -885,6 +909,7 @@
             loading: document.getElementById('screen-loading'),
             welcome: document.getElementById('screen-welcome'),
             pending: document.getElementById('screen-pending'),
+            expired: document.getElementById('screen-expired'),
             adminLogin: document.getElementById('screen-admin-login'),
             adminDashboard: document.getElementById('screen-admin-dashboard'),
             mainApp: document.getElementById('screen-main')
@@ -954,16 +979,47 @@
         loadLoginCompanies();
 
         async function checkCompanyStatus(uid) {
+            if (companyStatusUnsubscribe) companyStatusUnsubscribe();
+            
             try {
                 const companyRef = doc(db, 'artifacts', APP_ID, 'public', `companies_${uid}`);
-                const companySnap = await getDoc(companyRef);
-                if (companySnap.exists()) {
-                    companyProfile = companySnap.data();
-                    if (companyProfile.status === 'approved') {
-                        setupMainApp();
-                        showScreen('mainApp');
-                    } else showScreen('pending');
-                } else showScreen('welcome');
+                companyStatusUnsubscribe = onSnapshot(companyRef, (companySnap) => {
+                    if (companySnap.exists()) {
+                        companyProfile = companySnap.data();
+                        
+                        if (companyProfile.status === 'approved') {
+                            if (companyProfile.subscriptionExpiryDate) {
+                                const expiry = new Date(companyProfile.subscriptionExpiryDate);
+                                if (new Date() > expiry) {
+                                    showScreen('expired');
+                                    return;
+                                }
+                            }
+                            
+                            if (document.getElementById('screen-main').classList.contains('hidden-screen')) {
+                                setupMainApp();
+                                showScreen('mainApp');
+                                
+                                if (expirationCheckInterval) clearInterval(expirationCheckInterval);
+                                expirationCheckInterval = setInterval(() => {
+                                    if (companyProfile && companyProfile.subscriptionExpiryDate) {
+                                        if (new Date() > new Date(companyProfile.subscriptionExpiryDate)) {
+                                            showScreen('expired');
+                                            clearInterval(expirationCheckInterval);
+                                        }
+                                    }
+                                }, 60000);
+                            }
+                        } else {
+                            showScreen('pending');
+                        }
+                    } else {
+                        showScreen('welcome');
+                    }
+                }, (error) => {
+                    console.error("Error verificando empresa", error);
+                    showScreen('welcome');
+                });
             } catch (error) {
                 console.error(error);
                 showScreen('welcome');
@@ -1004,6 +1060,7 @@
             isRegistering = true; 
             const email = document.getElementById('reg-email').value;
             const pin = document.getElementById('reg-pin').value;
+            const planEl = document.getElementById('reg-plan');
             try {
                 const userCredential = await createUserWithEmailAndPassword(auth, email, pin);
                 await setDoc(doc(db, 'artifacts', APP_ID, 'public', `companies_${userCredential.user.uid}`), {
@@ -1017,6 +1074,7 @@
                     instagram: document.getElementById('reg-instagram').value,
                     facebook: document.getElementById('reg-facebook').value,
                     address: document.getElementById('reg-address').value,
+                    plan: planEl ? planEl.value : 'basico',
                     status: 'pending',
                     createdAt: serverTimestamp()
                 });
@@ -1029,8 +1087,14 @@
             }
         });
 
-        document.getElementById('btn-logout-main').addEventListener('click', async () => await signOut(auth));
+        document.getElementById('btn-logout-main').addEventListener('click', async () => {
+            if(companyStatusUnsubscribe) companyStatusUnsubscribe();
+            if(expirationCheckInterval) clearInterval(expirationCheckInterval);
+            await signOut(auth);
+        });
         document.getElementById('btn-logout-pending').addEventListener('click', async () => await signOut(auth));
+        document.getElementById('btn-logout-expired').addEventListener('click', async () => await signOut(auth));
+        
         document.getElementById('btn-goto-admin').addEventListener('click', () => showScreen('adminLogin'));
         document.getElementById('btn-back-from-admin').addEventListener('click', () => showScreen('welcome'));
         
@@ -1053,24 +1117,47 @@
                     if(!docSnap.id.startsWith('companies_')) return;
                     const c = docSnap.data();
                     const tr = document.createElement('tr');
+                    
+                    let expiryInfo = 'N/A';
+                    if(c.subscriptionExpiryDate) {
+                        const ex = new Date(c.subscriptionExpiryDate);
+                        expiryInfo = ex.toLocaleDateString();
+                        if(new Date() > ex) expiryInfo = `<span class="text-red-500 font-bold">${expiryInfo} (Vencido)</span>`;
+                    }
+
                     tr.innerHTML = `
-                        <td class="p-4"><strong>${c.companyName}</strong><br/><span class="text-xs text-gray-500">${c.rnc}</span></td>
+                        <td class="p-4"><strong>${c.companyName}</strong><br/><span class="text-xs text-gray-500">RNC: ${c.rnc} | Plan: <b class="uppercase text-indigo-600">${c.plan || 'basico'}</b></span></td>
                         <td class="p-4">${c.representative}<br/><span class="text-xs text-gray-500">${c.email}</span></td>
-                        <td class="p-4">${c.status === 'approved' ? '✅ Aprobado' : '⏳ Pendiente'}</td>
-                        <td class="p-4">${c.status !== 'approved' ? `<button onclick="window.approveCompany('${docSnap.id}')" class="bg-indigo-600 text-white px-3 py-1 rounded text-sm hover:bg-indigo-700">Aprobar</button>` : ''}</td>
+                        <td class="p-4">${c.status === 'approved' ? '✅ Aprobado<br><span class="text-xs">Vence: '+expiryInfo+'</span>' : '⏳ Pendiente'}</td>
+                        <td class="p-4">${c.status !== 'approved' ? `<button onclick="window.approveCompany('${docSnap.id}', '${c.plan}')" class="bg-indigo-600 text-white px-3 py-1 rounded text-sm hover:bg-indigo-700">Aprobar</button>` : `<button onclick="window.approveCompany('${docSnap.id}', '${c.plan}')" class="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700">Renovar</button>`}</td>
                     `;
                     tbody.appendChild(tr);
                 });
             });
         }
 
-        window.approveCompany = async (companyId) => { await updateDoc(doc(db, 'artifacts', APP_ID, 'public', companyId), { status: 'approved' }); };
+        window.approveCompany = async (companyId, planType) => { 
+            let daysToAdd = 15;
+            if(planType === 'normal') daysToAdd = 90;
+            else if(planType === 'premium') daysToAdd = 365;
+            else if(planType === 'negocios') daysToAdd = 36500;
+
+            let expiryDate = new Date();
+            expiryDate.setDate(expiryDate.getDate() + daysToAdd);
+
+            await updateDoc(doc(db, 'artifacts', APP_ID, 'public', companyId), { 
+                status: 'approved',
+                subscriptionExpiryDate: expiryDate.toISOString() 
+            }); 
+            alert(`Empresa aprobada/renovada. Vence el: ${expiryDate.toLocaleDateString()}`);
+        };
 
         // --- ARRANQUE PRINCIPAL ERP ---
         function setupMainApp() {
             document.getElementById('header-user-name').innerText = `👤 ${companyProfile.representative}`;
             document.getElementById('sidebar-company-name').innerText = companyProfile.companyName;
             document.getElementById('sidebar-company-rnc').innerText = `RNC: ${companyProfile.rnc}`;
+            document.getElementById('sidebar-company-plan').innerText = `Plan ${companyProfile.plan || 'Básico'}`;
             
             const logoContainer = document.getElementById('sidebar-logo-container');
             if(companyProfile.logo) logoContainer.innerHTML = `<img src="${companyProfile.logo}" alt="Logo" class="w-16 h-16 rounded-xl object-cover mb-3 bg-white" />`;
@@ -1087,10 +1174,55 @@
             });
             lucide.createIcons();
             
+            bindStaticEvents();
+            
             loadProducts();
             loadClients();
             loadInvoices();
             loadQuotes();
+        }
+
+        // === ASIGNADOR DE EVENTOS ESTÁTICOS ===
+        function bindStaticEvents() {
+            // Cotizaciones
+            document.getElementById('btn-new-quote').addEventListener('click', () => window.openDocumentModal('cotizacion'));
+            document.getElementById('btn-back-quotes').addEventListener('click', () => window.navigateTo('cotizaciones', '3. Cotizaciones'));
+            document.getElementById('btn-quo-edit').addEventListener('click', () => window.editQuote());
+            document.getElementById('btn-quo-reject').addEventListener('click', () => window.rejectQuote());
+            document.getElementById('btn-quo-approve').addEventListener('click', () => window.openConvertQuoteModal());
+            document.getElementById('btn-quo-pdf').addEventListener('click', () => window.generateQuotePDF());
+
+            // Facturas
+            document.getElementById('btn-new-invoice').addEventListener('click', () => window.openDocumentModal('factura'));
+            document.getElementById('btn-new-return').addEventListener('click', () => window.openDocumentModal('devolucion'));
+            document.getElementById('btn-back-invoices').addEventListener('click', () => window.navigateTo('facturas', '2. Facturas'));
+            document.getElementById('btn-inv-edit').addEventListener('click', () => window.editInvoice());
+            document.getElementById('btn-inv-pay').addEventListener('click', () => window.openPaymentModal());
+            document.getElementById('btn-inv-return').addEventListener('click', () => window.openReturnModal());
+            document.getElementById('btn-inv-pdf').addEventListener('click', () => window.generateInvoicePDF());
+
+            // Productos
+            document.getElementById('btn-new-product').addEventListener('click', () => window.openNewProductForm());
+            document.getElementById('btn-cancel-product').addEventListener('click', () => document.getElementById('form-add-product').classList.add('hidden'));
+            document.getElementById('filter-prod-category').addEventListener('change', () => window.renderProducts());
+
+            // Clientes
+            document.getElementById('btn-new-client').addEventListener('click', () => window.openNewClientForm());
+            document.getElementById('btn-cancel-client').addEventListener('click', () => document.getElementById('form-add-client').classList.add('hidden'));
+            document.getElementById('btn-back-clients').addEventListener('click', () => window.navigateTo('clientes', '10. Clientes/Prov.'));
+            document.getElementById('btn-edit-client').addEventListener('click', () => window.editCurrentClient());
+
+            // Modal Universal
+            document.getElementById('btn-close-univ-doc-x').addEventListener('click', () => document.getElementById('modal-document').classList.add('hidden-screen'));
+            document.getElementById('btn-cancel-univ-doc').addEventListener('click', () => document.getElementById('modal-document').classList.add('hidden-screen'));
+            document.getElementById('btn-add-univ-line').addEventListener('click', () => window.addUnivDocLine());
+            document.getElementById('univ-doc-ship').addEventListener('input', () => window.calculateUnivDocTotals());
+
+            // Modals Secundarios
+            document.getElementById('btn-cancel-payment').addEventListener('click', () => document.getElementById('modal-payment').classList.add('hidden-screen'));
+            document.getElementById('btn-cancel-return-modal').addEventListener('click', () => document.getElementById('modal-return').classList.add('hidden-screen'));
+            document.getElementById('btn-submit-return').addEventListener('click', () => window.processReturn());
+            document.getElementById('btn-cancel-convert').addEventListener('click', () => document.getElementById('modal-convert-quote').classList.add('hidden-screen'));
         }
 
         window.navigateTo = function(viewId, viewLabel) {
@@ -1118,12 +1250,9 @@
         // -- FORMULARIO UNIVERSAL DE DOCUMENTOS --
         // ==========================================
         
-        // Retorna las opciones de productos para los Selects
         function getProductOptionsHTML() {
             let html = '<option value="">Seleccione un producto...</option>';
-            allProducts.forEach(p => {
-                html += `<option value="${p.id}" data-price="${p.sellRate || 0}" data-tax="${p.tax || 0}">${p.name} ($${(p.sellRate || 0).toFixed(2)})</option>`;
-            });
+            allProducts.forEach(p => { html += `<option value="${p.id}" data-price="${p.sellRate || 0}" data-tax="${p.tax || 0}">${p.name} ($${(p.sellRate || 0).toFixed(2)})</option>`; });
             return html;
         }
 
@@ -1138,43 +1267,27 @@
             const expiryCont = document.getElementById('univ-doc-expiry-container');
             
             if (docType === 'factura') {
-                title.innerText = "Nueva Factura";
-                title.className = "text-xl font-black text-indigo-600";
-                submitBtn.innerText = "Guardar Factura";
-                submitBtn.className = "px-8 py-2.5 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition shadow-md flex items-center";
-                conditionCont.classList.remove('hidden');
-                document.getElementById('univ-doc-condition').disabled = false;
-                expiryCont.classList.add('hidden');
+                title.innerText = "Nueva Factura"; title.className = "text-xl font-black text-indigo-600";
+                submitBtn.innerText = "Guardar Factura"; submitBtn.className = "px-8 py-2.5 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition shadow-md flex items-center";
+                conditionCont.classList.remove('hidden'); document.getElementById('univ-doc-condition').disabled = false; expiryCont.classList.add('hidden');
             } else if (docType === 'cotizacion') {
-                title.innerText = "Nueva Cotización";
-                title.className = "text-xl font-black text-blue-600";
-                submitBtn.innerText = "Guardar Cotización";
-                submitBtn.className = "px-8 py-2.5 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition shadow-md flex items-center";
-                conditionCont.classList.add('hidden');
-                expiryCont.classList.remove('hidden');
+                title.innerText = "Nueva Cotización"; title.className = "text-xl font-black text-blue-600";
+                submitBtn.innerText = "Guardar Cotización"; submitBtn.className = "px-8 py-2.5 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition shadow-md flex items-center";
+                conditionCont.classList.add('hidden'); expiryCont.classList.remove('hidden');
             } else if (docType === 'devolucion') {
-                title.innerText = "Nueva Devolución (Nota Libre)";
-                title.className = "text-xl font-black text-orange-600";
-                submitBtn.innerText = "Guardar Devolución";
-                submitBtn.className = "px-8 py-2.5 bg-orange-600 text-white font-bold rounded-lg hover:bg-orange-700 transition shadow-md flex items-center";
-                conditionCont.classList.remove('hidden');
-                document.getElementById('univ-doc-condition').value = 'contado';
-                document.getElementById('univ-doc-condition').disabled = true; // Devolución se asume descontada/pagada
+                title.innerText = "Nueva Devolución (Nota Libre)"; title.className = "text-xl font-black text-orange-600";
+                submitBtn.innerText = "Guardar Devolución"; submitBtn.className = "px-8 py-2.5 bg-orange-600 text-white font-bold rounded-lg hover:bg-orange-700 transition shadow-md flex items-center";
+                conditionCont.classList.remove('hidden'); document.getElementById('univ-doc-condition').value = 'contado'; document.getElementById('univ-doc-condition').disabled = true;
                 expiryCont.classList.add('hidden');
             }
 
             const clientSelect = document.getElementById('univ-doc-client');
             clientSelect.innerHTML = '<option value="">Seleccione un cliente...</option>';
-            allClients.filter(c => c.type === 'cliente').forEach(c => {
-                clientSelect.innerHTML += `<option value="${c.id}">${c.orgName}</option>`;
-            });
+            allClients.filter(c => c.type === 'cliente').forEach(c => { clientSelect.innerHTML += `<option value="${c.id}">${c.orgName}</option>`; });
 
             document.getElementById('univ-doc-date').valueAsDate = new Date();
-            
             document.getElementById('univ-doc-lines').innerHTML = '';
-            window.addUnivDocLine();
-            window.calculateUnivDocTotals();
-
+            window.addUnivDocLine(); window.calculateUnivDocTotals();
             document.getElementById('modal-document').classList.remove('hidden-screen');
         }
 
@@ -1183,89 +1296,48 @@
             const tr = document.createElement('tr');
             tr.className = 'univ-line group hover:bg-slate-50 transition-colors border-b border-gray-100';
             tr.innerHTML = `
-                <td class="p-2">
-                    <select required class="line-product w-full border border-gray-300 rounded-md px-2 py-1.5 text-sm outline-none focus:border-indigo-500" onchange="window.calculateUnivDocTotals(this)">
-                        ${getProductOptionsHTML()}
-                    </select>
-                </td>
-                <td class="p-2">
-                    <input type="number" required min="0.01" step="0.01" value="1" class="line-qty w-full border border-gray-300 rounded-md px-2 py-1.5 text-sm outline-none focus:border-indigo-500 text-center" oninput="window.calculateUnivDocTotals()">
-                </td>
-                <td class="p-2">
-                    <div class="flex items-center"><span class="text-gray-400 mr-1">$</span><input type="number" required step="0.01" class="line-price w-full border border-gray-300 rounded-md px-2 py-1.5 text-sm outline-none focus:border-indigo-500 text-right" oninput="window.calculateUnivDocTotals()"></div>
-                </td>
-                <td class="p-2">
-                    <div class="flex items-center"><input type="number" required step="0.01" value="18" class="line-tax w-full border border-gray-300 rounded-md px-2 py-1.5 text-sm outline-none focus:border-indigo-500 text-right" oninput="window.calculateUnivDocTotals()"><span class="text-gray-400 ml-1">%</span></div>
-                </td>
-                <td class="p-2 text-right">
-                    <span class="line-total font-bold text-gray-800">$0.00</span>
-                </td>
-                <td class="p-2 text-center">
-                    <button type="button" onclick="window.removeUnivDocLine(this)" class="text-gray-300 hover:text-red-500 transition focus:outline-none">
-                        <i data-lucide="trash-2" class="w-5 h-5 mx-auto"></i>
-                    </button>
-                </td>
+                <td class="p-2"><select required class="line-product w-full border border-gray-300 rounded-md px-2 py-1.5 text-sm outline-none focus:border-indigo-500" onchange="window.calculateUnivDocTotals(this)">${getProductOptionsHTML()}</select></td>
+                <td class="p-2"><input type="number" required min="0.01" step="0.01" value="1" class="line-qty w-full border border-gray-300 rounded-md px-2 py-1.5 text-sm outline-none focus:border-indigo-500 text-center" oninput="window.calculateUnivDocTotals()"></td>
+                <td class="p-2"><div class="flex items-center"><span class="text-gray-400 mr-1">$</span><input type="number" required step="0.01" class="line-price w-full border border-gray-300 rounded-md px-2 py-1.5 text-sm outline-none focus:border-indigo-500 text-right" oninput="window.calculateUnivDocTotals()"></div></td>
+                <td class="p-2"><div class="flex items-center"><input type="number" required step="0.01" value="18" class="line-tax w-full border border-gray-300 rounded-md px-2 py-1.5 text-sm outline-none focus:border-indigo-500 text-right" oninput="window.calculateUnivDocTotals()"><span class="text-gray-400 ml-1">%</span></div></td>
+                <td class="p-2 text-right"><span class="line-total font-bold text-gray-800">$0.00</span></td>
+                <td class="p-2 text-center"><button type="button" onclick="window.removeUnivDocLine(this)" class="text-gray-300 hover:text-red-500 transition focus:outline-none"><i data-lucide="trash-2" class="w-5 h-5 mx-auto"></i></button></td>
             `;
-            tbody.appendChild(tr);
-            lucide.createIcons();
+            tbody.appendChild(tr); lucide.createIcons();
         }
 
-        window.removeUnivDocLine = function(btn) {
-            btn.closest('tr').remove();
-            window.calculateUnivDocTotals();
-        }
+        window.removeUnivDocLine = function(btn) { btn.closest('tr').remove(); window.calculateUnivDocTotals(); }
 
         window.calculateUnivDocTotals = function(selectElement = null) {
             if (selectElement && selectElement.classList.contains('line-product')) {
                 const tr = selectElement.closest('tr');
                 const option = selectElement.options[selectElement.selectedIndex];
-                if(option.value) {
-                    tr.querySelector('.line-price').value = option.dataset.price;
-                    tr.querySelector('.line-tax').value = option.dataset.tax;
-                } else {
-                    tr.querySelector('.line-price').value = '';
-                    tr.querySelector('.line-tax').value = '';
-                }
+                if(option.value) { tr.querySelector('.line-price').value = option.dataset.price; tr.querySelector('.line-tax').value = option.dataset.tax; } 
+                else { tr.querySelector('.line-price').value = ''; tr.querySelector('.line-tax').value = ''; }
             }
-
             let subtotal = 0; let totalTax = 0;
-
             document.querySelectorAll('.univ-line').forEach(tr => {
                 const qty = parseFloat(tr.querySelector('.line-qty').value) || 0;
                 const price = parseFloat(tr.querySelector('.line-price').value) || 0;
                 const taxRate = parseFloat(tr.querySelector('.line-tax').value) || 0;
-
-                const lineBase = qty * price;
-                const lineTax = lineBase * (taxRate / 100);
-                const lineTotal = lineBase + lineTax;
-
+                const lineBase = qty * price; const lineTax = lineBase * (taxRate / 100); const lineTotal = lineBase + lineTax;
                 tr.querySelector('.line-total').innerText = `$${lineTotal.toFixed(2)}`;
-
-                subtotal += lineBase;
-                totalTax += lineTax;
+                subtotal += lineBase; totalTax += lineTax;
             });
-
             const shipping = parseFloat(document.getElementById('univ-doc-ship').value) || 0;
             const grandTotal = subtotal + totalTax + shipping;
-
             document.getElementById('univ-doc-sub').innerText = `$${subtotal.toFixed(2)}`;
             document.getElementById('univ-doc-tax').innerText = `$${totalTax.toFixed(2)}`;
             document.getElementById('univ-doc-total').innerText = `$${grandTotal.toFixed(2)}`;
-            
             const form = document.getElementById('form-universal-document');
-            form.dataset.calcSubtotal = subtotal;
-            form.dataset.calcTax = totalTax;
-            form.dataset.calcShipping = shipping;
-            form.dataset.calcTotal = grandTotal;
+            form.dataset.calcSubtotal = subtotal; form.dataset.calcTax = totalTax; form.dataset.calcShipping = shipping; form.dataset.calcTotal = grandTotal;
         }
 
-        // GUARDADO DE DOCUMENTO (Cotización o Factura o Devolución)
         document.getElementById('form-universal-document').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('btn-submit-univ-doc');
             const originalBtnText = btn.innerHTML;
-            btn.disabled = true;
-            btn.innerHTML = "Procesando...";
+            btn.disabled = true; btn.innerHTML = "Procesando...";
 
             const docType = document.getElementById('univ-doc-type').value;
             const docId = document.getElementById('univ-doc-id').value;
@@ -1277,81 +1349,47 @@
                 const sel = tr.querySelector('.line-product');
                 if (sel.value) {
                     lines.push({
-                        productId: sel.value,
-                        productName: sel.options[sel.selectedIndex].text.split(' (')[0],
-                        qty: parseFloat(tr.querySelector('.line-qty').value) || 0,
-                        price: parseFloat(tr.querySelector('.line-price').value) || 0,
-                        tax: parseFloat(tr.querySelector('.line-tax').value) || 0
+                        productId: sel.value, productName: sel.options[sel.selectedIndex].text.split(' (')[0],
+                        qty: parseFloat(tr.querySelector('.line-qty').value) || 0, price: parseFloat(tr.querySelector('.line-price').value) || 0, tax: parseFloat(tr.querySelector('.line-tax').value) || 0
                     });
                 }
             });
 
-            if (lines.length === 0) {
-                alert("Debe agregar al menos un producto.");
-                btn.disabled = false; btn.innerHTML = originalBtnText; return;
-            }
+            if (lines.length === 0) { alert("Debe agregar al menos un producto."); btn.disabled = false; btn.innerHTML = originalBtnText; return; }
 
             const totalAmount = parseFloat(e.target.dataset.calcTotal || 0);
-
             const baseData = {
-                clientId: clientId,
-                clientName: client ? client.orgName : 'Desconocido',
-                clientEmail: client ? client.email : '',
-                clientPhone: client ? client.phone : '',
-                clientAddress: client ? client.address : '',
-                date: document.getElementById('univ-doc-date').value,
-                notes: document.getElementById('univ-doc-notes').value,
-                subtotal: parseFloat(e.target.dataset.calcSubtotal || 0),
-                tax: parseFloat(e.target.dataset.calcTax || 0),
-                shipping: parseFloat(e.target.dataset.calcShipping || 0),
-                total: totalAmount,
-                lines: lines,
-                createdAt: serverTimestamp()
+                clientId: clientId, clientName: client ? client.orgName : 'Desconocido', clientEmail: client ? client.email : '',
+                clientPhone: client ? client.phone : '', clientAddress: client ? client.address : '', date: document.getElementById('univ-doc-date').value,
+                notes: document.getElementById('univ-doc-notes').value, subtotal: parseFloat(e.target.dataset.calcSubtotal || 0),
+                tax: parseFloat(e.target.dataset.calcTax || 0), shipping: parseFloat(e.target.dataset.calcShipping || 0), total: totalAmount, lines: lines, createdAt: serverTimestamp()
             };
 
             try {
                 if (docType === 'cotizacion') {
-                    baseData.status = 'pendiente';
-                    baseData.expiryDate = document.getElementById('univ-doc-expiry').value;
-                    
-                    if (docId) {
-                        await updateDoc(doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'quotes', docId), baseData);
-                        alert("Cotización actualizada correctamente.");
-                    } else {
-                        await addDoc(collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'quotes'), baseData);
-                        alert("Cotización guardada exitosamente.");
-                    }
-                    
-                    document.getElementById('modal-document').classList.add('hidden-screen');
-                    window.navigateTo('cotizaciones', '3. Cotizaciones');
+                    baseData.status = 'pendiente'; baseData.expiryDate = document.getElementById('univ-doc-expiry').value;
+                    if (docId) { await updateDoc(doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'quotes', docId), baseData); alert("Cotización actualizada correctamente."); } 
+                    else { await addDoc(collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'quotes'), baseData); alert("Cotización guardada exitosamente."); }
+                    document.getElementById('modal-document').classList.add('hidden-screen'); window.navigateTo('cotizaciones', '3. Cotizaciones');
                 } else {
-                    // Factura o Devolucion
                     const condition = docType === 'devolucion' ? 'contado' : document.getElementById('univ-doc-condition').value;
-                    baseData.type = docType;
-                    baseData.condition = condition;
+                    baseData.type = docType; baseData.condition = condition;
                     
                     if (docId && docType === 'factura') {
-                        // EDITANDO FACTURA EXISTENTE
                         const originalInv = allInvoices.find(i => i.id === docId);
-                        baseData.paidAmount = originalInv.paidAmount || 0;
-                        baseData.payments = originalInv.payments || [];
-                        baseData.returns = originalInv.returns || [];
-
+                        baseData.paidAmount = originalInv.paidAmount || 0; baseData.payments = originalInv.payments || []; baseData.returns = originalInv.returns || [];
                         await updateDoc(doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'invoices', docId), baseData);
 
-                        // Revertir inventario de la factura vieja
                         if(originalInv && originalInv.lines) {
                             for (const oLine of originalInv.lines) {
                                 const prod = allProducts.find(p => p.id === oLine.productId);
                                 if(prod && prod.trackStock) {
                                     const restoredStock = (prod.stockCurrent || 0) + oLine.qty;
                                     await updateDoc(doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'products', prod.id), { stockCurrent: restoredStock });
-                                    prod.stockCurrent = restoredStock; // Update local to not overwrite immediately
+                                    prod.stockCurrent = restoredStock; 
                                 }
                             }
                         }
-
-                        // Aplicar nuevo inventario de la factura editada
                         for (const nLine of lines) {
                             const prod = allProducts.find(p => p.id === nLine.productId);
                             if(prod && prod.trackStock) {
@@ -1360,48 +1398,28 @@
                                 prod.stockCurrent = newStock;
                             }
                         }
-                        alert("Factura actualizada y stock ajustado.");
+                        alert("Factura actualizada y stock reajustado.");
                     } else {
-                        // CREANDO NUEVA FACTURA / DEVOLUCION
                         let paidAmount = 0; let payments = [];
                         if (condition === 'contado') {
                             paidAmount = totalAmount;
-                            payments.push({
-                                date: new Date().toISOString().split('T')[0],
-                                amount: totalAmount,
-                                method: 'Efectivo', 
-                                reference: docType === 'devolucion' ? 'Nota de Crédito Automática' : 'Pago al contado'
-                            });
+                            payments.push({ date: new Date().toISOString().split('T')[0], amount: totalAmount, method: 'Efectivo', reference: docType === 'devolucion' ? 'Nota Libre' : 'Pago al contado' });
                         }
-
-                        baseData.paidAmount = paidAmount;
-                        baseData.payments = payments;
-                        baseData.returns = [];
-
+                        baseData.paidAmount = paidAmount; baseData.payments = payments; baseData.returns = [];
                         await addDoc(collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'invoices'), baseData);
-
-                        // Afectar Inventario
                         for (const line of lines) {
                             const product = allProducts.find(p => p.id === line.productId);
                             if (product && product.trackStock) {
                                 const change = docType === 'devolucion' ? line.qty : -line.qty; 
-                                const newStock = (product.stockCurrent || 0) + change;
-                                await updateDoc(doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'products', product.id), { stockCurrent: newStock });
+                                await updateDoc(doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'products', product.id), { stockCurrent: (product.stockCurrent || 0) + change });
                             }
                         }
-                        alert("Documento guardado y stock actualizado.");
+                        alert("Documento guardado exitosamente.");
                     }
-                    
-                    document.getElementById('modal-document').classList.add('hidden-screen');
-                    document.getElementById('univ-doc-condition').disabled = false; 
-                    window.navigateTo('facturas', '2. Facturas');
+                    document.getElementById('modal-document').classList.add('hidden-screen'); document.getElementById('univ-doc-condition').disabled = false; window.navigateTo('facturas', '2. Facturas');
                 }
                 e.target.reset();
-            } catch (error) {
-                console.error(error); alert("Error al guardar.");
-            } finally {
-                btn.disabled = false; btn.innerHTML = originalBtnText;
-            }
+            } catch (error) { console.error(error); alert("Error al guardar."); } finally { btn.disabled = false; btn.innerHTML = originalBtnText; }
         });
 
 
@@ -1411,21 +1429,15 @@
 
         function loadQuotes() {
             if(!currentUser) return;
-            const q = query(collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'quotes'));
-            onSnapshot(q, (snapshot) => {
-                const tbody = document.getElementById('quotes-table-body');
-                if(!tbody) return;
-                tbody.innerHTML = '';
-                allQuotes = [];
-                let pendingQuotesCount = 0;
-
+            onSnapshot(query(collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'quotes')), (snapshot) => {
+                const tbody = document.getElementById('quotes-table-body'); if(!tbody) return;
+                tbody.innerHTML = ''; allQuotes = []; let pendingQuotesCount = 0;
                 const docs = snapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
                 docs.sort((a, b) => new Date(b.date) - new Date(a.date));
 
                 docs.forEach(quo => {
                     allQuotes.push(quo);
                     if (quo.status === 'pendiente') pendingQuotesCount++;
-
                     let statusBadge = '';
                     if (quo.status === 'aprobada') statusBadge = '<span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-bold border border-green-200">Aprobada</span>';
                     else if (quo.status === 'rechazada') statusBadge = '<span class="bg-red-100 text-red-700 px-2 py-1 rounded text-xs font-bold border border-red-200">Rechazada</span>';
@@ -1434,33 +1446,21 @@
                     const tr = document.createElement('tr');
                     tr.className = 'hover:bg-slate-50 transition-colors cursor-pointer group';
                     tr.onclick = () => window.showQuoteDetails(quo.id);
-                    
-                    tr.innerHTML = `
-                        <td class="p-4 font-medium text-gray-800">${quo.date}</td>
-                        <td class="p-4 font-bold text-gray-600 group-hover:text-blue-600 transition">${quo.clientName}</td>
-                        <td class="p-4 text-gray-500 text-sm">${quo.expiryDate || 'N/A'}</td>
-                        <td class="p-4">${statusBadge}</td>
-                        <td class="p-4 text-right font-black text-gray-800">$${quo.total.toFixed(2)}</td>
-                    `;
+                    tr.innerHTML = `<td class="p-4 font-medium text-gray-800">${quo.date}</td><td class="p-4 font-bold text-gray-600 group-hover:text-blue-600 transition">${quo.clientName}</td><td class="p-4 text-gray-500 text-sm">${quo.expiryDate || 'N/A'}</td><td class="p-4">${statusBadge}</td><td class="p-4 text-right font-black text-gray-800">$${quo.total.toFixed(2)}</td>`;
                     tbody.appendChild(tr);
                 });
-                const dashQ = document.getElementById('dash-quotes');
-                if(dashQ) dashQ.innerText = pendingQuotesCount;
+                const dashQ = document.getElementById('dash-quotes'); if(dashQ) dashQ.innerText = pendingQuotesCount;
             });
         }
 
         window.showQuoteDetails = function(quoteId) {
-            const quo = allQuotes.find(q => q.id === quoteId);
-            if(!quo) return;
+            const quo = allQuotes.find(q => q.id === quoteId); if(!quo) return;
             currentViewQuote = quo;
-
             document.querySelectorAll('.app-view').forEach(v => v.classList.add('hidden-screen'));
             document.getElementById('view-cotizacion-detalles').classList.remove('hidden-screen');
 
             const logoImg = document.getElementById('pdf-quo-comp-logo');
-            if (companyProfile.logo) { logoImg.src = companyProfile.logo; logoImg.classList.remove('hidden'); } 
-            else logoImg.classList.add('hidden');
-
+            if (companyProfile.logo) { logoImg.src = companyProfile.logo; logoImg.classList.remove('hidden'); } else logoImg.classList.add('hidden');
             document.getElementById('pdf-quo-comp-name').innerText = companyProfile.companyName || 'Empresa';
             document.getElementById('pdf-quo-comp-rnc').innerText = `RNC: ${companyProfile.rnc || ''}`;
             document.getElementById('pdf-quo-comp-address').innerText = companyProfile.address || '';
@@ -1472,133 +1472,66 @@
             document.getElementById('pdf-quo-comp-socials').innerText = socials.join(' | ');
 
             const pdfStatus = document.getElementById('pdf-quo-status');
-            if (quo.status === 'aprobada') {
-                pdfStatus.innerText = "APROBADA"; pdfStatus.className = "inline-block px-2 py-1 text-[10px] font-bold uppercase rounded border mb-2 bg-green-50 text-green-700 border-green-200";
-            } else if (quo.status === 'rechazada') {
-                pdfStatus.innerText = "RECHAZADA"; pdfStatus.className = "inline-block px-2 py-1 text-[10px] font-bold uppercase rounded border mb-2 bg-red-50 text-red-700 border-red-200";
-            } else {
-                pdfStatus.innerText = "PENDIENTE"; pdfStatus.className = "inline-block px-2 py-1 text-[10px] font-bold uppercase rounded border mb-2 bg-yellow-50 text-yellow-700 border-yellow-200";
-            }
+            if (quo.status === 'aprobada') { pdfStatus.innerText = "APROBADA"; pdfStatus.className = "inline-block px-2 py-1 text-[10px] font-bold uppercase rounded border mb-2 bg-green-50 text-green-700 border-green-200"; } 
+            else if (quo.status === 'rechazada') { pdfStatus.innerText = "RECHAZADA"; pdfStatus.className = "inline-block px-2 py-1 text-[10px] font-bold uppercase rounded border mb-2 bg-red-50 text-red-700 border-red-200"; } 
+            else { pdfStatus.innerText = "PENDIENTE"; pdfStatus.className = "inline-block px-2 py-1 text-[10px] font-bold uppercase rounded border mb-2 bg-yellow-50 text-yellow-700 border-yellow-200"; }
 
-            document.getElementById('pdf-quo-date').innerText = quo.date;
-            document.getElementById('pdf-quo-expiry').innerText = quo.expiryDate || 'N/A';
-            
-            document.getElementById('pdf-quo-cli-name').innerText = quo.clientName;
-            document.getElementById('pdf-quo-cli-email').innerText = quo.clientEmail || '';
-            document.getElementById('pdf-quo-cli-phone').innerText = quo.clientPhone || '';
-            document.getElementById('pdf-quo-cli-address').innerText = quo.clientAddress || ''; 
+            document.getElementById('pdf-quo-date').innerText = quo.date; document.getElementById('pdf-quo-expiry').innerText = quo.expiryDate || 'N/A';
+            document.getElementById('pdf-quo-cli-name').innerText = quo.clientName; document.getElementById('pdf-quo-cli-email').innerText = quo.clientEmail || '';
+            document.getElementById('pdf-quo-cli-phone').innerText = quo.clientPhone || ''; document.getElementById('pdf-quo-cli-address').innerText = quo.clientAddress || ''; 
 
-            const pdfLines = document.getElementById('pdf-quo-lines');
-            pdfLines.innerHTML = '';
+            const pdfLines = document.getElementById('pdf-quo-lines'); pdfLines.innerHTML = '';
             quo.lines.forEach(l => {
                 const lTotal = (l.qty * l.price) * (1 + (l.tax/100));
                 pdfLines.innerHTML += `<tr><td class="font-medium">${l.productName}</td><td class="text-center">${l.qty}</td><td class="text-right">$${l.price.toFixed(2)}</td><td class="text-right">${l.tax}%</td><td class="text-right font-semibold">$${lTotal.toFixed(2)}</td></tr>`;
             });
 
-            document.getElementById('pdf-quo-sub').innerText = `$${quo.subtotal.toFixed(2)}`;
-            document.getElementById('pdf-quo-tax').innerText = `$${quo.tax.toFixed(2)}`;
-            document.getElementById('pdf-quo-total').innerText = `$${quo.total.toFixed(2)}`;
+            document.getElementById('pdf-quo-sub').innerText = `$${quo.subtotal.toFixed(2)}`; document.getElementById('pdf-quo-tax').innerText = `$${quo.tax.toFixed(2)}`; document.getElementById('pdf-quo-total').innerText = `$${quo.total.toFixed(2)}`;
             if(quo.shipping > 0) { document.getElementById('pdf-quo-ship-container').classList.remove('hidden'); document.getElementById('pdf-quo-ship').innerText = `$${quo.shipping.toFixed(2)}`; } 
             else document.getElementById('pdf-quo-ship-container').classList.add('hidden');
             document.getElementById('pdf-quo-notes').innerText = quo.notes ? quo.notes : 'Sin términos o notas adicionales.';
 
-            // Mostrar u ocultar botones de acción según el estado
-            const btnApprove = document.getElementById('btn-quo-approve');
-            const btnReject = document.getElementById('btn-quo-reject');
-            const btnEdit = document.getElementById('btn-quo-edit');
-            
-            if (quo.status === 'pendiente') { 
-                btnApprove.classList.remove('hidden'); 
-                btnReject.classList.remove('hidden'); 
-                btnEdit.classList.remove('hidden');
-            } else { 
-                btnApprove.classList.add('hidden'); 
-                btnReject.classList.add('hidden'); 
-                btnEdit.classList.add('hidden');
-            }
+            const btnApprove = document.getElementById('btn-quo-approve'); const btnReject = document.getElementById('btn-quo-reject'); const btnEdit = document.getElementById('btn-quo-edit');
+            if (quo.status === 'pendiente') { btnApprove.classList.remove('hidden'); btnReject.classList.remove('hidden'); btnEdit.classList.remove('hidden'); } 
+            else { btnApprove.classList.add('hidden'); btnReject.classList.add('hidden'); btnEdit.classList.add('hidden'); }
             lucide.createIcons();
         }
 
         window.editQuote = function() {
             if(!currentViewQuote) return;
             const quo = currentViewQuote;
-
-            document.getElementById('form-universal-document').reset();
-            document.getElementById('univ-doc-type').value = 'cotizacion';
-            document.getElementById('univ-doc-id').value = quo.id;
+            document.getElementById('form-universal-document').reset(); document.getElementById('univ-doc-type').value = 'cotizacion'; document.getElementById('univ-doc-id').value = quo.id;
+            document.getElementById('doc-modal-title').innerText = "Editar Cotización"; document.getElementById('doc-modal-title').className = "text-xl font-black text-blue-600";
+            document.getElementById('btn-submit-univ-doc').innerText = "Actualizar Cotización"; document.getElementById('btn-submit-univ-doc').className = "px-8 py-2.5 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition shadow-md flex items-center";
             
-            document.getElementById('doc-modal-title').innerText = "Editar Cotización";
-            document.getElementById('doc-modal-title').className = "text-xl font-black text-blue-600";
-            document.getElementById('btn-submit-univ-doc').innerText = "Actualizar Cotización";
-            document.getElementById('btn-submit-univ-doc').className = "px-8 py-2.5 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition shadow-md flex items-center";
-            
-            const clientSelect = document.getElementById('univ-doc-client');
-            clientSelect.innerHTML = '<option value="">Seleccione un cliente...</option>';
-            allClients.filter(c => c.type === 'cliente').forEach(c => {
-                clientSelect.innerHTML += `<option value="${c.id}">${c.orgName}</option>`;
-            });
+            const clientSelect = document.getElementById('univ-doc-client'); clientSelect.innerHTML = '<option value="">Seleccione un cliente...</option>';
+            allClients.filter(c => c.type === 'cliente').forEach(c => { clientSelect.innerHTML += `<option value="${c.id}">${c.orgName}</option>`; });
             clientSelect.value = quo.clientId;
 
-            document.getElementById('univ-doc-date').value = quo.date || '';
-            document.getElementById('univ-doc-expiry').value = quo.expiryDate || '';
-            document.getElementById('univ-doc-notes').value = quo.notes || '';
-            document.getElementById('univ-doc-ship').value = quo.shipping || 0;
+            document.getElementById('univ-doc-date').value = quo.date || ''; document.getElementById('univ-doc-expiry').value = quo.expiryDate || '';
+            document.getElementById('univ-doc-notes').value = quo.notes || ''; document.getElementById('univ-doc-ship').value = quo.shipping || 0;
+            document.getElementById('univ-doc-condition-container').classList.add('hidden'); document.getElementById('univ-doc-expiry-container').classList.remove('hidden');
             
-            document.getElementById('univ-doc-condition-container').classList.add('hidden');
-            document.getElementById('univ-doc-expiry-container').classList.remove('hidden');
-            
-            const tbody = document.getElementById('univ-doc-lines');
-            tbody.innerHTML = '';
+            const tbody = document.getElementById('univ-doc-lines'); tbody.innerHTML = '';
             quo.lines.forEach(line => {
-                const tr = document.createElement('tr');
-                tr.className = 'univ-line group hover:bg-slate-50 transition-colors border-b border-gray-100';
-                tr.innerHTML = `
-                    <td class="p-2">
-                        <select required class="line-product w-full border border-gray-300 rounded-md px-2 py-1.5 text-sm outline-none focus:border-indigo-500" onchange="window.calculateUnivDocTotals(this)">
-                            ${getProductOptionsHTML()}
-                        </select>
-                    </td>
-                    <td class="p-2">
-                        <input type="number" required min="0.01" step="0.01" value="${line.qty}" class="line-qty w-full border border-gray-300 rounded-md px-2 py-1.5 text-sm outline-none focus:border-indigo-500 text-center" oninput="window.calculateUnivDocTotals()">
-                    </td>
-                    <td class="p-2">
-                        <div class="flex items-center"><span class="text-gray-400 mr-1">$</span><input type="number" required step="0.01" value="${line.price}" class="line-price w-full border border-gray-300 rounded-md px-2 py-1.5 text-sm outline-none focus:border-indigo-500 text-right" oninput="window.calculateUnivDocTotals()"></div>
-                    </td>
-                    <td class="p-2">
-                        <div class="flex items-center"><input type="number" required step="0.01" value="${line.tax}" class="line-tax w-full border border-gray-300 rounded-md px-2 py-1.5 text-sm outline-none focus:border-indigo-500 text-right" oninput="window.calculateUnivDocTotals()"><span class="text-gray-400 ml-1">%</span></div>
-                    </td>
-                    <td class="p-2 text-right">
-                        <span class="line-total font-bold text-gray-800">$0.00</span>
-                    </td>
-                    <td class="p-2 text-center">
-                        <button type="button" onclick="window.removeUnivDocLine(this)" class="text-gray-300 hover:text-red-500 transition focus:outline-none">
-                            <i data-lucide="trash-2" class="w-5 h-5 mx-auto"></i>
-                        </button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-                tr.querySelector('.line-product').value = line.productId;
+                const tr = document.createElement('tr'); tr.className = 'univ-line group hover:bg-slate-50 transition-colors border-b border-gray-100';
+                tr.innerHTML = `<td class="p-2"><select required class="line-product w-full border border-gray-300 rounded-md px-2 py-1.5 text-sm outline-none focus:border-indigo-500" onchange="window.calculateUnivDocTotals(this)">${getProductOptionsHTML()}</select></td><td class="p-2"><input type="number" required min="0.01" step="0.01" value="${line.qty}" class="line-qty w-full border border-gray-300 rounded-md px-2 py-1.5 text-sm outline-none focus:border-indigo-500 text-center" oninput="window.calculateUnivDocTotals()"></td><td class="p-2"><div class="flex items-center"><span class="text-gray-400 mr-1">$</span><input type="number" required step="0.01" value="${line.price}" class="line-price w-full border border-gray-300 rounded-md px-2 py-1.5 text-sm outline-none focus:border-indigo-500 text-right" oninput="window.calculateUnivDocTotals()"></div></td><td class="p-2"><div class="flex items-center"><input type="number" required step="0.01" value="${line.tax}" class="line-tax w-full border border-gray-300 rounded-md px-2 py-1.5 text-sm outline-none focus:border-indigo-500 text-right" oninput="window.calculateUnivDocTotals()"><span class="text-gray-400 ml-1">%</span></div></td><td class="p-2 text-right"><span class="line-total font-bold text-gray-800">$0.00</span></td><td class="p-2 text-center"><button type="button" onclick="window.removeUnivDocLine(this)" class="text-gray-300 hover:text-red-500 transition focus:outline-none"><i data-lucide="trash-2" class="w-5 h-5 mx-auto"></i></button></td>`;
+                tbody.appendChild(tr); tr.querySelector('.line-product').value = line.productId;
             });
-            
-            window.calculateUnivDocTotals();
-            lucide.createIcons();
-            document.getElementById('modal-document').classList.remove('hidden-screen');
+            window.calculateUnivDocTotals(); lucide.createIcons(); document.getElementById('modal-document').classList.remove('hidden-screen');
         };
 
         window.generateQuotePDF = function() {
             if(!currentViewQuote) return;
-            const element = document.getElementById('quote-print-area');
-            const cName = (companyProfile.companyName || 'Empresa').substring(0,5);
+            const element = document.getElementById('quote-print-area'); const cName = (companyProfile.companyName || 'Empresa').substring(0,5);
             const opt = { margin: 0.5, filename: `Cotizacion_${cName}_${currentViewQuote.date}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' } };
             window.html2pdf().set(opt).from(element).save();
         }
 
         window.rejectQuote = async function() {
             if(!currentViewQuote || !confirm("¿Estás seguro de que deseas marcar esta cotización como Rechazada?")) return;
-            try {
-                await updateDoc(doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'quotes', currentViewQuote.id), { status: 'rechazada' });
-                alert("Cotización rechazada."); window.navigateTo('cotizaciones', '3. Cotizaciones');
-            } catch (error) { console.error(error); }
+            try { await updateDoc(doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'quotes', currentViewQuote.id), { status: 'rechazada' }); alert("Cotización rechazada."); window.navigateTo('cotizaciones', '3. Cotizaciones'); } 
+            catch (error) { console.error(error); }
         }
 
         window.openConvertQuoteModal = function() {
@@ -1608,39 +1541,21 @@
 
         document.getElementById('form-convert-quote').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const condition = document.getElementById('convert-quo-condition').value;
-            const btn = document.getElementById('btn-confirm-convert');
-            btn.innerHTML = "Convirtiendo..."; btn.disabled = true;
-
+            const condition = document.getElementById('convert-quo-condition').value; const btn = document.getElementById('btn-confirm-convert'); btn.innerHTML = "Convirtiendo..."; btn.disabled = true;
             try {
-                const totalAmount = currentViewQuote.total;
-                let paidAmount = 0; let payments = [];
-                if (condition === 'contado') {
-                    paidAmount = totalAmount;
-                    payments.push({ date: new Date().toISOString().split('T')[0], amount: totalAmount, method: 'Efectivo', reference: `Pago al contado (Desde Cotización)` });
-                }
-
+                const totalAmount = currentViewQuote.total; let paidAmount = 0; let payments = [];
+                if (condition === 'contado') { paidAmount = totalAmount; payments.push({ date: new Date().toISOString().split('T')[0], amount: totalAmount, method: 'Efectivo', reference: `Pago al contado (Desde Cotización)` }); }
                 const invoiceData = {
-                    type: 'factura', condition: condition, clientId: currentViewQuote.clientId, clientName: currentViewQuote.clientName,
-                    clientEmail: currentViewQuote.clientEmail || '', clientPhone: currentViewQuote.clientPhone || '', clientAddress: currentViewQuote.clientAddress || '',
-                    date: new Date().toISOString().split('T')[0], notes: currentViewQuote.notes, subtotal: currentViewQuote.subtotal, tax: currentViewQuote.tax, shipping: currentViewQuote.shipping || 0,
-                    total: totalAmount, paidAmount: paidAmount, payments: payments, returns: [], lines: currentViewQuote.lines, createdAt: serverTimestamp()
+                    type: 'factura', condition: condition, clientId: currentViewQuote.clientId, clientName: currentViewQuote.clientName, clientEmail: currentViewQuote.clientEmail || '', clientPhone: currentViewQuote.clientPhone || '', clientAddress: currentViewQuote.clientAddress || '',
+                    date: new Date().toISOString().split('T')[0], notes: currentViewQuote.notes, subtotal: currentViewQuote.subtotal, tax: currentViewQuote.tax, shipping: currentViewQuote.shipping || 0, total: totalAmount, paidAmount: paidAmount, payments: payments, returns: [], lines: currentViewQuote.lines, createdAt: serverTimestamp()
                 };
-
                 await addDoc(collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'invoices'), invoiceData);
-
                 for (const line of currentViewQuote.lines) {
                     const product = allProducts.find(p => p.id === line.productId);
-                    if (product && product.trackStock) {
-                        const newStock = (product.stockCurrent || 0) - line.qty; 
-                        await updateDoc(doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'products', product.id), { stockCurrent: newStock });
-                    }
+                    if (product && product.trackStock) await updateDoc(doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'products', product.id), { stockCurrent: (product.stockCurrent || 0) - line.qty });
                 }
-
                 await updateDoc(doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'quotes', currentViewQuote.id), { status: 'aprobada' });
-                document.getElementById('modal-convert-quote').classList.add('hidden-screen');
-                alert("Cotización aprobada y convertida a Factura exitosamente.");
-                window.navigateTo('facturas', '2. Facturas');
+                document.getElementById('modal-convert-quote').classList.add('hidden-screen'); alert("Cotización aprobada y convertida a Factura exitosamente."); window.navigateTo('facturas', '2. Facturas');
             } catch (error) { alert("Error al convertir la cotización."); } 
             finally { btn.innerHTML = `<i data-lucide="check-circle" class="w-4 h-4 mr-2"></i> Confirmar`; btn.disabled = false; lucide.createIcons(); }
         });
@@ -1652,14 +1567,9 @@
 
         function loadInvoices() {
             if(!currentUser) return;
-            const q = query(collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'invoices'));
-            onSnapshot(q, (snapshot) => {
-                const tbody = document.getElementById('invoices-table-body');
-                if(!tbody) return;
-                tbody.innerHTML = '';
-                allInvoices = [];
-                let totalSales = 0; let pendingInvoices = 0;
-
+            onSnapshot(query(collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'invoices')), (snapshot) => {
+                const tbody = document.getElementById('invoices-table-body'); if(!tbody) return;
+                tbody.innerHTML = ''; allInvoices = []; let totalSales = 0; let pendingInvoices = 0;
                 const docs = snapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
                 docs.sort((a, b) => new Date(b.date) - new Date(a.date));
 
@@ -1680,15 +1590,7 @@
                     const tr = document.createElement('tr');
                     tr.className = 'hover:bg-slate-50 transition-colors cursor-pointer group border-b border-gray-100';
                     tr.onclick = () => window.showInvoiceDetails(inv.id);
-                    
-                    tr.innerHTML = `
-                        <td class="p-4 font-medium text-gray-800">${inv.date}</td>
-                        <td class="p-4 font-bold text-gray-600 group-hover:text-indigo-600 transition">${inv.clientName}</td>
-                        <td class="p-4 uppercase text-[10px] font-bold text-gray-500 tracking-wider">${isReturn ? 'N/A' : inv.condition}</td>
-                        <td class="p-4">${statusBadge}</td>
-                        <td class="p-4 text-right font-black ${isReturn ? 'text-orange-600' : 'text-gray-800'}">${isReturn ? '-' : ''}$${inv.total.toFixed(2)}</td>
-                        <td class="p-4 text-right font-bold ${balance < -0.01 ? 'text-purple-600' : 'text-red-500'}">${isReturn || balance <= 0.01 && balance >= -0.01 ? '' : (balance < -0.01 ? 'A favor $'+Math.abs(balance).toFixed(2) : '$'+balance.toFixed(2))}</td>
-                    `;
+                    tr.innerHTML = `<td class="p-4 font-medium text-gray-800">${inv.date}</td><td class="p-4 font-bold text-gray-600 group-hover:text-indigo-600 transition">${inv.clientName}</td><td class="p-4 uppercase text-[10px] font-bold text-gray-500 tracking-wider">${isReturn ? 'N/A' : inv.condition}</td><td class="p-4">${statusBadge}</td><td class="p-4 text-right font-black ${isReturn ? 'text-orange-600' : 'text-gray-800'}">${isReturn ? '-' : ''}$${inv.total.toFixed(2)}</td><td class="p-4 text-right font-bold ${balance < -0.01 ? 'text-purple-600' : 'text-red-500'}">${isReturn || (balance <= 0.01 && balance >= -0.01) ? '' : (balance < -0.01 ? 'A favor $'+Math.abs(balance).toFixed(2) : '$'+balance.toFixed(2))}</td>`;
                     tbody.appendChild(tr);
                 });
 
@@ -1699,10 +1601,8 @@
         }
 
         window.showInvoiceDetails = function(invoiceId) {
-            const inv = allInvoices.find(i => i.id === invoiceId);
-            if(!inv) return;
+            const inv = allInvoices.find(i => i.id === invoiceId); if(!inv) return;
             currentViewInvoice = inv;
-
             document.querySelectorAll('.app-view').forEach(v => v.classList.add('hidden-screen'));
             document.getElementById('view-factura-detalles').classList.remove('hidden-screen');
 
@@ -1710,68 +1610,44 @@
             const balance = inv.total - (inv.paidAmount || 0);
 
             const logoImg = document.getElementById('pdf-comp-logo');
-            if (companyProfile.logo) { logoImg.src = companyProfile.logo; logoImg.classList.remove('hidden'); } 
-            else logoImg.classList.add('hidden');
+            if (companyProfile.logo) { logoImg.src = companyProfile.logo; logoImg.classList.remove('hidden'); } else logoImg.classList.add('hidden');
 
-            document.getElementById('pdf-comp-name').innerText = companyProfile.companyName || 'Empresa';
-            document.getElementById('pdf-comp-rnc').innerText = `RNC: ${companyProfile.rnc || ''}`;
-            document.getElementById('pdf-comp-address').innerText = companyProfile.address || '';
-            document.getElementById('pdf-comp-phone').innerText = companyProfile.phone ? `Tel: ${companyProfile.phone}` : '';
-            
-            let socials = [];
-            if (companyProfile.instagram) socials.push(`IG: ${companyProfile.instagram}`);
-            if (companyProfile.facebook) socials.push(`FB: ${companyProfile.facebook}`);
+            document.getElementById('pdf-comp-name').innerText = companyProfile.companyName || 'Empresa'; document.getElementById('pdf-comp-rnc').innerText = `RNC: ${companyProfile.rnc || ''}`;
+            document.getElementById('pdf-comp-address').innerText = companyProfile.address || ''; document.getElementById('pdf-comp-phone').innerText = companyProfile.phone ? `Tel: ${companyProfile.phone}` : '';
+            let socials = []; if (companyProfile.instagram) socials.push(`IG: ${companyProfile.instagram}`); if (companyProfile.facebook) socials.push(`FB: ${companyProfile.facebook}`);
             document.getElementById('pdf-comp-socials').innerText = socials.join(' | ');
-            
             document.getElementById('pdf-doc-title').innerText = isReturn ? "NOTA DE CRÉDITO" : "FACTURA";
 
-            const pdfStatus = document.getElementById('pdf-inv-status');
-            const condContainer = document.getElementById('pdf-inv-cond-container');
+            const pdfStatus = document.getElementById('pdf-inv-status'); const condContainer = document.getElementById('pdf-inv-cond-container');
             
             if (isReturn) {
-                pdfStatus.innerText = "DEVOLUCIÓN";
-                pdfStatus.className = "inline-block px-2 py-1 text-[10px] font-bold uppercase rounded border mb-2 bg-orange-100 text-orange-800 border-orange-300";
-                condContainer.classList.add('hidden');
+                pdfStatus.innerText = "DEVOLUCIÓN"; pdfStatus.className = "inline-block px-2 py-1 text-[10px] font-bold uppercase rounded border mb-2 bg-orange-100 text-orange-800 border-orange-300"; condContainer.classList.add('hidden');
             } else {
-                condContainer.classList.remove('hidden');
-                document.getElementById('pdf-inv-cond').innerText = inv.condition;
+                condContainer.classList.remove('hidden'); document.getElementById('pdf-inv-cond').innerText = inv.condition;
                 if (balance <= 0.01 && balance >= -0.01) { pdfStatus.innerText = "PAGADA"; pdfStatus.className = "inline-block px-2 py-1 text-[10px] font-bold uppercase rounded border mb-2 bg-green-50 text-green-700 border-green-200"; } 
                 else if (balance < -0.01) { pdfStatus.innerText = "SALDO A FAVOR"; pdfStatus.className = "inline-block px-2 py-1 text-[10px] font-bold uppercase rounded border mb-2 bg-purple-50 text-purple-700 border-purple-200"; } 
                 else if ((inv.paidAmount || 0) > 0) { pdfStatus.innerText = "PAGO PARCIAL"; pdfStatus.className = "inline-block px-2 py-1 text-[10px] font-bold uppercase rounded border mb-2 bg-blue-50 text-blue-700 border-blue-200"; } 
                 else { pdfStatus.innerText = "PENDIENTE DE PAGO"; pdfStatus.className = "inline-block px-2 py-1 text-[10px] font-bold uppercase rounded border mb-2 bg-red-50 text-red-700 border-red-200"; }
             }
 
-            document.getElementById('pdf-inv-date').innerText = inv.date;
-            document.getElementById('pdf-cli-name').innerText = inv.clientName;
-            document.getElementById('pdf-cli-email').innerText = inv.clientEmail || '';
-            document.getElementById('pdf-cli-phone').innerText = inv.clientPhone || '';
-            document.getElementById('pdf-cli-address').innerText = inv.clientAddress || ''; 
+            document.getElementById('pdf-inv-date').innerText = inv.date; document.getElementById('pdf-cli-name').innerText = inv.clientName;
+            document.getElementById('pdf-cli-email').innerText = inv.clientEmail || ''; document.getElementById('pdf-cli-phone').innerText = inv.clientPhone || ''; document.getElementById('pdf-cli-address').innerText = inv.clientAddress || ''; 
 
-            const pdfLines = document.getElementById('pdf-inv-lines');
-            pdfLines.innerHTML = '';
+            const pdfLines = document.getElementById('pdf-inv-lines'); pdfLines.innerHTML = '';
             inv.lines.forEach(l => {
                 const lTotal = (l.qty * l.price) * (1 + (l.tax/100));
                 pdfLines.innerHTML += `<tr><td class="font-medium">${l.productName}</td><td class="text-center">${l.qty}</td><td class="text-right">$${l.price.toFixed(2)}</td><td class="text-right">${l.tax}%</td><td class="text-right font-semibold">$${lTotal.toFixed(2)}</td></tr>`;
             });
 
-            document.getElementById('pdf-inv-sub').innerText = `$${inv.subtotal.toFixed(2)}`;
-            document.getElementById('pdf-inv-tax').innerText = `$${inv.tax.toFixed(2)}`;
-            document.getElementById('pdf-inv-total').innerText = `$${inv.total.toFixed(2)}`;
+            document.getElementById('pdf-inv-sub').innerText = `$${inv.subtotal.toFixed(2)}`; document.getElementById('pdf-inv-tax').innerText = `$${inv.tax.toFixed(2)}`; document.getElementById('pdf-inv-total').innerText = `$${inv.total.toFixed(2)}`;
             if(inv.shipping > 0) { document.getElementById('pdf-inv-ship-container').classList.remove('hidden'); document.getElementById('pdf-inv-ship').innerText = `$${inv.shipping.toFixed(2)}`; } 
             else document.getElementById('pdf-inv-ship-container').classList.add('hidden');
             document.getElementById('pdf-inv-notes').innerText = inv.notes ? inv.notes : 'Sin términos o notas adicionales.';
 
-            // Panel Lateral
-            document.getElementById('inv-detail-total').innerText = `$${inv.total.toFixed(2)}`;
-            document.getElementById('inv-detail-paid').innerText = `$${(inv.paidAmount || 0).toFixed(2)}`;
+            document.getElementById('inv-detail-total').innerText = `$${inv.total.toFixed(2)}`; document.getElementById('inv-detail-paid').innerText = `$${(inv.paidAmount || 0).toFixed(2)}`;
             
-            if (balance <= -0.01) {
-                document.getElementById('inv-detail-balance').innerText = `-$${Math.abs(balance).toFixed(2)} (A Favor)`;
-                document.getElementById('inv-detail-balance').parentElement.className = "flex justify-between text-purple-600 pt-2 border-t font-black text-lg";
-            } else {
-                document.getElementById('inv-detail-balance').innerText = `$${balance.toFixed(2)}`;
-                document.getElementById('inv-detail-balance').parentElement.className = "flex justify-between text-gray-800 pt-2 border-t font-black text-lg";
-            }
+            if (balance <= -0.01) { document.getElementById('inv-detail-balance').innerText = `-$${Math.abs(balance).toFixed(2)} (A Favor)`; document.getElementById('inv-detail-balance').parentElement.className = "flex justify-between text-purple-600 pt-2 border-t font-black text-lg"; } 
+            else { document.getElementById('inv-detail-balance').innerText = `$${balance.toFixed(2)}`; document.getElementById('inv-detail-balance').parentElement.className = "flex justify-between text-gray-800 pt-2 border-t font-black text-lg"; }
 
             const badge = document.getElementById('inv-detail-status-badge');
             const btnPay = document.getElementById('btn-inv-pay');
@@ -1780,34 +1656,22 @@
             
             if (isReturn) {
                 badge.className = "mb-4 text-center py-2 rounded-lg font-bold text-sm bg-orange-100 text-orange-800 border border-orange-200"; badge.innerText = "NOTA DE CRÉDITO";
-                btnPay.classList.add('hidden'); btnReturn.classList.add('hidden'); document.getElementById('inv-payments-panel').classList.add('hidden');
-                btnEdit.classList.add('hidden');
+                btnPay.classList.add('hidden'); btnReturn.classList.add('hidden'); btnEdit.classList.add('hidden'); document.getElementById('inv-payments-panel').classList.add('hidden');
             } else {
-                document.getElementById('inv-payments-panel').classList.remove('hidden'); 
-                btnReturn.classList.remove('hidden');
-                btnEdit.classList.remove('hidden'); // Facturas normales se pueden editar
-
-                if (balance <= 0.01 && balance >= -0.01) { 
-                    badge.className = "mb-4 text-center py-2 rounded-lg font-bold text-sm bg-green-100 text-green-700"; badge.innerText = "FACTURA PAGADA"; btnPay.classList.add('hidden'); 
-                } else if (balance < -0.01) {
-                    badge.className = "mb-4 text-center py-2 rounded-lg font-bold text-sm bg-purple-100 text-purple-700"; badge.innerText = "SALDO A FAVOR"; btnPay.classList.add('hidden'); 
-                } else if ((inv.paidAmount || 0) > 0) { 
-                    badge.className = "mb-4 text-center py-2 rounded-lg font-bold text-sm bg-blue-100 text-blue-700"; badge.innerText = "PAGO PARCIAL"; btnPay.classList.remove('hidden'); 
-                } else { 
-                    badge.className = "mb-4 text-center py-2 rounded-lg font-bold text-sm bg-red-100 text-red-700"; badge.innerText = "PENDIENTE DE PAGO"; btnPay.classList.remove('hidden'); 
-                }
+                document.getElementById('inv-payments-panel').classList.remove('hidden'); btnReturn.classList.remove('hidden'); btnEdit.classList.remove('hidden'); 
+                if (balance <= 0.01 && balance >= -0.01) { badge.className = "mb-4 text-center py-2 rounded-lg font-bold text-sm bg-green-100 text-green-700"; badge.innerText = "FACTURA PAGADA"; btnPay.classList.add('hidden'); } 
+                else if (balance < -0.01) { badge.className = "mb-4 text-center py-2 rounded-lg font-bold text-sm bg-purple-100 text-purple-700"; badge.innerText = "SALDO A FAVOR"; btnPay.classList.add('hidden'); } 
+                else if ((inv.paidAmount || 0) > 0) { badge.className = "mb-4 text-center py-2 rounded-lg font-bold text-sm bg-blue-100 text-blue-700"; badge.innerText = "PAGO PARCIAL"; btnPay.classList.remove('hidden'); } 
+                else { badge.className = "mb-4 text-center py-2 rounded-lg font-bold text-sm bg-red-100 text-red-700"; badge.innerText = "PENDIENTE DE PAGO"; btnPay.classList.remove('hidden'); }
             }
 
-            const ulPayments = document.getElementById('inv-payments-list');
-            ulPayments.innerHTML = '';
-            if(inv.payments && inv.payments.length > 0) {
-                inv.payments.forEach(pay => { ulPayments.innerHTML += `<li class="py-3 flex justify-between items-center"><div><p class="font-semibold text-gray-800">${pay.method}</p><p class="text-xs text-gray-500">${pay.date} | ${pay.reference || 'Sin ref'}</p></div><span class="font-bold text-green-600">+$${pay.amount.toFixed(2)}</span></li>`; });
-            } else ulPayments.innerHTML = '<li class="py-4 text-center text-gray-400">Sin pagos registrados</li>';
+            const ulPayments = document.getElementById('inv-payments-list'); ulPayments.innerHTML = '';
+            if(inv.payments && inv.payments.length > 0) { inv.payments.forEach(pay => { ulPayments.innerHTML += `<li class="py-3 flex justify-between items-center"><div><p class="font-semibold text-gray-800">${pay.method}</p><p class="text-xs text-gray-500">${pay.date} | ${pay.reference || 'Sin ref'}</p></div><span class="font-bold text-green-600">+$${pay.amount.toFixed(2)}</span></li>`; }); } 
+            else ulPayments.innerHTML = '<li class="py-4 text-center text-gray-400">Sin pagos registrados</li>';
 
             const retContainer = document.getElementById('inv-returns-container');
             if(inv.returns && inv.returns.length > 0) {
-                retContainer.classList.remove('hidden');
-                let retHtml = '<ul class="space-y-2">';
+                retContainer.classList.remove('hidden'); let retHtml = '<ul class="space-y-2">';
                 inv.returns.forEach(r => { retHtml += `<li><strong>${r.date}:</strong> Devueltos ${r.qty} unid. de ${r.productName}</li>`; });
                 document.getElementById('inv-returns-text').innerHTML = retHtml + '</ul>';
             } else retContainer.classList.add('hidden');
@@ -1817,74 +1681,30 @@
         window.editInvoice = function() {
             if(!currentViewInvoice) return;
             const inv = currentViewInvoice;
-
-            document.getElementById('form-universal-document').reset();
-            document.getElementById('univ-doc-type').value = 'factura';
-            document.getElementById('univ-doc-id').value = inv.id;
+            document.getElementById('form-universal-document').reset(); document.getElementById('univ-doc-type').value = 'factura'; document.getElementById('univ-doc-id').value = inv.id;
+            document.getElementById('doc-modal-title').innerText = "Editar Factura"; document.getElementById('doc-modal-title').className = "text-xl font-black text-indigo-600";
+            document.getElementById('btn-submit-univ-doc').innerText = "Actualizar Factura"; document.getElementById('btn-submit-univ-doc').className = "px-8 py-2.5 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition shadow-md flex items-center";
             
-            document.getElementById('doc-modal-title').innerText = "Editar Factura";
-            document.getElementById('doc-modal-title').className = "text-xl font-black text-indigo-600";
-            document.getElementById('btn-submit-univ-doc').innerText = "Actualizar Factura";
-            document.getElementById('btn-submit-univ-doc').className = "px-8 py-2.5 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition shadow-md flex items-center";
-            
-            const clientSelect = document.getElementById('univ-doc-client');
-            clientSelect.innerHTML = '<option value="">Seleccione un cliente...</option>';
-            allClients.filter(c => c.type === 'cliente').forEach(c => {
-                clientSelect.innerHTML += `<option value="${c.id}">${c.orgName}</option>`;
-            });
+            const clientSelect = document.getElementById('univ-doc-client'); clientSelect.innerHTML = '<option value="">Seleccione un cliente...</option>';
+            allClients.filter(c => c.type === 'cliente').forEach(c => { clientSelect.innerHTML += `<option value="${c.id}">${c.orgName}</option>`; });
             clientSelect.value = inv.clientId;
 
-            document.getElementById('univ-doc-date').value = inv.date || '';
-            document.getElementById('univ-doc-notes').value = inv.notes || '';
-            document.getElementById('univ-doc-ship').value = inv.shipping || 0;
+            document.getElementById('univ-doc-date').value = inv.date || ''; document.getElementById('univ-doc-notes').value = inv.notes || ''; document.getElementById('univ-doc-ship').value = inv.shipping || 0;
+            document.getElementById('univ-doc-condition-container').classList.remove('hidden'); document.getElementById('univ-doc-condition').value = inv.condition;
+            document.getElementById('univ-doc-condition').disabled = false; document.getElementById('univ-doc-expiry-container').classList.add('hidden');
             
-            document.getElementById('univ-doc-condition-container').classList.remove('hidden');
-            document.getElementById('univ-doc-condition').value = inv.condition;
-            document.getElementById('univ-doc-condition').disabled = false;
-            document.getElementById('univ-doc-expiry-container').classList.add('hidden');
-            
-            const tbody = document.getElementById('univ-doc-lines');
-            tbody.innerHTML = '';
+            const tbody = document.getElementById('univ-doc-lines'); tbody.innerHTML = '';
             inv.lines.forEach(line => {
-                const tr = document.createElement('tr');
-                tr.className = 'univ-line group hover:bg-slate-50 transition-colors border-b border-gray-100';
-                tr.innerHTML = `
-                    <td class="p-2">
-                        <select required class="line-product w-full border border-gray-300 rounded-md px-2 py-1.5 text-sm outline-none focus:border-indigo-500" onchange="window.calculateUnivDocTotals(this)">
-                            ${getProductOptionsHTML()}
-                        </select>
-                    </td>
-                    <td class="p-2">
-                        <input type="number" required min="0.01" step="0.01" value="${line.qty}" class="line-qty w-full border border-gray-300 rounded-md px-2 py-1.5 text-sm outline-none focus:border-indigo-500 text-center" oninput="window.calculateUnivDocTotals()">
-                    </td>
-                    <td class="p-2">
-                        <div class="flex items-center"><span class="text-gray-400 mr-1">$</span><input type="number" required step="0.01" value="${line.price}" class="line-price w-full border border-gray-300 rounded-md px-2 py-1.5 text-sm outline-none focus:border-indigo-500 text-right" oninput="window.calculateUnivDocTotals()"></div>
-                    </td>
-                    <td class="p-2">
-                        <div class="flex items-center"><input type="number" required step="0.01" value="${line.tax}" class="line-tax w-full border border-gray-300 rounded-md px-2 py-1.5 text-sm outline-none focus:border-indigo-500 text-right" oninput="window.calculateUnivDocTotals()"><span class="text-gray-400 ml-1">%</span></div>
-                    </td>
-                    <td class="p-2 text-right">
-                        <span class="line-total font-bold text-gray-800">$0.00</span>
-                    </td>
-                    <td class="p-2 text-center">
-                        <button type="button" onclick="window.removeUnivDocLine(this)" class="text-gray-300 hover:text-red-500 transition focus:outline-none">
-                            <i data-lucide="trash-2" class="w-5 h-5 mx-auto"></i>
-                        </button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-                tr.querySelector('.line-product').value = line.productId;
+                const tr = document.createElement('tr'); tr.className = 'univ-line group hover:bg-slate-50 transition-colors border-b border-gray-100';
+                tr.innerHTML = `<td class="p-2"><select required class="line-product w-full border border-gray-300 rounded-md px-2 py-1.5 text-sm outline-none focus:border-indigo-500" onchange="window.calculateUnivDocTotals(this)">${getProductOptionsHTML()}</select></td><td class="p-2"><input type="number" required min="0.01" step="0.01" value="${line.qty}" class="line-qty w-full border border-gray-300 rounded-md px-2 py-1.5 text-sm outline-none focus:border-indigo-500 text-center" oninput="window.calculateUnivDocTotals()"></td><td class="p-2"><div class="flex items-center"><span class="text-gray-400 mr-1">$</span><input type="number" required step="0.01" value="${line.price}" class="line-price w-full border border-gray-300 rounded-md px-2 py-1.5 text-sm outline-none focus:border-indigo-500 text-right" oninput="window.calculateUnivDocTotals()"></div></td><td class="p-2"><div class="flex items-center"><input type="number" required step="0.01" value="${line.tax}" class="line-tax w-full border border-gray-300 rounded-md px-2 py-1.5 text-sm outline-none focus:border-indigo-500 text-right" oninput="window.calculateUnivDocTotals()"><span class="text-gray-400 ml-1">%</span></div></td><td class="p-2 text-right"><span class="line-total font-bold text-gray-800">$0.00</span></td><td class="p-2 text-center"><button type="button" onclick="window.removeUnivDocLine(this)" class="text-gray-300 hover:text-red-500 transition focus:outline-none"><i data-lucide="trash-2" class="w-5 h-5 mx-auto"></i></button></td>`;
+                tbody.appendChild(tr); tr.querySelector('.line-product').value = line.productId;
             });
-            
-            window.calculateUnivDocTotals();
-            lucide.createIcons();
-            document.getElementById('modal-document').classList.remove('hidden-screen');
+            window.calculateUnivDocTotals(); lucide.createIcons(); document.getElementById('modal-document').classList.remove('hidden-screen');
         };
 
         window.generateInvoicePDF = function() {
             if(!currentViewInvoice) return;
-            const element = document.getElementById('invoice-print-area');
-            const cName = (companyProfile.companyName || 'Empresa').substring(0,5);
+            const element = document.getElementById('invoice-print-area'); const cName = (companyProfile.companyName || 'Empresa').substring(0,5);
             const opt = { margin: 0.5, filename: `Factura_${cName}_${currentViewInvoice.date}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' } };
             window.html2pdf().set(opt).from(element).save();
         }
@@ -1892,14 +1712,11 @@
         window.openPaymentModal = function() {
             if(!currentViewInvoice) return;
             const balance = currentViewInvoice.total - (currentViewInvoice.paidAmount || 0);
-            document.getElementById('pay-amount').value = balance.toFixed(2);
-            document.getElementById('pay-date').valueAsDate = new Date();
-            document.getElementById('modal-payment').classList.remove('hidden-screen');
+            document.getElementById('pay-amount').value = balance.toFixed(2); document.getElementById('pay-date').valueAsDate = new Date(); document.getElementById('modal-payment').classList.remove('hidden-screen');
         }
 
         document.getElementById('form-add-payment').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            if(!currentViewInvoice) return;
+            e.preventDefault(); if(!currentViewInvoice) return;
             const btn = document.getElementById('btn-submit-payment'); btn.innerHTML = "Procesando..."; btn.disabled = true;
             const amount = parseFloat(document.getElementById('pay-amount').value);
             const newPayment = { amount, date: document.getElementById('pay-date').value, method: document.getElementById('pay-method').value, reference: document.getElementById('pay-ref').value };
@@ -1928,57 +1745,30 @@
 
         window.processReturn = async function() {
             if(!currentViewInvoice) return;
-            
             const btn = document.getElementById('btn-submit-return'); btn.innerHTML = "Procesando..."; btn.disabled = true;
-
             const returnItems = [];
-            document.querySelectorAll('.ret-qty').forEach(input => {
-                const qty = parseInt(input.value || 0);
-                if (qty > 0) returnItems.push({ productId: input.dataset.pid, productName: input.dataset.pname, qty: qty, date: new Date().toISOString().split('T')[0] });
-            });
-
+            document.querySelectorAll('.ret-qty').forEach(input => { const qty = parseInt(input.value || 0); if (qty > 0) returnItems.push({ productId: input.dataset.pid, productName: input.dataset.pname, qty: qty, date: new Date().toISOString().split('T')[0] }); });
             if(returnItems.length === 0) { alert("Indique cantidad mayor a 0."); btn.innerHTML = "Aplicar"; btn.disabled = false; return; }
 
             try {
                 const invRef = doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'invoices', currentViewInvoice.id);
-                
                 let newLines = JSON.parse(JSON.stringify(currentViewInvoice.lines));
-                returnItems.forEach(ret => {
-                    let line = newLines.find(l => l.productId === ret.productId);
-                    if (line) line.qty -= ret.qty;
-                });
-                
+                returnItems.forEach(ret => { let line = newLines.find(l => l.productId === ret.productId); if (line) line.qty -= ret.qty; });
                 newLines = newLines.filter(l => l.qty > 0);
-                
                 let newSubtotal = 0; let newTax = 0;
-                newLines.forEach(l => {
-                    const base = l.qty * l.price; const tax = base * (l.tax / 100);
-                    newSubtotal += base; newTax += tax;
-                });
-                
+                newLines.forEach(l => { const base = l.qty * l.price; const tax = base * (l.tax / 100); newSubtotal += base; newTax += tax; });
                 let newTotal = newSubtotal + newTax + (currentViewInvoice.shipping || 0);
 
                 for (const ret of returnItems) await updateDoc(invRef, { returns: arrayUnion(ret) });
-
-                await updateDoc(invRef, {
-                    lines: newLines, subtotal: newSubtotal, tax: newTax, total: newTotal
-                });
+                await updateDoc(invRef, { lines: newLines, subtotal: newSubtotal, tax: newTax, total: newTotal });
 
                 for (const ret of returnItems) {
                     const product = allProducts.find(p => p.id === ret.productId);
-                    if (product && product.trackStock) {
-                        await updateDoc(doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'products', product.id), { stockCurrent: (product.stockCurrent || 0) + ret.qty });
-                    }
+                    if (product && product.trackStock) await updateDoc(doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'products', product.id), { stockCurrent: (product.stockCurrent || 0) + ret.qty });
                 }
-
-                document.getElementById('modal-return').classList.add('hidden-screen'); 
-                alert("Devolución aplicada con éxito. Se ha actualizado la factura y el inventario.");
-                
+                document.getElementById('modal-return').classList.add('hidden-screen'); alert("Devolución aplicada con éxito.");
                 setTimeout(() => { const u = allInvoices.find(i => i.id === currentViewInvoice.id); if(u) window.showInvoiceDetails(u.id); }, 500);
-
-            } catch (error) { 
-                console.error(error); alert("Error procesando la devolución."); 
-            } finally { btn.innerHTML = "Aplicar Devolución"; btn.disabled = false; }
+            } catch (error) { console.error(error); alert("Error procesando la devolución."); } finally { btn.innerHTML = "Aplicar Devolución"; btn.disabled = false; }
         }
 
         // ==========================================
