@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="do">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -43,7 +43,7 @@
                     <h2 class="text-3xl font-bold mb-2">LorHels ERP</h2>
                     <p class="text-slate-400 text-sm mt-4">Sistema Integral de Planificación de Recursos Empresariales.</p>
                 </div>
-                <button id="btn-goto-admin" class="text-sm text-slate-500 hover:text-white text-left flex items-center transition mt-8">
+                <button onclick="window.showScreen('adminLogin')" class="text-sm text-slate-500 hover:text-white text-left flex items-center transition mt-8">
                     <i data-lucide="shield-check" class="w-4 h-4 mr-2"></i> Acceso Admin
                 </button>
             </div>
@@ -51,12 +51,12 @@
             <div class="w-full md:w-2/3 p-8">
                 <!-- Pestañas de Navegación -->
                 <div class="flex border-b border-gray-200 mb-6">
-                    <button id="tab-login" class="px-6 py-3 font-bold text-indigo-600 border-b-2 border-indigo-600 transition">Ingresar</button>
-                    <button id="tab-register" class="px-6 py-3 font-bold text-gray-500 hover:text-indigo-600 transition">Crear Empresa</button>
+                    <button id="tab-login" onclick="window.switchAuthTab('login')" class="px-6 py-3 font-bold text-indigo-600 border-b-2 border-indigo-600 transition">Ingresar</button>
+                    <button id="tab-register" onclick="window.switchAuthTab('register')" class="px-6 py-3 font-bold text-gray-500 hover:text-indigo-600 transition">Crear Empresa</button>
                 </div>
 
                 <!-- FORMULARIO DE INGRESO (LOGIN) -->
-                <form id="form-login-company" class="space-y-4">
+                <form id="form-login-company" onsubmit="window.handleLogin(event)" class="space-y-4">
                     <h3 class="text-2xl font-bold text-gray-800 mb-6">Acceso a mi Empresa</h3>
                     <div>
                         <label class="block text-xs font-semibold text-gray-600 uppercase mb-2">Selecciona tu Empresa</label>
@@ -78,7 +78,7 @@
                 </form>
 
                 <!-- FORMULARIO DE REGISTRO -->
-                <form id="form-register-company" class="space-y-4 hidden">
+                <form id="form-register-company" onsubmit="window.handleRegisterCompany(event)" class="space-y-4 hidden">
                     <h3 class="text-xl font-bold text-gray-800 mb-4">Registro de Nueva Empresa</h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="md:col-span-2">
@@ -115,7 +115,7 @@
                             </select>
                             <p class="text-[11px] text-orange-700 mt-1.5 font-medium bg-orange-50 p-2 rounded border border-orange-200">
                                 <i data-lucide="info" class="w-3 h-3 inline-block mr-1"></i>
-                                Envíe comprobante al <b>182991355723</b>
+                                Para activar, envíe el comprobante al <b>182991355723</b>
                             </p>
                         </div>
                         <div class="md:col-span-2">
@@ -136,7 +136,7 @@
                         </div>
                     </div>
                     <button type="submit" id="btn-submit-register" class="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700 transition flex justify-center items-center mt-6">
-                        Registrar Empresa
+                        Registrar Empresa y Continuar
                     </button>
                 </form>
             </div>
@@ -146,20 +146,20 @@
     <!-- PANTALLA PENDIENTE DE APROBACIÓN -->
     <div id="screen-pending" class="hidden-screen h-screen w-screen bg-slate-50 flex flex-col items-center justify-center p-6 text-center z-40 fixed inset-0">
         <div class="bg-white p-10 rounded-2xl shadow-xl border max-w-md w-full relative">
-            <button id="btn-logout-pending" class="absolute top-4 right-4 text-sm text-gray-500 hover:text-red-500"><i data-lucide="log-out" class="w-5 h-5"></i></button>
+            <button onclick="window.logout()" class="absolute top-4 right-4 text-sm text-gray-500 hover:text-red-500"><i data-lucide="log-out" class="w-5 h-5"></i></button>
             <i data-lucide="shield-alert" class="w-20 h-20 text-indigo-500 mx-auto mb-6"></i>
             <h2 class="text-2xl font-bold text-gray-800 mb-2">Aprobación Pendiente</h2>
-            <p class="text-gray-600 mb-4">Tu empresa ha sido registrada exitosamente.</p>
+            <p class="text-gray-600 mb-4">Tu empresa ha sido registrada exitosamente en nuestra base de datos.</p>
             
             <div class="bg-orange-50 border border-orange-200 text-orange-800 p-4 rounded-lg mb-6 text-sm">
-                <strong>Paso Final:</strong> Para activar tu plan y habilitar tu cuenta, por favor envía tu comprobante de depósito al siguiente número:<br>
+                <strong>Paso Final:</strong> Para activar tu plan y habilitar tu cuenta, por favor envía tu comprobante de depósito al siguiente número vía WhatsApp:<br>
                 <a href="https://wa.me/182991355723" target="_blank" class="inline-flex items-center justify-center font-black text-xl mt-3 text-green-600 hover:text-green-700 transition">
                     <i data-lucide="phone" class="w-5 h-5 mr-2"></i> 182991355723
                 </a>
             </div>
 
             <button onclick="window.location.reload()" class="w-full bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold py-3 px-6 rounded-lg transition">
-                Verificar Estado Actual
+                Ya pagué (Verificar Estado)
             </button>
         </div>
     </div>
@@ -167,13 +167,13 @@
     <!-- PANTALLA SUSCRIPCIÓN VENCIDA -->
     <div id="screen-expired" class="hidden-screen h-screen w-screen bg-slate-50 flex flex-col items-center justify-center p-6 text-center z-40 fixed inset-0">
         <div class="bg-white p-10 rounded-2xl shadow-xl border max-w-md w-full relative">
-            <button id="btn-logout-expired" class="absolute top-4 right-4 text-sm text-gray-500 hover:text-red-500"><i data-lucide="log-out" class="w-5 h-5"></i></button>
+            <button onclick="window.logout()" class="absolute top-4 right-4 text-sm text-gray-500 hover:text-red-500"><i data-lucide="log-out" class="w-5 h-5"></i></button>
             <i data-lucide="calendar-x" class="w-20 h-20 text-red-500 mx-auto mb-6"></i>
             <h2 class="text-2xl font-bold text-gray-800 mb-2">Suscripción Vencida</h2>
             <p class="text-gray-600 mb-4">El plan de acceso para tu empresa ha caducado.</p>
             
             <div class="bg-red-50 border border-red-200 text-red-800 p-4 rounded-lg mb-6 text-sm">
-                <strong>Renovación Requerida:</strong> Para restaurar el acceso al ERP y mantener tus datos seguros, por favor contáctanos y envía tu comprobante de pago de renovación al:<br>
+                <strong>Renovación Requerida:</strong> Para restaurar el acceso al ERP y mantener tus datos seguros, por favor envía tu comprobante de pago de renovación al:<br>
                 <a href="https://wa.me/182991355723" target="_blank" class="inline-flex items-center justify-center font-black text-xl mt-3 text-green-600 hover:text-green-700 transition">
                     <i data-lucide="phone" class="w-5 h-5 mr-2"></i> 182991355723
                 </a>
@@ -189,12 +189,12 @@
     <div id="screen-admin-login" class="hidden-screen h-screen w-screen bg-slate-900 flex items-center justify-center p-6 z-50 fixed inset-0">
         <div class="bg-white p-8 rounded-2xl shadow-2xl max-w-sm w-full">
             <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">Admin LorHels</h2>
-            <form id="form-admin-login" class="space-y-4">
+            <form onsubmit="window.handleAdminLogin(event)" class="space-y-4">
                 <input required type="text" id="admin-user" placeholder="Usuario" class="w-full border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500">
                 <input required type="password" id="admin-pass" placeholder="Contraseña" class="w-full border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500">
                 <button type="submit" class="w-full bg-indigo-600 text-white font-bold py-2 rounded-lg">Entrar</button>
             </form>
-            <button id="btn-back-from-admin" class="w-full mt-4 text-sm text-gray-500">Volver</button>
+            <button onclick="window.showScreen('welcome')" type="button" class="w-full mt-4 text-sm text-gray-500 hover:underline">Volver al inicio</button>
         </div>
     </div>
 
@@ -203,7 +203,7 @@
         <div class="max-w-6xl mx-auto">
             <div class="flex justify-between items-center mb-8">
                 <h1 class="text-3xl font-bold text-slate-800">Panel de Administración</h1>
-                <button id="btn-admin-logout" class="text-red-600 font-bold hover:underline">Cerrar Sesión</button>
+                <button onclick="window.showScreen('welcome')" class="text-red-600 font-bold hover:underline">Salir de Admin</button>
             </div>
             <div class="bg-white rounded-xl shadow border overflow-hidden">
                 <table class="w-full text-left">
@@ -234,7 +234,7 @@
                 <div id="sidebar-company-plan" class="mt-2 text-[10px] font-bold uppercase tracking-wider bg-indigo-500/30 text-indigo-200 px-2 py-1 rounded-full inline-block">Plan</div>
             </div>
             <nav class="flex-1 px-3 py-4 space-y-1" id="main-nav">
-                <!-- Generado por JS -->
+                <!-- Generado dinámicamente por JS -->
             </nav>
         </aside>
 
@@ -245,7 +245,7 @@
                 <h2 id="header-title" class="text-xl font-bold text-gray-800 capitalize">Dashboard</h2>
                 <div class="flex items-center space-x-4">
                     <span id="header-user-name" class="text-sm font-medium text-gray-600 hidden md:block">👤 Usuario</span>
-                    <button id="btn-logout-main" class="w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-red-600 transition" title="Cerrar Sesión">
+                    <button onclick="window.logout()" class="w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-red-600 transition" title="Cerrar Sesión">
                         <i data-lucide="log-out" class="w-4 h-4"></i>
                     </button>
                 </div>
@@ -283,7 +283,7 @@
                 <!-- VISTA: COTIZACIONES LISTA -->
                 <div id="view-cotizaciones" class="app-view hidden-screen">
                     <div class="flex justify-between items-center mb-6">
-                        <button id="btn-new-quote" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center shadow transition">
+                        <button onclick="window.openDocumentModal('cotizacion')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center shadow transition">
                             <i data-lucide="plus" class="w-4 h-4 mr-2"></i> Nueva Cotización
                         </button>
                     </div>
@@ -306,20 +306,20 @@
                 <!-- VISTA: COTIZACION DETALLES -->
                 <div id="view-cotizacion-detalles" class="app-view hidden-screen space-y-6">
                     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-2">
-                        <button id="btn-back-quotes" class="flex items-center text-slate-500 hover:text-indigo-600 font-medium transition">
+                        <button onclick="window.navigateTo('cotizaciones', '3. Cotizaciones')" class="flex items-center text-slate-500 hover:text-indigo-600 font-medium transition">
                             <i data-lucide="arrow-left" class="w-4 h-4 mr-2"></i> Volver a Cotizaciones
                         </button>
                         <div class="flex flex-wrap gap-2">
-                            <button id="btn-quo-edit" class="flex items-center bg-blue-50 text-blue-700 hover:bg-blue-100 font-medium px-4 py-2 rounded-lg transition hidden">
+                            <button id="btn-quo-edit" onclick="window.editQuote()" class="flex items-center bg-blue-50 text-blue-700 hover:bg-blue-100 font-medium px-4 py-2 rounded-lg transition hidden">
                                 <i data-lucide="edit" class="w-4 h-4 mr-2"></i> Editar
                             </button>
-                            <button id="btn-quo-reject" class="flex items-center bg-red-100 text-red-700 hover:bg-red-200 font-medium px-4 py-2 rounded-lg transition hidden">
+                            <button id="btn-quo-reject" onclick="window.rejectQuote()" class="flex items-center bg-red-100 text-red-700 hover:bg-red-200 font-medium px-4 py-2 rounded-lg transition hidden">
                                 <i data-lucide="x-circle" class="w-4 h-4 mr-2"></i> Rechazar
                             </button>
-                            <button id="btn-quo-approve" class="flex items-center bg-green-600 hover:bg-green-700 text-white font-medium px-4 py-2 rounded-lg transition shadow-sm hidden">
+                            <button id="btn-quo-approve" onclick="window.openConvertQuoteModal()" class="flex items-center bg-green-600 hover:bg-green-700 text-white font-medium px-4 py-2 rounded-lg transition shadow-sm hidden">
                                 <i data-lucide="check-circle" class="w-4 h-4 mr-2"></i> Aprobar y Crear Factura
                             </button>
-                            <button id="btn-quo-pdf" class="flex items-center bg-indigo-50 text-indigo-700 hover:bg-indigo-100 font-medium px-4 py-2 rounded-lg transition">
+                            <button onclick="window.generateQuotePDF()" class="flex items-center bg-indigo-50 text-indigo-700 hover:bg-indigo-100 font-medium px-4 py-2 rounded-lg transition">
                                 <i data-lucide="file-down" class="w-4 h-4 mr-2"></i> Generar PDF
                             </button>
                         </div>
@@ -346,6 +346,7 @@
                                     <p class="text-gray-600">Válida Hasta: <span id="pdf-quo-expiry"></span></p>
                                 </div>
                             </div>
+                            <!-- Info Cliente -->
                             <div class="mb-8">
                                 <h3 class="text-gray-500 font-semibold mb-1 uppercase text-xs tracking-wider">Cotizar a:</h3>
                                 <p class="text-lg font-bold text-gray-800" id="pdf-quo-cli-name"></p>
@@ -384,10 +385,10 @@
                 <div id="view-facturas" class="app-view hidden-screen">
                     <div class="flex justify-between items-center mb-6">
                         <div class="flex space-x-3">
-                            <button id="btn-new-invoice" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium flex items-center shadow transition">
+                            <button onclick="window.openDocumentModal('factura')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium flex items-center shadow transition">
                                 <i data-lucide="plus" class="w-4 h-4 mr-2"></i> Nueva Factura
                             </button>
-                            <button id="btn-new-return" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-medium flex items-center shadow transition">
+                            <button onclick="window.openDocumentModal('devolucion')" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-medium flex items-center shadow transition">
                                 <i data-lucide="corner-down-left" class="w-4 h-4 mr-2"></i> Nueva Devolución Libre
                             </button>
                         </div>
@@ -412,20 +413,20 @@
                 <!-- VISTA: FACTURA DETALLES (PDF y Pagos) -->
                 <div id="view-factura-detalles" class="app-view hidden-screen space-y-6">
                     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-2">
-                        <button id="btn-back-invoices" class="flex items-center text-slate-500 hover:text-indigo-600 font-medium transition">
+                        <button onclick="window.navigateTo('facturas', '2. Facturas')" class="flex items-center text-slate-500 hover:text-indigo-600 font-medium transition">
                             <i data-lucide="arrow-left" class="w-4 h-4 mr-2"></i> Volver a Facturas
                         </button>
                         <div class="flex flex-wrap gap-2">
-                            <button id="btn-inv-edit" class="flex items-center bg-blue-50 text-blue-700 hover:bg-blue-100 font-medium px-4 py-2 rounded-lg transition">
-                                <i data-lucide="edit" class="w-4 h-4 mr-2"></i> Editar
+                            <button id="btn-inv-edit" onclick="window.editInvoice()" class="flex items-center bg-blue-50 text-blue-700 hover:bg-blue-100 font-medium px-4 py-2 rounded-lg transition hidden">
+                                <i data-lucide="edit" class="w-4 h-4 mr-2"></i> Editar Factura
                             </button>
-                            <button id="btn-inv-pay" class="flex items-center bg-green-600 hover:bg-green-700 text-white font-medium px-4 py-2 rounded-lg transition shadow-sm">
+                            <button id="btn-inv-pay" onclick="window.openPaymentModal('factura')" class="flex items-center bg-green-600 hover:bg-green-700 text-white font-medium px-4 py-2 rounded-lg transition shadow-sm hidden">
                                 <i data-lucide="dollar-sign" class="w-4 h-4 mr-2"></i> Añadir Pago
                             </button>
-                            <button id="btn-inv-return" class="flex items-center bg-orange-100 text-orange-700 hover:bg-orange-200 font-medium px-4 py-2 rounded-lg transition">
+                            <button id="btn-inv-return" onclick="window.openReturnModal('factura')" class="flex items-center bg-orange-100 text-orange-700 hover:bg-orange-200 font-medium px-4 py-2 rounded-lg transition hidden">
                                 <i data-lucide="corner-down-left" class="w-4 h-4 mr-2"></i> Devolución
                             </button>
-                            <button id="btn-inv-pdf" class="flex items-center bg-indigo-50 text-indigo-700 hover:bg-indigo-100 font-medium px-4 py-2 rounded-lg transition">
+                            <button onclick="window.generateInvoicePDF()" class="flex items-center bg-indigo-50 text-indigo-700 hover:bg-indigo-100 font-medium px-4 py-2 rounded-lg transition">
                                 <i data-lucide="file-down" class="w-4 h-4 mr-2"></i> Generar PDF
                             </button>
                         </div>
@@ -507,20 +508,240 @@
                     </div>
                 </div>
 
+                <!-- VISTA: ORDENES DE COMPRA LISTA -->
+                <div id="view-orden_compra" class="app-view hidden-screen">
+                    <div class="flex justify-between items-center mb-6">
+                        <button onclick="window.openDocumentModal('orden_compra')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center shadow transition">
+                            <i data-lucide="plus" class="w-4 h-4 mr-2"></i> Nueva Orden de Compra
+                        </button>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
+                        <table class="w-full text-left">
+                            <thead class="bg-slate-50 border-b">
+                                <tr>
+                                    <th class="p-4 font-semibold text-gray-600">Fecha</th>
+                                    <th class="p-4 font-semibold text-gray-600">Proveedor</th>
+                                    <th class="p-4 font-semibold text-gray-600">Entrega Esperada</th>
+                                    <th class="p-4 font-semibold text-gray-600">Estado</th>
+                                    <th class="p-4 font-semibold text-gray-600 text-right">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody id="purchase-orders-table-body" class="divide-y"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- VISTA: ORDEN DE COMPRA DETALLES -->
+                <div id="view-orden_compra-detalles" class="app-view hidden-screen space-y-6">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-2">
+                        <button onclick="window.navigateTo('orden_compra', '5. Orden de Compra')" class="flex items-center text-slate-500 hover:text-indigo-600 font-medium transition">
+                            <i data-lucide="arrow-left" class="w-4 h-4 mr-2"></i> Volver a Órdenes
+                        </button>
+                        <div class="flex flex-wrap gap-2">
+                            <button id="btn-po-edit" onclick="window.editPurchaseOrder()" class="flex items-center bg-blue-50 text-blue-700 hover:bg-blue-100 font-medium px-4 py-2 rounded-lg transition hidden">
+                                <i data-lucide="edit" class="w-4 h-4 mr-2"></i> Editar
+                            </button>
+                            <button id="btn-po-reject" onclick="window.rejectPurchaseOrder()" class="flex items-center bg-red-100 text-red-700 hover:bg-red-200 font-medium px-4 py-2 rounded-lg transition hidden">
+                                <i data-lucide="x-circle" class="w-4 h-4 mr-2"></i> Cancelar
+                            </button>
+                            <button id="btn-po-approve" onclick="window.openConvertOrderModal()" class="flex items-center bg-teal-600 hover:bg-teal-700 text-white font-medium px-4 py-2 rounded-lg transition shadow-sm hidden">
+                                <i data-lucide="check-circle" class="w-4 h-4 mr-2"></i> Recibir y Registrar Compra
+                            </button>
+                            <button onclick="window.generatePurchaseOrderPDF()" class="flex items-center bg-indigo-50 text-indigo-700 hover:bg-indigo-100 font-medium px-4 py-2 rounded-lg transition">
+                                <i data-lucide="file-down" class="w-4 h-4 mr-2"></i> Generar PDF
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-sm border overflow-hidden max-w-4xl mx-auto">
+                        <div id="po-print-area" class="pdf-container font-sans text-sm relative">
+                            <div class="flex justify-between items-start border-b pb-6 mb-6">
+                                <div class="flex items-center space-x-4">
+                                    <img id="pdf-po-comp-logo" src="" alt="Logo" class="h-16 w-16 object-contain hidden" />
+                                    <div>
+                                        <h1 class="text-3xl font-black text-gray-800 tracking-tight" id="pdf-po-comp-name">Empresa</h1>
+                                        <p class="text-gray-500 mt-1" id="pdf-po-comp-rnc"></p>
+                                        <p class="text-gray-500" id="pdf-po-comp-address"></p>
+                                        <p class="text-gray-500" id="pdf-po-comp-phone"></p>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <h2 class="text-2xl font-bold text-blue-600 mb-1">ORDEN DE COMPRA</h2>
+                                    <div id="pdf-po-status" class="inline-block px-2 py-1 text-[10px] font-bold uppercase rounded border mb-2">ESTADO</div>
+                                    <p class="text-gray-600 font-medium">Fecha: <span id="pdf-po-date"></span></p>
+                                    <p class="text-gray-600">Entrega Esperada: <span id="pdf-po-expiry"></span></p>
+                                </div>
+                            </div>
+                            <div class="mb-8">
+                                <h3 class="text-gray-500 font-semibold mb-1 uppercase text-xs tracking-wider">Proveedor:</h3>
+                                <p class="text-lg font-bold text-gray-800" id="pdf-po-cli-name"></p>
+                                <p class="text-gray-600" id="pdf-po-cli-email"></p>
+                                <p class="text-gray-600" id="pdf-po-cli-phone"></p>
+                                <p class="text-gray-600 mt-1" id="pdf-po-cli-address"></p>
+                            </div>
+                            <table class="w-full text-left border-collapse pdf-table mb-6">
+                                <thead>
+                                    <tr>
+                                        <th>Descripción</th><th class="text-center">Cant.</th><th class="text-right">Costo Unit.</th><th class="text-right">Imp.</th><th class="text-right">Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="pdf-po-lines"></tbody>
+                            </table>
+                            <div class="flex flex-col sm:flex-row justify-between items-start mt-6">
+                                <div class="w-full sm:w-1/2 pr-4 mb-4 sm:mb-0">
+                                    <h4 class="text-xs font-bold text-gray-700 uppercase mb-2">Notas / Instrucciones</h4>
+                                    <div class="text-xs text-gray-600 bg-slate-50 p-3 rounded border min-h-[60px] whitespace-pre-line" id="pdf-po-notes"></div>
+                                </div>
+                                <div class="w-full sm:w-64">
+                                    <div class="flex justify-between py-1 text-gray-600"><span>Subtotal:</span><span id="pdf-po-sub"></span></div>
+                                    <div class="flex justify-between py-1 text-gray-600"><span>Impuestos:</span><span id="pdf-po-tax"></span></div>
+                                    <div class="flex justify-between py-1 text-gray-600" id="pdf-po-ship-container"><span>Envío:</span><span id="pdf-po-ship"></span></div>
+                                    <div class="flex justify-between py-2 mt-2 border-t-2 border-gray-800 text-lg font-bold text-gray-800">
+                                        <span>Total:</span><span id="pdf-po-total"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VISTA: COMPRAS LISTA -->
+                <div id="view-compras" class="app-view hidden-screen">
+                    <div class="flex justify-between items-center mb-6">
+                        <div class="flex space-x-3">
+                            <button onclick="window.openDocumentModal('compra')" class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg font-medium flex items-center shadow transition">
+                                <i data-lucide="plus" class="w-4 h-4 mr-2"></i> Nuevo Registro de Compra
+                            </button>
+                            <button onclick="window.openDocumentModal('devolucion_compra')" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-medium flex items-center shadow transition">
+                                <i data-lucide="corner-down-left" class="w-4 h-4 mr-2"></i> Devolución a Proveedor
+                            </button>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
+                        <table class="w-full text-left">
+                            <thead class="bg-slate-50 border-b">
+                                <tr>
+                                    <th class="p-4 font-semibold text-gray-600">Fecha</th>
+                                    <th class="p-4 font-semibold text-gray-600">Proveedor</th>
+                                    <th class="p-4 font-semibold text-gray-600">Condición</th>
+                                    <th class="p-4 font-semibold text-gray-600">Estado</th>
+                                    <th class="p-4 font-semibold text-gray-600 text-right">Total</th>
+                                    <th class="p-4 font-semibold text-gray-600 text-right">Deuda</th>
+                                </tr>
+                            </thead>
+                            <tbody id="purchases-table-body" class="divide-y"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- VISTA: COMPRA DETALLES -->
+                <div id="view-compra-detalles" class="app-view hidden-screen space-y-6">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-2">
+                        <button onclick="window.navigateTo('compras', '4. Compras')" class="flex items-center text-slate-500 hover:text-indigo-600 font-medium transition">
+                            <i data-lucide="arrow-left" class="w-4 h-4 mr-2"></i> Volver a Compras
+                        </button>
+                        <div class="flex flex-wrap gap-2">
+                            <button id="btn-pur-edit" onclick="window.editPurchase()" class="flex items-center bg-blue-50 text-blue-700 hover:bg-blue-100 font-medium px-4 py-2 rounded-lg transition hidden">
+                                <i data-lucide="edit" class="w-4 h-4 mr-2"></i> Editar Compra
+                            </button>
+                            <button onclick="window.openPaymentModal('compra')" id="btn-pur-pay" class="flex items-center bg-teal-600 hover:bg-teal-700 text-white font-medium px-4 py-2 rounded-lg transition shadow-sm hidden">
+                                <i data-lucide="dollar-sign" class="w-4 h-4 mr-2"></i> Registrar Pago Emitido
+                            </button>
+                            <button onclick="window.openReturnModal('compra')" id="btn-pur-return" class="flex items-center bg-orange-100 text-orange-700 hover:bg-orange-200 font-medium px-4 py-2 rounded-lg transition hidden">
+                                <i data-lucide="corner-down-left" class="w-4 h-4 mr-2"></i> Devolver Ítems
+                            </button>
+                            <button onclick="window.generatePurchasePDF()" class="flex items-center bg-indigo-50 text-indigo-700 hover:bg-indigo-100 font-medium px-4 py-2 rounded-lg transition">
+                                <i data-lucide="file-down" class="w-4 h-4 mr-2"></i> Ver PDF
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border overflow-hidden">
+                            <div id="purchase-print-area" class="pdf-container font-sans text-sm relative">
+                                <div class="flex justify-between items-start border-b pb-6 mb-6">
+                                    <div class="flex items-center space-x-4">
+                                        <img id="pdf-pur-comp-logo" src="" alt="Logo" class="h-16 w-16 object-contain hidden" />
+                                        <div>
+                                            <h1 class="text-3xl font-black text-gray-800 tracking-tight" id="pdf-pur-comp-name">Empresa</h1>
+                                            <p class="text-gray-500 mt-1" id="pdf-pur-comp-rnc"></p>
+                                            <p class="text-gray-500" id="pdf-pur-comp-address"></p>
+                                        </div>
+                                    </div>
+                                    <div class="text-right">
+                                        <h2 class="text-2xl font-bold text-teal-600 mb-1" id="pdf-pur-title">REGISTRO DE COMPRA</h2>
+                                        <div id="pdf-pur-status" class="inline-block px-2 py-1 text-[10px] font-bold uppercase rounded border mb-2">ESTADO</div>
+                                        <p class="text-gray-600 font-medium">Fecha: <span id="pdf-pur-date"></span></p>
+                                        <p class="text-gray-600" id="pdf-pur-cond-container">Condición: <span id="pdf-pur-cond" class="uppercase"></span></p>
+                                    </div>
+                                </div>
+                                <div class="mb-8">
+                                    <h3 class="text-gray-500 font-semibold mb-1 uppercase text-xs tracking-wider">Proveedor:</h3>
+                                    <p class="text-lg font-bold text-gray-800" id="pdf-pur-cli-name"></p>
+                                    <p class="text-gray-600" id="pdf-pur-cli-email"></p>
+                                    <p class="text-gray-600" id="pdf-pur-cli-phone"></p>
+                                </div>
+                                <table class="w-full text-left border-collapse pdf-table mb-6">
+                                    <thead>
+                                        <tr>
+                                            <th>Descripción</th><th class="text-center">Cant.</th><th class="text-right">Costo Unit.</th><th class="text-right">Imp.</th><th class="text-right">Total</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="pdf-pur-lines"></tbody>
+                                </table>
+                                <div class="flex flex-col sm:flex-row justify-between items-start mt-6">
+                                    <div class="w-full sm:w-1/2 pr-4 mb-4 sm:mb-0">
+                                        <h4 class="text-xs font-bold text-gray-700 uppercase mb-2">Notas</h4>
+                                        <div class="text-xs text-gray-600 bg-slate-50 p-3 rounded border min-h-[60px] whitespace-pre-line" id="pdf-pur-notes"></div>
+                                    </div>
+                                    <div class="w-full sm:w-64">
+                                        <div class="flex justify-between py-1 text-gray-600"><span>Subtotal:</span><span id="pdf-pur-sub"></span></div>
+                                        <div class="flex justify-between py-1 text-gray-600"><span>Impuestos:</span><span id="pdf-pur-tax"></span></div>
+                                        <div class="flex justify-between py-1 text-gray-600" id="pdf-pur-ship-container"><span>Envío:</span><span id="pdf-pur-ship"></span></div>
+                                        <div class="flex justify-between py-2 mt-2 border-t-2 border-gray-800 text-lg font-bold text-gray-800">
+                                            <span>Total:</span><span id="pdf-pur-total"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="space-y-6">
+                            <div class="bg-white p-6 rounded-xl shadow-sm border" id="pur-state-panel">
+                                <h3 class="font-bold text-gray-800 mb-4">Estado de Cuenta (Cuentas por Pagar)</h3>
+                                <div id="pur-detail-status-badge" class="mb-4 text-center py-2 rounded-lg font-bold text-sm">Estado</div>
+                                <div class="space-y-2 text-sm">
+                                    <div class="flex justify-between text-gray-600"><span>Total Compra:</span> <span id="pur-detail-total" class="font-semibold"></span></div>
+                                    <div class="flex justify-between text-gray-600"><span>Monto Pagado:</span> <span id="pur-detail-paid" class="text-teal-600 font-semibold"></span></div>
+                                    <div class="flex justify-between text-gray-800 pt-2 border-t font-bold text-lg"><span>Deuda Restante:</span> <span id="pur-detail-balance"></span></div>
+                                </div>
+                            </div>
+                            <div class="bg-white rounded-xl shadow-sm border overflow-hidden" id="pur-payments-panel">
+                                <div class="p-4 bg-slate-50 border-b font-bold text-gray-700">Historial de Pagos Emitidos</div>
+                                <div class="p-0"><ul id="pur-payments-list" class="divide-y text-sm"></ul></div>
+                            </div>
+                            <div id="pur-returns-container" class="bg-white rounded-xl shadow-sm border overflow-hidden hidden">
+                                <div class="p-4 bg-orange-50 border-b font-bold text-orange-800">Ítems Devueltos</div>
+                                <div class="p-4 text-sm text-gray-600" id="pur-returns-text"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- VISTA: PRODUCTOS -->
                 <div id="view-productos" class="app-view hidden-screen">
                     <div class="flex justify-between items-center mb-6">
                         <div class="flex items-center space-x-4">
-                            <button id="btn-new-product" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium flex items-center shadow transition">
+                            <button onclick="window.openNewProductForm()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium flex items-center shadow transition">
                                 <i data-lucide="plus" class="w-4 h-4 mr-2"></i> Nuevo Producto
                             </button>
-                            <select id="filter-prod-category" class="border border-gray-300 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500 bg-white shadow-sm text-sm">
+                            <select id="filter-prod-category" onchange="window.renderProducts()" class="border border-gray-300 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500 bg-white shadow-sm text-sm">
                                 <option value="">Todas las categorías</option>
                             </select>
                         </div>
                     </div>
 
-                    <form id="form-add-product" class="hidden bg-white p-6 rounded-xl border shadow-sm mb-6">
+                    <form id="form-add-product" onsubmit="window.handleProductSubmit(event)" class="hidden bg-white p-6 rounded-xl border shadow-sm mb-6">
                         <h3 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2">Detalles del Producto / Servicio</h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
                             <div><label class="block text-xs font-semibold text-gray-600 mb-1">Tipo *</label><select id="prod-type" class="w-full border rounded-lg px-3 py-2"><option value="producto">Producto</option><option value="servicio">Servicio</option></select></div>
@@ -536,7 +757,7 @@
                             <div><label class="block text-xs font-semibold text-gray-600 mb-1">Impuesto (%)</label><input type="number" step="0.01" id="prod-tax" class="w-full border rounded-lg px-3 py-2" value="18"></div>
                             
                             <div class="lg:col-span-4 flex items-center justify-start mt-4 pl-1">
-                                <input type="checkbox" id="prod-track-stock" class="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 cursor-pointer">
+                                <input type="checkbox" id="prod-track-stock" onchange="window.toggleStockFields(this)" class="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 cursor-pointer">
                                 <label for="prod-track-stock" class="ml-2 block text-sm font-medium text-gray-700 cursor-pointer select-none">Activar control de stock</label>
                             </div>
                             <div id="stock-fields-container" class="lg:col-span-4 grid grid-cols-1 md:grid-cols-3 gap-4 hidden bg-slate-50 p-4 rounded-lg border border-slate-200 mt-2">
@@ -545,7 +766,7 @@
                                 <div><label class="block text-xs font-semibold text-gray-600 mb-1">Stock Mínimo (Alerta)</label><input type="number" id="prod-stock-min" class="w-full border rounded-lg px-3 py-2" value="0" title="Si el stock actual es igual o menor a este, se generará una alerta"></div>
                             </div>
                             <div class="lg:col-span-4 flex justify-end gap-3 mt-4 pt-4 border-t">
-                                <button type="button" id="btn-cancel-product" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg">Cancelar</button>
+                                <button type="button" onclick="document.getElementById('form-add-product').classList.add('hidden')" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg">Cancelar</button>
                                 <button type="submit" id="btn-submit-product" class="px-4 py-2 bg-indigo-600 text-white font-medium rounded-lg">Guardar Producto</button>
                             </div>
                         </div>
@@ -566,12 +787,12 @@
                 <!-- VISTA: CLIENTES LISTA -->
                 <div id="view-clientes" class="app-view hidden-screen">
                     <div class="flex justify-between items-center mb-6">
-                        <button id="btn-new-client" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium flex items-center shadow transition">
+                        <button onclick="window.openNewClientForm()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium flex items-center shadow transition">
                             <i data-lucide="plus" class="w-4 h-4 mr-2"></i> Nuevo Contacto
                         </button>
                     </div>
 
-                    <form id="form-add-client" class="hidden bg-white p-6 rounded-xl border shadow-sm mb-6">
+                    <form id="form-add-client" onsubmit="window.handleClientSubmit(event)" class="hidden bg-white p-6 rounded-xl border shadow-sm mb-6">
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             <div><label class="block text-xs font-semibold text-gray-600 mb-1">Tipo *</label><select id="cli-type" class="w-full border rounded-lg px-3 py-2"><option value="cliente">Cliente</option><option value="proveedor">Proveedor</option></select></div>
                             <div><label class="block text-xs font-semibold text-gray-600 mb-1">Organización *</label><input required type="text" id="cli-org" class="w-full border rounded-lg px-3 py-2"></div>
@@ -582,7 +803,7 @@
                             <div class="md:col-span-2"><label class="block text-xs font-semibold text-gray-600 mb-1">Dirección Envío</label><input type="text" id="cli-shipping" class="w-full border rounded-lg px-3 py-2"></div>
                             <div><label class="block text-xs font-semibold text-gray-600 mb-1">Límite de Crédito ($)</label><input type="number" id="cli-credit" class="w-full border rounded-lg px-3 py-2" value="0"></div>
                             <div class="md:col-span-3 flex justify-end gap-3 mt-2">
-                                <button type="button" id="btn-cancel-client" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg">Cancelar</button>
+                                <button type="button" onclick="document.getElementById('form-add-client').classList.add('hidden')" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg">Cancelar</button>
                                 <button type="submit" id="btn-submit-client" class="px-4 py-2 bg-indigo-600 text-white font-medium rounded-lg">Guardar</button>
                             </div>
                         </div>
@@ -593,10 +814,10 @@
                 <!-- VISTA: CLIENTES DETALLES -->
                 <div id="view-clientes-detalles" class="app-view hidden-screen space-y-6">
                     <div class="flex justify-between items-center mb-4">
-                        <button id="btn-back-clients" class="flex items-center text-slate-500 hover:text-indigo-600 font-medium transition">
+                        <button onclick="window.navigateTo('clientes', '10. Clientes/Prov.')" class="flex items-center text-slate-500 hover:text-indigo-600 font-medium transition">
                             <i data-lucide="arrow-left" class="w-4 h-4 mr-2"></i> Volver a la lista
                         </button>
-                        <button id="btn-edit-client" class="flex items-center text-indigo-600 hover:text-indigo-800 font-medium transition bg-indigo-50 px-3 py-1.5 rounded-lg">
+                        <button onclick="window.editCurrentClient()" class="flex items-center text-indigo-600 hover:text-indigo-800 font-medium transition bg-indigo-50 px-3 py-1.5 rounded-lg">
                             <i data-lucide="edit" class="w-4 h-4 mr-2"></i> Editar Info
                         </button>
                     </div>
@@ -634,7 +855,7 @@
                     <div class="bg-white rounded-2xl shadow-sm border overflow-hidden">
                         <div class="p-4 bg-slate-50 border-b flex justify-between items-center">
                             <h3 class="font-bold text-gray-700">Histórico de Documentos</h3>
-                            <div class="text-sm text-gray-500"><span>Total Facturado: <strong id="cd-hist-total">$0.00</strong></span></div>
+                            <div class="text-sm text-gray-500"><span>Total Histórico: <strong id="cd-hist-total">$0.00</strong></span></div>
                         </div>
                         <div class="overflow-x-auto">
                             <table class="w-full text-left">
@@ -667,17 +888,17 @@
                 <div class="bg-white w-full max-w-5xl rounded-2xl shadow-xl flex flex-col max-h-[95vh] overflow-hidden">
                     <div class="p-6 border-b shrink-0 flex justify-between items-center bg-gray-50">
                         <h3 id="doc-modal-title" class="text-xl font-black text-gray-800">Nuevo Documento</h3>
-                        <button id="btn-close-univ-doc-x" type="button" class="text-gray-400 hover:text-red-500 transition"><i data-lucide="x" class="w-6 h-6"></i></button>
+                        <button type="button" onclick="document.getElementById('modal-document').classList.add('hidden-screen')" class="text-gray-400 hover:text-red-500 transition"><i data-lucide="x" class="w-6 h-6"></i></button>
                     </div>
                     
                     <div class="p-6 overflow-y-auto custom-scrollbar flex-1">
-                        <form id="form-universal-document" class="space-y-6">
+                        <form id="form-universal-document" onsubmit="window.handleUniversalSubmit(event)" class="space-y-6">
                             <input type="hidden" id="univ-doc-type">
                             <input type="hidden" id="univ-doc-id">
                             
                             <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                                 <div class="md:col-span-2">
-                                    <label class="block text-xs font-semibold text-gray-600 mb-1">Cliente *</label>
+                                    <label id="label-univ-client" class="block text-xs font-semibold text-gray-600 mb-1">Cliente *</label>
                                     <select required id="univ-doc-client" class="w-full border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500"></select>
                                 </div>
                                 <div>
@@ -693,7 +914,7 @@
                                     </select>
                                 </div>
                                 <div id="univ-doc-expiry-container" class="hidden">
-                                    <label class="block text-xs font-semibold text-gray-600 mb-1">Válida Hasta</label>
+                                    <label class="block text-xs font-semibold text-gray-600 mb-1">Válida/Entrega Hasta</label>
                                     <input type="date" id="univ-doc-expiry" class="w-full border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500">
                                 </div>
                             </div>
@@ -701,7 +922,7 @@
                             <div class="border rounded-xl overflow-hidden shadow-sm">
                                 <div class="bg-slate-100 p-3 border-b flex justify-between items-center">
                                     <h4 class="font-bold text-gray-700">Detalle de Productos</h4>
-                                    <button id="btn-add-univ-line" type="button" class="text-sm bg-white border px-3 py-1 rounded shadow-sm text-indigo-600 hover:text-indigo-800 font-medium flex items-center transition">
+                                    <button type="button" onclick="window.addUnivDocLine()" class="text-sm bg-white border px-3 py-1 rounded shadow-sm text-indigo-600 hover:text-indigo-800 font-medium flex items-center transition">
                                         <i data-lucide="plus-circle" class="w-4 h-4 mr-1"></i> Agregar Línea
                                     </button>
                                 </div>
@@ -725,7 +946,7 @@
                             <div class="flex flex-col md:flex-row justify-between items-start gap-6">
                                 <div class="w-full md:w-1/2">
                                     <label class="block text-xs font-semibold text-gray-600 mb-1">Notas / Términos</label>
-                                    <textarea id="univ-doc-notes" rows="4" class="w-full border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Añadir notas visibles para el cliente..."></textarea>
+                                    <textarea id="univ-doc-notes" rows="4" class="w-full border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Añadir notas..."></textarea>
                                 </div>
                                 
                                 <div class="w-full md:w-72 bg-slate-50 p-5 rounded-xl border shadow-inner">
@@ -735,7 +956,7 @@
                                         <span class="font-medium">Costo Envío:</span> 
                                         <div class="flex items-center">
                                             <span class="mr-1 font-bold text-gray-400">$</span>
-                                            <input type="number" id="univ-doc-ship" step="0.01" value="0" class="w-20 border border-gray-300 rounded px-2 py-1 text-right outline-none focus:ring-2 focus:ring-indigo-500">
+                                            <input type="number" id="univ-doc-ship" step="0.01" value="0" oninput="window.calculateUnivDocTotals()" class="w-20 border border-gray-300 rounded px-2 py-1 text-right outline-none focus:ring-2 focus:ring-indigo-500">
                                         </div>
                                     </div>
                                     <div class="flex justify-between text-2xl font-black text-gray-800 pt-2 border-t border-gray-300">
@@ -747,7 +968,7 @@
                     </div>
                     
                     <div class="p-6 border-t shrink-0 flex justify-end gap-3 bg-gray-50">
-                        <button id="btn-cancel-univ-doc" type="button" class="px-6 py-2.5 text-gray-600 hover:bg-gray-200 rounded-lg transition font-medium">Cancelar</button>
+                        <button type="button" onclick="document.getElementById('modal-document').classList.add('hidden-screen')" class="px-6 py-2.5 text-gray-600 hover:bg-gray-200 rounded-lg transition font-medium">Cancelar</button>
                         <button type="submit" form="form-universal-document" id="btn-submit-univ-doc" class="px-8 py-2.5 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition shadow-md flex items-center">
                             Guardar Documento
                         </button>
@@ -759,7 +980,8 @@
             <div id="modal-payment" class="hidden-screen absolute inset-0 bg-slate-900/50 flex items-center justify-center z-50 p-4">
                 <div class="bg-white w-full max-w-md rounded-2xl shadow-xl p-6">
                     <h3 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2">Registrar Pago</h3>
-                    <form id="form-add-payment" class="space-y-4">
+                    <form id="form-add-payment" onsubmit="window.handlePaymentSubmit(event)" class="space-y-4">
+                        <input type="hidden" id="payment-target-type">
                         <div>
                             <label class="block text-xs font-semibold text-gray-600 mb-1">Monto a Pagar ($) *</label>
                             <input required type="number" step="0.01" id="pay-amount" class="w-full border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500">
@@ -782,25 +1004,25 @@
                             <input type="text" id="pay-ref" placeholder="Ej. Depósito #12345" class="w-full border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500">
                         </div>
                         <div class="flex justify-end gap-3 mt-6">
-                            <button id="btn-cancel-payment" type="button" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition">Cancelar</button>
+                            <button type="button" onclick="document.getElementById('modal-payment').classList.add('hidden-screen')" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition">Cancelar</button>
                             <button type="submit" id="btn-submit-payment" class="px-6 py-2 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 transition">Procesar Pago</button>
                         </div>
                     </form>
                 </div>
             </div>
 
-            <!-- Modal de Devolución de Factura Existente -->
+            <!-- Modal de Devolución -->
             <div id="modal-return" class="hidden-screen absolute inset-0 bg-slate-900/50 flex items-center justify-center z-50 p-4">
                 <div class="bg-white w-full max-w-2xl rounded-2xl shadow-xl p-6 flex flex-col max-h-[90vh]">
                     <h3 class="text-xl font-bold text-orange-600 mb-2">Procesar Devolución</h3>
                     <p class="text-sm text-gray-500 mb-4 border-b pb-2">Seleccione la cantidad a devolver por producto. El stock será reintegrado automáticamente.</p>
-                    
+                    <input type="hidden" id="return-target-type">
                     <div class="overflow-y-auto custom-scrollbar flex-1 mb-4">
                         <table class="w-full text-left border-collapse">
                             <thead class="bg-slate-50 text-xs uppercase text-gray-500 sticky top-0">
                                 <tr>
                                     <th class="p-2">Producto</th>
-                                    <th class="p-2 text-center">Comprado</th>
+                                    <th class="p-2 text-center">Registrado</th>
                                     <th class="p-2 text-center w-24">A Devolver</th>
                                 </tr>
                             </thead>
@@ -809,18 +1031,41 @@
                     </div>
                     
                     <div class="flex justify-end gap-3 pt-4 border-t shrink-0">
-                        <button id="btn-cancel-return-modal" type="button" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition">Cancelar</button>
-                        <button id="btn-submit-return" type="button" class="px-6 py-2 bg-orange-600 text-white font-bold rounded-lg hover:bg-orange-700 transition">Aplicar Devolución</button>
+                        <button type="button" onclick="document.getElementById('modal-return').classList.add('hidden-screen')" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition">Cancelar</button>
+                        <button type="button" id="btn-submit-return" onclick="window.processReturn()" class="px-6 py-2 bg-orange-600 text-white font-bold rounded-lg hover:bg-orange-700 transition">Aplicar Devolución</button>
                     </div>
                 </div>
             </div>
 
-            <!-- Modal para Aprobar Cotización y Crear Factura -->
+            <!-- Modal para Aprobar Orden -> Compra -->
+            <div id="modal-convert-order" class="hidden-screen absolute inset-0 bg-slate-900/50 flex items-center justify-center z-50 p-4">
+                <div class="bg-white w-full max-w-md rounded-2xl shadow-xl p-6">
+                    <h3 class="text-xl font-bold text-teal-600 mb-2">Registrar Compra</h3>
+                    <p class="text-sm text-gray-500 mb-4 border-b pb-2">Al aprobar, se registrará la compra y se sumará al inventario correspondiente.</p>
+                    <form id="form-convert-order" onsubmit="window.handleConvertOrderSubmit(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 mb-1">Condición de Pago a Proveedor *</label>
+                            <select id="convert-order-condition" class="w-full border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-teal-500">
+                                <option value="contado">Al Contado (Pagado)</option>
+                                <option value="credito">A Crédito (Por Pagar)</option>
+                            </select>
+                        </div>
+                        <div class="flex justify-end gap-3 mt-6">
+                            <button type="button" onclick="document.getElementById('modal-convert-order').classList.add('hidden-screen')" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition">Cancelar</button>
+                            <button type="submit" id="btn-confirm-convert-order" class="px-6 py-2 bg-teal-600 text-white font-bold rounded-lg hover:bg-teal-700 transition shadow-sm flex items-center">
+                                <i data-lucide="check-circle" class="w-4 h-4 mr-2"></i> Recibir y Registrar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Modal para Aprobar Cotización -> Factura -->
             <div id="modal-convert-quote" class="hidden-screen absolute inset-0 bg-slate-900/50 flex items-center justify-center z-50 p-4">
                 <div class="bg-white w-full max-w-md rounded-2xl shadow-xl p-6">
                     <h3 class="text-xl font-bold text-indigo-600 mb-2">Convertir a Factura</h3>
                     <p class="text-sm text-gray-500 mb-4 border-b pb-2">Al aprobar, se generará una factura y se restará el inventario correspondiente.</p>
-                    <form id="form-convert-quote" class="space-y-4">
+                    <form id="form-convert-quote" onsubmit="window.handleConvertQuoteSubmit(event)" class="space-y-4">
                         <div>
                             <label class="block text-xs font-semibold text-gray-600 mb-1">Condición de Pago *</label>
                             <select id="convert-quo-condition" class="w-full border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500">
@@ -829,7 +1074,7 @@
                             </select>
                         </div>
                         <div class="flex justify-end gap-3 mt-6">
-                            <button id="btn-cancel-convert" type="button" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition">Cancelar</button>
+                            <button type="button" onclick="document.getElementById('modal-convert-quote').classList.add('hidden-screen')" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition">Cancelar</button>
                             <button type="submit" id="btn-confirm-convert" class="px-6 py-2 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 transition shadow-sm flex items-center">
                                 <i data-lucide="check-circle" class="w-4 h-4 mr-2"></i> Confirmar
                             </button>
@@ -884,6 +1129,12 @@
 
         let allQuotes = [];
         let currentViewQuote = null;
+
+        let allPurchases = [];
+        let currentViewPurchase = null;
+
+        let allPurchaseOrders = [];
+        let currentViewPurchaseOrder = null;
         
         let companyStatusUnsubscribe = null;
         let expirationCheckInterval = null;
@@ -915,12 +1166,15 @@
             mainApp: document.getElementById('screen-main')
         };
 
-        function showScreen(screenName) {
-            Object.values(screens).forEach(s => s.classList.add('hidden-screen'));
+        window.showScreen = function(screenName) {
+            Object.values(screens).forEach(s => { if(s) s.classList.add('hidden-screen'); });
             if(screens[screenName]) screens[screenName].classList.remove('hidden-screen');
         }
 
-        async function initAuth() {
+        // ==========================================
+        // -- AUTENTICACIÓN SEGURA CANVA --
+        // ==========================================
+        async function initializeAppAuth() {
             try {
                 if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
                     await signInWithCustomToken(auth, __initial_auth_token);
@@ -932,8 +1186,19 @@
             }
         }
 
+        onAuthStateChanged(auth, async (user) => {
+            currentUser = user;
+            if (user && !isRegistering) {
+                await checkCompanyStatus(user.uid);
+            } else if (!user) {
+                window.showScreen('welcome');
+            }
+        });
+
+        initializeAppAuth();
+
         function loadLoginCompanies() {
-            const q = query(collection(db, 'artifacts', APP_ID, 'public'));
+            const q = query(collection(db, 'artifacts', APP_ID, 'public', 'data', 'companies'));
             onSnapshot(q, (snapshot) => {
                 const grid = document.getElementById('login-companies-grid');
                 if(!grid) return;
@@ -941,7 +1206,6 @@
                 let hasCompanies = false;
                 
                 snapshot.forEach(docSnap => {
-                    if(!docSnap.id.startsWith('companies_')) return;
                     const c = docSnap.data();
                     hasCompanies = true;
                     
@@ -968,21 +1232,14 @@
                 if(!hasCompanies) grid.innerHTML = '<div class="p-4 text-center text-sm text-gray-500 col-span-full">No hay empresas registradas aún.</div>';
             });
         }
-
-        onAuthStateChanged(auth, async (user) => {
-            currentUser = user;
-            if (user && !isRegistering) await checkCompanyStatus(user.uid);
-            else if (!user) showScreen('welcome');
-        });
-
-        initAuth();
+        
         loadLoginCompanies();
 
         async function checkCompanyStatus(uid) {
             if (companyStatusUnsubscribe) companyStatusUnsubscribe();
             
             try {
-                const companyRef = doc(db, 'artifacts', APP_ID, 'public', `companies_${uid}`);
+                const companyRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'companies', `company_${uid}`);
                 companyStatusUnsubscribe = onSnapshot(companyRef, (companySnap) => {
                     if (companySnap.exists()) {
                         companyProfile = companySnap.data();
@@ -991,79 +1248,57 @@
                             if (companyProfile.subscriptionExpiryDate) {
                                 const expiry = new Date(companyProfile.subscriptionExpiryDate);
                                 if (new Date() > expiry) {
-                                    showScreen('expired');
+                                    window.showScreen('expired');
                                     return;
                                 }
                             }
                             
                             if (document.getElementById('screen-main').classList.contains('hidden-screen')) {
                                 setupMainApp();
-                                showScreen('mainApp');
+                                window.showScreen('mainApp');
                                 
                                 if (expirationCheckInterval) clearInterval(expirationCheckInterval);
                                 expirationCheckInterval = setInterval(() => {
                                     if (companyProfile && companyProfile.subscriptionExpiryDate) {
                                         if (new Date() > new Date(companyProfile.subscriptionExpiryDate)) {
-                                            showScreen('expired');
+                                            window.showScreen('expired');
                                             clearInterval(expirationCheckInterval);
                                         }
                                     }
                                 }, 60000);
                             }
                         } else {
-                            showScreen('pending');
+                            window.showScreen('pending');
                         }
                     } else {
-                        showScreen('welcome');
+                        // Empresa no existe: en lugar de obligar registro,
+                        // lo mostramos en la pantalla de bienvenida logueada (pestaña Ingresar)
+                        window.showScreen('welcome');
+                        window.switchAuthTab('login');
                     }
                 }, (error) => {
                     console.error("Error verificando empresa", error);
-                    showScreen('welcome');
+                    window.showScreen('welcome');
                 });
             } catch (error) {
                 console.error(error);
-                showScreen('welcome');
+                window.showScreen('welcome');
             }
         }
 
-        // --- MANEJO DE AUTENTICACION UI ---
-        document.getElementById('tab-login').addEventListener('click', () => {
-            document.getElementById('form-register-company').classList.add('hidden');
-            document.getElementById('form-login-company').classList.remove('hidden');
-            document.getElementById('tab-login').className = 'px-6 py-3 font-bold text-indigo-600 border-b-2 border-indigo-600 transition';
-            document.getElementById('tab-register').className = 'px-6 py-3 font-bold text-gray-500 hover:text-indigo-600 transition';
-        });
-
-        document.getElementById('tab-register').addEventListener('click', () => {
-            document.getElementById('form-login-company').classList.add('hidden');
-            document.getElementById('form-register-company').classList.remove('hidden');
-            document.getElementById('tab-register').className = 'px-6 py-3 font-bold text-indigo-600 border-b-2 border-indigo-600 transition';
-            document.getElementById('tab-login').className = 'px-6 py-3 font-bold text-gray-500 hover:text-indigo-600 transition';
-        });
-
-        document.getElementById('form-login-company').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const btn = document.getElementById('btn-submit-login');
-            btn.innerHTML = "Verificando..."; btn.disabled = true;
-            try {
-                await signInWithEmailAndPassword(auth, document.getElementById('login-email').value, document.getElementById('login-pin').value);
-            } catch (error) {
-                alert("Credenciales incorrectas.");
-                btn.innerHTML = "Ingresar"; btn.disabled = false;
-            }
-        });
-
-        document.getElementById('form-register-company').addEventListener('submit', async (e) => {
+        window.handleRegisterCompany = async function(e) {
             e.preventDefault();
             const btn = document.getElementById('btn-submit-register');
             btn.innerHTML = "Guardando..."; btn.disabled = true;
             isRegistering = true; 
-            const email = document.getElementById('reg-email').value;
+            
+            const email = document.getElementById('reg-email').value.trim(); // Limpiamos espacios
             const pin = document.getElementById('reg-pin').value;
             const planEl = document.getElementById('reg-plan');
             try {
+                // Guardamos la cuenta segura en Firebase Auth
                 const userCredential = await createUserWithEmailAndPassword(auth, email, pin);
-                await setDoc(doc(db, 'artifacts', APP_ID, 'public', `companies_${userCredential.user.uid}`), {
+                await setDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'companies', `company_${userCredential.user.uid}`), {
                     uid: userCredential.user.uid,
                     logo: document.getElementById('reg-logo').value,
                     companyName: document.getElementById('reg-name').value,
@@ -1078,43 +1313,78 @@
                     status: 'pending',
                     createdAt: serverTimestamp()
                 });
-                showScreen('pending');
+                window.showScreen('pending');
             } catch (error) {
-                alert("Error al registrar.");
+                console.error("Register error:", error);
+                if (error.code === 'auth/email-already-in-use') {
+                    alert("⚠️ Este correo ya está registrado. Usa uno diferente o intenta iniciar sesión.");
+                } else if (error.code === 'auth/operation-not-allowed') {
+                    alert("⚠️ ADMINISTRADOR: Debes ir a Firebase -> Authentication -> Sign-in method, y HABILITAR 'Correo electrónico/Contraseña'.");
+                } else {
+                    alert("Error al registrar: " + error.message);
+                }
             } finally {
-                btn.innerHTML = "Registrar Empresa"; btn.disabled = false;
+                btn.innerHTML = "Registrar Empresa y Continuar"; btn.disabled = false;
                 isRegistering = false;
             }
-        });
+        };
 
-        document.getElementById('btn-logout-main').addEventListener('click', async () => {
+        window.switchAuthTab = function(tab) {
+            if(tab === 'login') {
+                document.getElementById('form-register-company').classList.add('hidden');
+                document.getElementById('form-login-company').classList.remove('hidden');
+                document.getElementById('tab-login').className = 'px-6 py-3 font-bold text-indigo-600 border-b-2 border-indigo-600 transition';
+                document.getElementById('tab-register').className = 'px-6 py-3 font-bold text-gray-500 hover:text-indigo-600 transition';
+            } else {
+                document.getElementById('form-login-company').classList.add('hidden');
+                document.getElementById('form-register-company').classList.remove('hidden');
+                document.getElementById('tab-register').className = 'px-6 py-3 font-bold text-indigo-600 border-b-2 border-indigo-600 transition';
+                document.getElementById('tab-login').className = 'px-6 py-3 font-bold text-gray-500 hover:text-indigo-600 transition';
+            }
+        };
+
+        window.handleLogin = async function(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btn-submit-login');
+            btn.innerHTML = "Verificando..."; btn.disabled = true;
+            try {
+                const email = document.getElementById('login-email').value.trim(); // Limpiamos espacios
+                const pin = document.getElementById('login-pin').value;
+                await signInWithEmailAndPassword(auth, email, pin);
+            } catch (error) {
+                console.error("Login error:", error);
+                if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
+                    alert("❌ PIN o correo incorrectos. \n\nNOTA: Si creaste esta empresa antes de la última actualización de seguridad, por favor registra la empresa nuevamente.");
+                } else if (error.code === 'auth/operation-not-allowed') {
+                    alert("⚠️ ADMINISTRADOR: Debes ir a Firebase -> Authentication -> Sign-in method, y HABILITAR 'Correo electrónico/Contraseña'.");
+                } else {
+                    alert("Error al ingresar: " + error.message);
+                }
+                btn.innerHTML = "Ingresar"; btn.disabled = false;
+            }
+        };
+
+        window.logout = async function() {
             if(companyStatusUnsubscribe) companyStatusUnsubscribe();
             if(expirationCheckInterval) clearInterval(expirationCheckInterval);
             await signOut(auth);
-        });
-        document.getElementById('btn-logout-pending').addEventListener('click', async () => await signOut(auth));
-        document.getElementById('btn-logout-expired').addEventListener('click', async () => await signOut(auth));
-        
-        document.getElementById('btn-goto-admin').addEventListener('click', () => showScreen('adminLogin'));
-        document.getElementById('btn-back-from-admin').addEventListener('click', () => showScreen('welcome'));
-        
-        document.getElementById('form-admin-login').addEventListener('submit', (e) => {
+        };
+
+        window.handleAdminLogin = function(e) {
             e.preventDefault();
             if(document.getElementById('admin-user').value === 'Handhels' && document.getElementById('admin-pass').value === 'HandhelsV21') {
-                showScreen('adminDashboard');
+                window.showScreen('adminDashboard');
                 loadAdminData();
             } else alert('Credenciales incorrectas');
-        });
-        document.getElementById('btn-admin-logout').addEventListener('click', () => { document.getElementById('form-admin-login').reset(); showScreen('welcome'); });
+        };
 
         let adminUnsubscribe = null;
         function loadAdminData() {
             if(adminUnsubscribe) adminUnsubscribe();
-            adminUnsubscribe = onSnapshot(query(collection(db, 'artifacts', APP_ID, 'public')), (snapshot) => {
+            adminUnsubscribe = onSnapshot(query(collection(db, 'artifacts', APP_ID, 'public', 'data', 'companies')), (snapshot) => {
                 const tbody = document.getElementById('admin-companies-list');
                 tbody.innerHTML = '';
                 snapshot.forEach(docSnap => {
-                    if(!docSnap.id.startsWith('companies_')) return;
                     const c = docSnap.data();
                     const tr = document.createElement('tr');
                     
@@ -1129,11 +1399,11 @@
                         <td class="p-4"><strong>${c.companyName}</strong><br/><span class="text-xs text-gray-500">RNC: ${c.rnc} | Plan: <b class="uppercase text-indigo-600">${c.plan || 'basico'}</b></span></td>
                         <td class="p-4">${c.representative}<br/><span class="text-xs text-gray-500">${c.email}</span></td>
                         <td class="p-4">${c.status === 'approved' ? '✅ Aprobado<br><span class="text-xs">Vence: '+expiryInfo+'</span>' : '⏳ Pendiente'}</td>
-                        <td class="p-4">${c.status !== 'approved' ? `<button onclick="window.approveCompany('${docSnap.id}', '${c.plan}')" class="bg-indigo-600 text-white px-3 py-1 rounded text-sm hover:bg-indigo-700">Aprobar</button>` : `<button onclick="window.approveCompany('${docSnap.id}', '${c.plan}')" class="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700">Renovar</button>`}</td>
+                        <td class="p-4">${c.status !== 'approved' ? `<button type="button" onclick="window.approveCompany('${docSnap.id}', '${c.plan}')" class="bg-indigo-600 text-white px-3 py-1 rounded text-sm hover:bg-indigo-700">Aprobar</button>` : `<button type="button" onclick="window.approveCompany('${docSnap.id}', '${c.plan}')" class="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700">Renovar</button>`}</td>
                     `;
                     tbody.appendChild(tr);
                 });
-            });
+            }, (err) => console.error(err));
         }
 
         window.approveCompany = async (companyId, planType) => { 
@@ -1145,7 +1415,7 @@
             let expiryDate = new Date();
             expiryDate.setDate(expiryDate.getDate() + daysToAdd);
 
-            await updateDoc(doc(db, 'artifacts', APP_ID, 'public', companyId), { 
+            await updateDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'companies', companyId), { 
                 status: 'approved',
                 subscriptionExpiryDate: expiryDate.toISOString() 
             }); 
@@ -1174,55 +1444,12 @@
             });
             lucide.createIcons();
             
-            bindStaticEvents();
-            
             loadProducts();
             loadClients();
             loadInvoices();
             loadQuotes();
-        }
-
-        // === ASIGNADOR DE EVENTOS ESTÁTICOS ===
-        function bindStaticEvents() {
-            // Cotizaciones
-            document.getElementById('btn-new-quote').addEventListener('click', () => window.openDocumentModal('cotizacion'));
-            document.getElementById('btn-back-quotes').addEventListener('click', () => window.navigateTo('cotizaciones', '3. Cotizaciones'));
-            document.getElementById('btn-quo-edit').addEventListener('click', () => window.editQuote());
-            document.getElementById('btn-quo-reject').addEventListener('click', () => window.rejectQuote());
-            document.getElementById('btn-quo-approve').addEventListener('click', () => window.openConvertQuoteModal());
-            document.getElementById('btn-quo-pdf').addEventListener('click', () => window.generateQuotePDF());
-
-            // Facturas
-            document.getElementById('btn-new-invoice').addEventListener('click', () => window.openDocumentModal('factura'));
-            document.getElementById('btn-new-return').addEventListener('click', () => window.openDocumentModal('devolucion'));
-            document.getElementById('btn-back-invoices').addEventListener('click', () => window.navigateTo('facturas', '2. Facturas'));
-            document.getElementById('btn-inv-edit').addEventListener('click', () => window.editInvoice());
-            document.getElementById('btn-inv-pay').addEventListener('click', () => window.openPaymentModal());
-            document.getElementById('btn-inv-return').addEventListener('click', () => window.openReturnModal());
-            document.getElementById('btn-inv-pdf').addEventListener('click', () => window.generateInvoicePDF());
-
-            // Productos
-            document.getElementById('btn-new-product').addEventListener('click', () => window.openNewProductForm());
-            document.getElementById('btn-cancel-product').addEventListener('click', () => document.getElementById('form-add-product').classList.add('hidden'));
-            document.getElementById('filter-prod-category').addEventListener('change', () => window.renderProducts());
-
-            // Clientes
-            document.getElementById('btn-new-client').addEventListener('click', () => window.openNewClientForm());
-            document.getElementById('btn-cancel-client').addEventListener('click', () => document.getElementById('form-add-client').classList.add('hidden'));
-            document.getElementById('btn-back-clients').addEventListener('click', () => window.navigateTo('clientes', '10. Clientes/Prov.'));
-            document.getElementById('btn-edit-client').addEventListener('click', () => window.editCurrentClient());
-
-            // Modal Universal
-            document.getElementById('btn-close-univ-doc-x').addEventListener('click', () => document.getElementById('modal-document').classList.add('hidden-screen'));
-            document.getElementById('btn-cancel-univ-doc').addEventListener('click', () => document.getElementById('modal-document').classList.add('hidden-screen'));
-            document.getElementById('btn-add-univ-line').addEventListener('click', () => window.addUnivDocLine());
-            document.getElementById('univ-doc-ship').addEventListener('input', () => window.calculateUnivDocTotals());
-
-            // Modals Secundarios
-            document.getElementById('btn-cancel-payment').addEventListener('click', () => document.getElementById('modal-payment').classList.add('hidden-screen'));
-            document.getElementById('btn-cancel-return-modal').addEventListener('click', () => document.getElementById('modal-return').classList.add('hidden-screen'));
-            document.getElementById('btn-submit-return').addEventListener('click', () => window.processReturn());
-            document.getElementById('btn-cancel-convert').addEventListener('click', () => document.getElementById('modal-convert-quote').classList.add('hidden-screen'));
+            loadPurchases();
+            loadPurchaseOrders();
         }
 
         window.navigateTo = function(viewId, viewLabel) {
@@ -1245,7 +1472,6 @@
             }
         }
 
-
         // ==========================================
         // -- FORMULARIO UNIVERSAL DE DOCUMENTOS --
         // ==========================================
@@ -1266,6 +1492,8 @@
             const conditionCont = document.getElementById('univ-doc-condition-container');
             const expiryCont = document.getElementById('univ-doc-expiry-container');
             
+            let isPurchaseGroup = ['compra', 'orden_compra', 'devolucion_compra'].includes(docType);
+
             if (docType === 'factura') {
                 title.innerText = "Nueva Factura"; title.className = "text-xl font-black text-indigo-600";
                 submitBtn.innerText = "Guardar Factura"; submitBtn.className = "px-8 py-2.5 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition shadow-md flex items-center";
@@ -1279,11 +1507,25 @@
                 submitBtn.innerText = "Guardar Devolución"; submitBtn.className = "px-8 py-2.5 bg-orange-600 text-white font-bold rounded-lg hover:bg-orange-700 transition shadow-md flex items-center";
                 conditionCont.classList.remove('hidden'); document.getElementById('univ-doc-condition').value = 'contado'; document.getElementById('univ-doc-condition').disabled = true;
                 expiryCont.classList.add('hidden');
+            } else if (docType === 'compra') {
+                title.innerText = "Nuevo Registro de Compra"; title.className = "text-xl font-black text-teal-600";
+                submitBtn.innerText = "Guardar Compra"; submitBtn.className = "px-8 py-2.5 bg-teal-600 text-white font-bold rounded-lg hover:bg-teal-700 transition shadow-md flex items-center";
+                conditionCont.classList.remove('hidden'); document.getElementById('univ-doc-condition').disabled = false; expiryCont.classList.add('hidden');
+            } else if (docType === 'orden_compra') {
+                title.innerText = "Nueva Orden de Compra"; title.className = "text-xl font-black text-blue-600";
+                submitBtn.innerText = "Guardar Orden"; submitBtn.className = "px-8 py-2.5 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition shadow-md flex items-center";
+                conditionCont.classList.add('hidden'); expiryCont.classList.remove('hidden');
+            } else if (docType === 'devolucion_compra') {
+                title.innerText = "Devolución a Proveedor"; title.className = "text-xl font-black text-orange-600";
+                submitBtn.innerText = "Guardar Devolución"; submitBtn.className = "px-8 py-2.5 bg-orange-600 text-white font-bold rounded-lg hover:bg-orange-700 transition shadow-md flex items-center";
+                conditionCont.classList.remove('hidden'); document.getElementById('univ-doc-condition').value = 'contado'; document.getElementById('univ-doc-condition').disabled = true;
+                expiryCont.classList.add('hidden');
             }
 
+            document.getElementById('label-univ-client').innerText = isPurchaseGroup ? 'Proveedor *' : 'Cliente *';
             const clientSelect = document.getElementById('univ-doc-client');
-            clientSelect.innerHTML = '<option value="">Seleccione un cliente...</option>';
-            allClients.filter(c => c.type === 'cliente').forEach(c => { clientSelect.innerHTML += `<option value="${c.id}">${c.orgName}</option>`; });
+            clientSelect.innerHTML = `<option value="">Seleccione un ${isPurchaseGroup ? 'proveedor' : 'cliente'}...</option>`;
+            allClients.filter(c => c.type === (isPurchaseGroup ? 'proveedor' : 'cliente')).forEach(c => { clientSelect.innerHTML += `<option value="${c.id}">${c.orgName}</option>`; });
 
             document.getElementById('univ-doc-date').valueAsDate = new Date();
             document.getElementById('univ-doc-lines').innerHTML = '';
@@ -1333,7 +1575,7 @@
             form.dataset.calcSubtotal = subtotal; form.dataset.calcTax = totalTax; form.dataset.calcShipping = shipping; form.dataset.calcTotal = grandTotal;
         }
 
-        document.getElementById('form-universal-document').addEventListener('submit', async (e) => {
+        window.handleUniversalSubmit = async function(e) {
             e.preventDefault();
             const btn = document.getElementById('btn-submit-univ-doc');
             const originalBtnText = btn.innerHTML;
@@ -1357,34 +1599,48 @@
 
             if (lines.length === 0) { alert("Debe agregar al menos un producto."); btn.disabled = false; btn.innerHTML = originalBtnText; return; }
 
-            const totalAmount = parseFloat(e.target.dataset.calcTotal || 0);
+            const form = document.getElementById('form-universal-document');
+            const totalAmount = parseFloat(form.dataset.calcTotal || 0);
             const baseData = {
                 clientId: clientId, clientName: client ? client.orgName : 'Desconocido', clientEmail: client ? client.email : '',
                 clientPhone: client ? client.phone : '', clientAddress: client ? client.address : '', date: document.getElementById('univ-doc-date').value,
-                notes: document.getElementById('univ-doc-notes').value, subtotal: parseFloat(e.target.dataset.calcSubtotal || 0),
-                tax: parseFloat(e.target.dataset.calcTax || 0), shipping: parseFloat(e.target.dataset.calcShipping || 0), total: totalAmount, lines: lines, createdAt: serverTimestamp()
+                notes: document.getElementById('univ-doc-notes').value, subtotal: parseFloat(form.dataset.calcSubtotal || 0),
+                tax: parseFloat(form.dataset.calcTax || 0), shipping: parseFloat(form.dataset.calcShipping || 0), total: totalAmount, lines: lines, createdAt: serverTimestamp()
             };
 
+            let collectionName = 'invoices';
+            if(['cotizacion'].includes(docType)) collectionName = 'quotes';
+            if(['orden_compra'].includes(docType)) collectionName = 'purchase_orders';
+            if(['compra', 'devolucion_compra'].includes(docType)) collectionName = 'purchases';
+
             try {
-                if (docType === 'cotizacion') {
+                if (docType === 'cotizacion' || docType === 'orden_compra') {
                     baseData.status = 'pendiente'; baseData.expiryDate = document.getElementById('univ-doc-expiry').value;
-                    if (docId) { await updateDoc(doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'quotes', docId), baseData); alert("Cotización actualizada correctamente."); } 
-                    else { await addDoc(collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'quotes'), baseData); alert("Cotización guardada exitosamente."); }
-                    document.getElementById('modal-document').classList.add('hidden-screen'); window.navigateTo('cotizaciones', '3. Cotizaciones');
+                    if (docId) { await updateDoc(doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, collectionName, docId), baseData); alert("Documento actualizado."); } 
+                    else { await addDoc(collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, collectionName), baseData); alert("Documento guardado."); }
+                    
+                    document.getElementById('modal-document').classList.add('hidden-screen'); 
+                    window.navigateTo(docType === 'cotizacion' ? 'cotizaciones' : 'orden_compra', docType === 'cotizacion' ? '3. Cotizaciones' : '5. Orden de Compra');
                 } else {
-                    const condition = docType === 'devolucion' ? 'contado' : document.getElementById('univ-doc-condition').value;
+                    const condition = (docType === 'devolucion' || docType === 'devolucion_compra') ? 'contado' : document.getElementById('univ-doc-condition').value;
                     baseData.type = docType; baseData.condition = condition;
                     
-                    if (docId && docType === 'factura') {
-                        const originalInv = allInvoices.find(i => i.id === docId);
-                        baseData.paidAmount = originalInv.paidAmount || 0; baseData.payments = originalInv.payments || []; baseData.returns = originalInv.returns || [];
-                        await updateDoc(doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'invoices', docId), baseData);
+                    if (docId) {
+                        const originalDoc = (docType === 'compra' || docType === 'devolucion_compra') ? allPurchases.find(i => i.id === docId) : allInvoices.find(i => i.id === docId);
+                        baseData.paidAmount = originalDoc.paidAmount || 0; baseData.payments = originalDoc.payments || []; baseData.returns = originalDoc.returns || [];
+                        await updateDoc(doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, collectionName, docId), baseData);
 
-                        if(originalInv && originalInv.lines) {
-                            for (const oLine of originalInv.lines) {
+                        if(originalDoc && originalDoc.lines) {
+                            for (const oLine of originalDoc.lines) {
                                 const prod = allProducts.find(p => p.id === oLine.productId);
                                 if(prod && prod.trackStock) {
-                                    const restoredStock = (prod.stockCurrent || 0) + oLine.qty;
+                                    let oldChange = 0;
+                                    if (docType === 'factura') oldChange = oLine.qty;
+                                    else if (docType === 'devolucion') oldChange = -oLine.qty;
+                                    else if (docType === 'compra') oldChange = -oLine.qty;
+                                    else if (docType === 'devolucion_compra') oldChange = oLine.qty;
+                                    
+                                    const restoredStock = (prod.stockCurrent || 0) + oldChange;
                                     await updateDoc(doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'products', prod.id), { stockCurrent: restoredStock });
                                     prod.stockCurrent = restoredStock; 
                                 }
@@ -1393,34 +1649,47 @@
                         for (const nLine of lines) {
                             const prod = allProducts.find(p => p.id === nLine.productId);
                             if(prod && prod.trackStock) {
-                                const newStock = (prod.stockCurrent || 0) - nLine.qty;
+                                let newChange = 0;
+                                if (docType === 'factura') newChange = -nLine.qty;
+                                else if (docType === 'devolucion') newChange = nLine.qty;
+                                else if (docType === 'compra') newChange = nLine.qty;
+                                else if (docType === 'devolucion_compra') newChange = -nLine.qty;
+                                
+                                const newStock = (prod.stockCurrent || 0) + newChange;
                                 await updateDoc(doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'products', prod.id), { stockCurrent: newStock });
                                 prod.stockCurrent = newStock;
                             }
                         }
-                        alert("Factura actualizada y stock reajustado.");
+                        alert("Documento actualizado y stock reajustado.");
                     } else {
                         let paidAmount = 0; let payments = [];
                         if (condition === 'contado') {
                             paidAmount = totalAmount;
-                            payments.push({ date: new Date().toISOString().split('T')[0], amount: totalAmount, method: 'Efectivo', reference: docType === 'devolucion' ? 'Nota Libre' : 'Pago al contado' });
+                            payments.push({ date: new Date().toISOString().split('T')[0], amount: totalAmount, method: 'Efectivo', reference: 'Automático' });
                         }
                         baseData.paidAmount = paidAmount; baseData.payments = payments; baseData.returns = [];
-                        await addDoc(collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'invoices'), baseData);
+                        await addDoc(collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, collectionName), baseData);
+                        
                         for (const line of lines) {
                             const product = allProducts.find(p => p.id === line.productId);
                             if (product && product.trackStock) {
-                                const change = docType === 'devolucion' ? line.qty : -line.qty; 
+                                let change = 0;
+                                if (docType === 'factura') change = -line.qty;
+                                else if (docType === 'devolucion') change = line.qty;
+                                else if (docType === 'compra') change = line.qty;
+                                else if (docType === 'devolucion_compra') change = -line.qty;
+                                
                                 await updateDoc(doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'products', product.id), { stockCurrent: (product.stockCurrent || 0) + change });
                             }
                         }
                         alert("Documento guardado exitosamente.");
                     }
-                    document.getElementById('modal-document').classList.add('hidden-screen'); document.getElementById('univ-doc-condition').disabled = false; window.navigateTo('facturas', '2. Facturas');
+                    document.getElementById('modal-document').classList.add('hidden-screen'); document.getElementById('univ-doc-condition').disabled = false; 
+                    window.navigateTo(['compra', 'devolucion_compra'].includes(docType) ? 'compras' : 'facturas', ['compra', 'devolucion_compra'].includes(docType) ? '4. Compras' : '2. Facturas');
                 }
                 e.target.reset();
             } catch (error) { console.error(error); alert("Error al guardar."); } finally { btn.disabled = false; btn.innerHTML = originalBtnText; }
-        });
+        };
 
 
         // ==========================================
@@ -1444,13 +1713,13 @@
                     else statusBadge = '<span class="bg-yellow-100 text-yellow-700 px-2 py-1 rounded text-xs font-bold border border-yellow-200">Pendiente</span>';
 
                     const tr = document.createElement('tr');
-                    tr.className = 'hover:bg-slate-50 transition-colors cursor-pointer group';
+                    tr.className = 'hover:bg-slate-50 transition-colors cursor-pointer group border-b border-gray-100';
                     tr.onclick = () => window.showQuoteDetails(quo.id);
                     tr.innerHTML = `<td class="p-4 font-medium text-gray-800">${quo.date}</td><td class="p-4 font-bold text-gray-600 group-hover:text-blue-600 transition">${quo.clientName}</td><td class="p-4 text-gray-500 text-sm">${quo.expiryDate || 'N/A'}</td><td class="p-4">${statusBadge}</td><td class="p-4 text-right font-black text-gray-800">$${quo.total.toFixed(2)}</td>`;
                     tbody.appendChild(tr);
                 });
                 const dashQ = document.getElementById('dash-quotes'); if(dashQ) dashQ.innerText = pendingQuotesCount;
-            });
+            }, (error) => console.error("Error cargando cotizaciones", error));
         }
 
         window.showQuoteDetails = function(quoteId) {
@@ -1539,7 +1808,7 @@
             document.getElementById('modal-convert-quote').classList.remove('hidden-screen');
         }
 
-        document.getElementById('form-convert-quote').addEventListener('submit', async (e) => {
+        window.handleConvertQuoteSubmit = async function(e) {
             e.preventDefault();
             const condition = document.getElementById('convert-quo-condition').value; const btn = document.getElementById('btn-confirm-convert'); btn.innerHTML = "Convirtiendo..."; btn.disabled = true;
             try {
@@ -1558,11 +1827,284 @@
                 document.getElementById('modal-convert-quote').classList.add('hidden-screen'); alert("Cotización aprobada y convertida a Factura exitosamente."); window.navigateTo('facturas', '2. Facturas');
             } catch (error) { alert("Error al convertir la cotización."); } 
             finally { btn.innerHTML = `<i data-lucide="check-circle" class="w-4 h-4 mr-2"></i> Confirmar`; btn.disabled = false; lucide.createIcons(); }
-        });
+        };
 
 
         // ==========================================
-        // -- LÓGICA: FACTURAS Y DEVOLUCIONES
+        // -- LÓGICA: ÓRDENES DE COMPRA (PURCHASE ORDERS)
+        // ==========================================
+        
+        function loadPurchaseOrders() {
+            if(!currentUser) return;
+            onSnapshot(query(collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'purchase_orders')), (snapshot) => {
+                const tbody = document.getElementById('purchase-orders-table-body'); if(!tbody) return;
+                tbody.innerHTML = ''; allPurchaseOrders = [];
+                const docs = snapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
+                docs.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+                docs.forEach(po => {
+                    allPurchaseOrders.push(po);
+                    let statusBadge = '';
+                    if (po.status === 'aprobada') statusBadge = '<span class="bg-teal-100 text-teal-700 px-2 py-1 rounded text-xs font-bold border border-teal-200">Recibida</span>';
+                    else if (po.status === 'rechazada') statusBadge = '<span class="bg-red-100 text-red-700 px-2 py-1 rounded text-xs font-bold border border-red-200">Cancelada</span>';
+                    else statusBadge = '<span class="bg-yellow-100 text-yellow-700 px-2 py-1 rounded text-xs font-bold border border-yellow-200">Pendiente</span>';
+
+                    const tr = document.createElement('tr');
+                    tr.className = 'hover:bg-slate-50 transition-colors cursor-pointer group border-b border-gray-100';
+                    tr.onclick = () => window.showPurchaseOrderDetails(po.id);
+                    tr.innerHTML = `<td class="p-4 font-medium text-gray-800">${po.date}</td><td class="p-4 font-bold text-gray-600 group-hover:text-blue-600 transition">${po.clientName}</td><td class="p-4 text-gray-500 text-sm">${po.expiryDate || 'N/A'}</td><td class="p-4">${statusBadge}</td><td class="p-4 text-right font-black text-gray-800">$${po.total.toFixed(2)}</td>`;
+                    tbody.appendChild(tr);
+                });
+            }, (error) => console.error("Error cargando ordenes", error));
+        }
+
+        window.showPurchaseOrderDetails = function(poId) {
+            const po = allPurchaseOrders.find(q => q.id === poId); if(!po) return;
+            currentViewPurchaseOrder = po;
+            document.querySelectorAll('.app-view').forEach(v => v.classList.add('hidden-screen'));
+            document.getElementById('view-orden_compra-detalles').classList.remove('hidden-screen');
+
+            const logoImg = document.getElementById('pdf-po-comp-logo');
+            if (companyProfile.logo) { logoImg.src = companyProfile.logo; logoImg.classList.remove('hidden'); } else logoImg.classList.add('hidden');
+            document.getElementById('pdf-po-comp-name').innerText = companyProfile.companyName || 'Empresa';
+            document.getElementById('pdf-po-comp-rnc').innerText = `RNC: ${companyProfile.rnc || ''}`;
+            document.getElementById('pdf-po-comp-address').innerText = companyProfile.address || '';
+            document.getElementById('pdf-po-comp-phone').innerText = companyProfile.phone ? `Tel: ${companyProfile.phone}` : '';
+
+            const pdfStatus = document.getElementById('pdf-po-status');
+            if (po.status === 'aprobada') { pdfStatus.innerText = "RECIBIDA / CERRADA"; pdfStatus.className = "inline-block px-2 py-1 text-[10px] font-bold uppercase rounded border mb-2 bg-teal-50 text-teal-700 border-teal-200"; } 
+            else if (po.status === 'rechazada') { pdfStatus.innerText = "CANCELADA"; pdfStatus.className = "inline-block px-2 py-1 text-[10px] font-bold uppercase rounded border mb-2 bg-red-50 text-red-700 border-red-200"; } 
+            else { pdfStatus.innerText = "PENDIENTE"; pdfStatus.className = "inline-block px-2 py-1 text-[10px] font-bold uppercase rounded border mb-2 bg-yellow-50 text-yellow-700 border-yellow-200"; }
+
+            document.getElementById('pdf-po-date').innerText = po.date; document.getElementById('pdf-po-expiry').innerText = po.expiryDate || 'N/A';
+            document.getElementById('pdf-po-cli-name').innerText = po.clientName; document.getElementById('pdf-po-cli-email').innerText = po.clientEmail || '';
+            document.getElementById('pdf-po-cli-phone').innerText = po.clientPhone || ''; document.getElementById('pdf-po-cli-address').innerText = po.clientAddress || ''; 
+
+            const pdfLines = document.getElementById('pdf-po-lines'); pdfLines.innerHTML = '';
+            po.lines.forEach(l => {
+                const lTotal = (l.qty * l.price) * (1 + (l.tax/100));
+                pdfLines.innerHTML += `<tr><td class="font-medium">${l.productName}</td><td class="text-center">${l.qty}</td><td class="text-right">$${l.price.toFixed(2)}</td><td class="text-right">${l.tax}%</td><td class="text-right font-semibold">$${lTotal.toFixed(2)}</td></tr>`;
+            });
+
+            document.getElementById('pdf-po-sub').innerText = `$${po.subtotal.toFixed(2)}`; document.getElementById('pdf-po-tax').innerText = `$${po.tax.toFixed(2)}`; document.getElementById('pdf-po-total').innerText = `$${po.total.toFixed(2)}`;
+            if(po.shipping > 0) { document.getElementById('pdf-po-ship-container').classList.remove('hidden'); document.getElementById('pdf-po-ship').innerText = `$${po.shipping.toFixed(2)}`; } 
+            else document.getElementById('pdf-po-ship-container').classList.add('hidden');
+            document.getElementById('pdf-po-notes').innerText = po.notes ? po.notes : 'Sin notas adicionales.';
+
+            const btnApprove = document.getElementById('btn-po-approve'); const btnReject = document.getElementById('btn-po-reject'); const btnEdit = document.getElementById('btn-po-edit');
+            if (po.status === 'pendiente') { btnApprove.classList.remove('hidden'); btnReject.classList.remove('hidden'); btnEdit.classList.remove('hidden'); } 
+            else { btnApprove.classList.add('hidden'); btnReject.classList.add('hidden'); btnEdit.classList.add('hidden'); }
+            lucide.createIcons();
+        }
+
+        window.editPurchaseOrder = function() {
+            if(!currentViewPurchaseOrder) return;
+            const po = currentViewPurchaseOrder;
+            document.getElementById('form-universal-document').reset(); document.getElementById('univ-doc-type').value = 'orden_compra'; document.getElementById('univ-doc-id').value = po.id;
+            document.getElementById('doc-modal-title').innerText = "Editar Orden de Compra"; document.getElementById('doc-modal-title').className = "text-xl font-black text-blue-600";
+            document.getElementById('btn-submit-univ-doc').innerText = "Actualizar Orden"; document.getElementById('btn-submit-univ-doc').className = "px-8 py-2.5 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition shadow-md flex items-center";
+            
+            const clientSelect = document.getElementById('univ-doc-client'); clientSelect.innerHTML = '<option value="">Seleccione un proveedor...</option>';
+            allClients.filter(c => c.type === 'proveedor').forEach(c => { clientSelect.innerHTML += `<option value="${c.id}">${c.orgName}</option>`; });
+            clientSelect.value = po.clientId;
+
+            document.getElementById('univ-doc-date').value = po.date || ''; document.getElementById('univ-doc-expiry').value = po.expiryDate || '';
+            document.getElementById('univ-doc-notes').value = po.notes || ''; document.getElementById('univ-doc-ship').value = po.shipping || 0;
+            document.getElementById('univ-doc-condition-container').classList.add('hidden'); document.getElementById('univ-doc-expiry-container').classList.remove('hidden');
+            
+            const tbody = document.getElementById('univ-doc-lines'); tbody.innerHTML = '';
+            po.lines.forEach(line => {
+                const tr = document.createElement('tr'); tr.className = 'univ-line group hover:bg-slate-50 transition-colors border-b border-gray-100';
+                tr.innerHTML = `<td class="p-2"><select required class="line-product w-full border border-gray-300 rounded-md px-2 py-1.5 text-sm outline-none focus:border-indigo-500" onchange="window.calculateUnivDocTotals(this)">${getProductOptionsHTML()}</select></td><td class="p-2"><input type="number" required min="0.01" step="0.01" value="${line.qty}" class="line-qty w-full border border-gray-300 rounded-md px-2 py-1.5 text-sm outline-none focus:border-indigo-500 text-center" oninput="window.calculateUnivDocTotals()"></td><td class="p-2"><div class="flex items-center"><span class="text-gray-400 mr-1">$</span><input type="number" required step="0.01" value="${line.price}" class="line-price w-full border border-gray-300 rounded-md px-2 py-1.5 text-sm outline-none focus:border-indigo-500 text-right" oninput="window.calculateUnivDocTotals()"></div></td><td class="p-2"><div class="flex items-center"><input type="number" required step="0.01" value="${line.tax}" class="line-tax w-full border border-gray-300 rounded-md px-2 py-1.5 text-sm outline-none focus:border-indigo-500 text-right" oninput="window.calculateUnivDocTotals()"><span class="text-gray-400 ml-1">%</span></div></td><td class="p-2 text-right"><span class="line-total font-bold text-gray-800">$0.00</span></td><td class="p-2 text-center"><button type="button" onclick="window.removeUnivDocLine(this)" class="text-gray-300 hover:text-red-500 transition focus:outline-none"><i data-lucide="trash-2" class="w-5 h-5 mx-auto"></i></button></td>`;
+                tbody.appendChild(tr); tr.querySelector('.line-product').value = line.productId;
+            });
+            window.calculateUnivDocTotals(); lucide.createIcons(); document.getElementById('modal-document').classList.remove('hidden-screen');
+        };
+
+        window.generatePurchaseOrderPDF = function() {
+            if(!currentViewPurchaseOrder) return;
+            const element = document.getElementById('po-print-area'); const cName = (companyProfile.companyName || 'Empresa').substring(0,5);
+            const opt = { margin: 0.5, filename: `OrdenCompra_${cName}_${currentViewPurchaseOrder.date}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' } };
+            window.html2pdf().set(opt).from(element).save();
+        }
+
+        window.rejectPurchaseOrder = async function() {
+            if(!currentViewPurchaseOrder || !confirm("¿Estás seguro de que deseas cancelar esta orden de compra?")) return;
+            try { await updateDoc(doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'purchase_orders', currentViewPurchaseOrder.id), { status: 'rechazada' }); alert("Orden cancelada."); window.navigateTo('orden_compra', '5. Orden de Compra'); } 
+            catch (error) { console.error(error); }
+        }
+
+        window.openConvertOrderModal = function() {
+            if(!currentViewPurchaseOrder) return;
+            document.getElementById('modal-convert-order').classList.remove('hidden-screen');
+        }
+
+        window.handleConvertOrderSubmit = async function(e) {
+            e.preventDefault();
+            const condition = document.getElementById('convert-order-condition').value; const btn = document.getElementById('btn-confirm-convert-order'); btn.innerHTML = "Registrando..."; btn.disabled = true;
+            try {
+                const totalAmount = currentViewPurchaseOrder.total; let paidAmount = 0; let payments = [];
+                if (condition === 'contado') { paidAmount = totalAmount; payments.push({ date: new Date().toISOString().split('T')[0], amount: totalAmount, method: 'Efectivo', reference: `Pago al contado (Desde Orden)` }); }
+                const purchaseData = {
+                    type: 'compra', condition: condition, clientId: currentViewPurchaseOrder.clientId, clientName: currentViewPurchaseOrder.clientName, clientEmail: currentViewPurchaseOrder.clientEmail || '', clientPhone: currentViewPurchaseOrder.clientPhone || '', clientAddress: currentViewPurchaseOrder.clientAddress || '',
+                    date: new Date().toISOString().split('T')[0], notes: currentViewPurchaseOrder.notes, subtotal: currentViewPurchaseOrder.subtotal, tax: currentViewPurchaseOrder.tax, shipping: currentViewPurchaseOrder.shipping || 0, total: totalAmount, paidAmount: paidAmount, payments: payments, returns: [], lines: currentViewPurchaseOrder.lines, createdAt: serverTimestamp()
+                };
+                await addDoc(collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'purchases'), purchaseData);
+                for (const line of currentViewPurchaseOrder.lines) {
+                    const product = allProducts.find(p => p.id === line.productId);
+                    if (product && product.trackStock) await updateDoc(doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'products', product.id), { stockCurrent: (product.stockCurrent || 0) + line.qty }); // COMPRA SUMA INVENTARIO
+                }
+                await updateDoc(doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'purchase_orders', currentViewPurchaseOrder.id), { status: 'aprobada' });
+                document.getElementById('modal-convert-order').classList.add('hidden-screen'); alert("Orden recibida y convertida a Compra exitosamente (Inventario sumado)."); window.navigateTo('compras', '4. Compras');
+            } catch (error) { alert("Error al convertir la orden."); } 
+            finally { btn.innerHTML = `<i data-lucide="check-circle" class="w-4 h-4 mr-2"></i> Recibir y Registrar`; btn.disabled = false; lucide.createIcons(); }
+        };
+
+        // ==========================================
+        // -- LÓGICA: COMPRAS Y DEVOLUCIONES DE COMPRA
+        // ==========================================
+
+        function loadPurchases() {
+            if(!currentUser) return;
+            onSnapshot(query(collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'purchases')), (snapshot) => {
+                const tbody = document.getElementById('purchases-table-body'); if(!tbody) return;
+                tbody.innerHTML = ''; allPurchases = [];
+
+                const docs = snapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
+                docs.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+                docs.forEach(pur => {
+                    allPurchases.push(pur);
+                    const isReturn = pur.type === 'devolucion_compra';
+                    const balance = pur.total - (pur.paidAmount || 0);
+
+                    let statusBadge = '';
+                    if (isReturn) statusBadge = '<span class="bg-orange-100 text-orange-700 px-2 py-1 rounded text-xs font-bold border border-orange-200">DEVOLUCIÓN</span>';
+                    else if (balance <= 0.01 && balance >= -0.01) statusBadge = '<span class="bg-teal-100 text-teal-700 px-2 py-1 rounded text-xs font-bold border border-teal-200">Pagada</span>';
+                    else if (balance < -0.01) statusBadge = '<span class="bg-purple-100 text-purple-700 px-2 py-1 rounded text-xs font-bold border border-purple-200">Saldo A Favor</span>';
+                    else if (pur.paidAmount > 0) statusBadge = '<span class="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs font-bold border border-blue-200">Abonada</span>';
+                    else statusBadge = '<span class="bg-red-50 text-red-600 px-2 py-1 rounded text-xs font-bold border border-red-200">Por Pagar</span>';
+
+                    const tr = document.createElement('tr');
+                    tr.className = 'hover:bg-slate-50 transition-colors cursor-pointer group border-b border-gray-100';
+                    tr.onclick = () => window.showPurchaseDetails(pur.id);
+                    tr.innerHTML = `<td class="p-4 font-medium text-gray-800">${pur.date}</td><td class="p-4 font-bold text-gray-600 group-hover:text-teal-600 transition">${pur.clientName}</td><td class="p-4 uppercase text-[10px] font-bold text-gray-500 tracking-wider">${isReturn ? 'N/A' : pur.condition}</td><td class="p-4">${statusBadge}</td><td class="p-4 text-right font-black ${isReturn ? 'text-orange-600' : 'text-gray-800'}">${isReturn ? '-' : ''}$${pur.total.toFixed(2)}</td><td class="p-4 text-right font-bold ${balance < -0.01 ? 'text-purple-600' : 'text-red-500'}">${isReturn || (balance <= 0.01 && balance >= -0.01) ? '' : (balance < -0.01 ? 'A favor $'+Math.abs(balance).toFixed(2) : '$'+balance.toFixed(2))}</td>`;
+                    tbody.appendChild(tr);
+                });
+
+                if(currentViewClient && !document.getElementById('view-clientes-detalles').classList.contains('hidden-screen')) window.showClientDetails(currentViewClient);
+            }, (error) => console.error("Error cargando compras", error));
+        }
+
+        window.showPurchaseDetails = function(purchaseId) {
+            const pur = allPurchases.find(i => i.id === purchaseId); if(!pur) return;
+            currentViewPurchase = pur;
+            document.querySelectorAll('.app-view').forEach(v => v.classList.add('hidden-screen'));
+            document.getElementById('view-compra-detalles').classList.remove('hidden-screen');
+
+            const isReturn = pur.type === 'devolucion_compra';
+            const balance = pur.total - (pur.paidAmount || 0);
+
+            const logoImg = document.getElementById('pdf-pur-comp-logo');
+            if (companyProfile.logo) { logoImg.src = companyProfile.logo; logoImg.classList.remove('hidden'); } else logoImg.classList.add('hidden');
+
+            document.getElementById('pdf-pur-comp-name').innerText = companyProfile.companyName || 'Empresa'; document.getElementById('pdf-pur-comp-rnc').innerText = `RNC: ${companyProfile.rnc || ''}`;
+            document.getElementById('pdf-pur-comp-address').innerText = companyProfile.address || '';
+            document.getElementById('pdf-pur-title').innerText = isReturn ? "DEVOLUCIÓN DE COMPRA" : "REGISTRO DE COMPRA";
+
+            const pdfStatus = document.getElementById('pdf-pur-status'); const condContainer = document.getElementById('pdf-pur-cond-container');
+            
+            if (isReturn) {
+                pdfStatus.innerText = "DEVOLUCIÓN"; pdfStatus.className = "inline-block px-2 py-1 text-[10px] font-bold uppercase rounded border mb-2 bg-orange-100 text-orange-800 border-orange-300"; condContainer.classList.add('hidden');
+            } else {
+                condContainer.classList.remove('hidden'); document.getElementById('pdf-pur-cond').innerText = pur.condition;
+                if (balance <= 0.01 && balance >= -0.01) { pdfStatus.innerText = "PAGADA"; pdfStatus.className = "inline-block px-2 py-1 text-[10px] font-bold uppercase rounded border mb-2 bg-teal-50 text-teal-700 border-teal-200"; } 
+                else if (balance < -0.01) { pdfStatus.innerText = "SALDO A FAVOR"; pdfStatus.className = "inline-block px-2 py-1 text-[10px] font-bold uppercase rounded border mb-2 bg-purple-50 text-purple-700 border-purple-200"; } 
+                else if ((pur.paidAmount || 0) > 0) { pdfStatus.innerText = "ABONADA"; pdfStatus.className = "inline-block px-2 py-1 text-[10px] font-bold uppercase rounded border mb-2 bg-blue-50 text-blue-700 border-blue-200"; } 
+                else { pdfStatus.innerText = "POR PAGAR"; pdfStatus.className = "inline-block px-2 py-1 text-[10px] font-bold uppercase rounded border mb-2 bg-red-50 text-red-700 border-red-200"; }
+            }
+
+            document.getElementById('pdf-pur-date').innerText = pur.date; document.getElementById('pdf-pur-cli-name').innerText = pur.clientName;
+            document.getElementById('pdf-pur-cli-email').innerText = pur.clientEmail || ''; document.getElementById('pdf-pur-cli-phone').innerText = pur.clientPhone || '';
+
+            const pdfLines = document.getElementById('pdf-pur-lines'); pdfLines.innerHTML = '';
+            pur.lines.forEach(l => {
+                const lTotal = (l.qty * l.price) * (1 + (l.tax/100));
+                pdfLines.innerHTML += `<tr><td class="font-medium">${l.productName}</td><td class="text-center">${l.qty}</td><td class="text-right">$${l.price.toFixed(2)}</td><td class="text-right">${l.tax}%</td><td class="text-right font-semibold">$${lTotal.toFixed(2)}</td></tr>`;
+            });
+
+            document.getElementById('pdf-pur-sub').innerText = `$${pur.subtotal.toFixed(2)}`; document.getElementById('pdf-pur-tax').innerText = `$${pur.tax.toFixed(2)}`; document.getElementById('pdf-pur-total').innerText = `$${pur.total.toFixed(2)}`;
+            if(pur.shipping > 0) { document.getElementById('pdf-pur-ship-container').classList.remove('hidden'); document.getElementById('pdf-pur-ship').innerText = `$${pur.shipping.toFixed(2)}`; } 
+            else document.getElementById('pdf-pur-ship-container').classList.add('hidden');
+            document.getElementById('pdf-pur-notes').innerText = pur.notes ? pur.notes : 'Sin notas adicionales.';
+
+            document.getElementById('pur-detail-total').innerText = `$${pur.total.toFixed(2)}`; document.getElementById('pur-detail-paid').innerText = `$${(pur.paidAmount || 0).toFixed(2)}`;
+            
+            if (balance <= -0.01) { document.getElementById('pur-detail-balance').innerText = `-$${Math.abs(balance).toFixed(2)} (A Favor)`; document.getElementById('pur-detail-balance').parentElement.className = "flex justify-between text-purple-600 pt-2 border-t font-black text-lg"; } 
+            else { document.getElementById('pur-detail-balance').innerText = `$${balance.toFixed(2)}`; document.getElementById('pur-detail-balance').parentElement.className = "flex justify-between text-gray-800 pt-2 border-t font-black text-lg"; }
+
+            const badge = document.getElementById('pur-detail-status-badge');
+            const btnPay = document.getElementById('btn-pur-pay');
+            const btnReturn = document.getElementById('btn-pur-return');
+            const btnEdit = document.getElementById('btn-pur-edit');
+            
+            if (isReturn) {
+                badge.className = "mb-4 text-center py-2 rounded-lg font-bold text-sm bg-orange-100 text-orange-800 border border-orange-200"; badge.innerText = "DEVOLUCIÓN DE COMPRA";
+                btnPay.classList.add('hidden'); btnReturn.classList.add('hidden'); btnEdit.classList.add('hidden'); document.getElementById('pur-payments-panel').classList.add('hidden');
+            } else {
+                document.getElementById('pur-payments-panel').classList.remove('hidden'); btnReturn.classList.remove('hidden'); btnEdit.classList.remove('hidden'); 
+                if (balance <= 0.01 && balance >= -0.01) { badge.className = "mb-4 text-center py-2 rounded-lg font-bold text-sm bg-teal-100 text-teal-700"; badge.innerText = "COMPRA PAGADA"; btnPay.classList.add('hidden'); } 
+                else if (balance < -0.01) { badge.className = "mb-4 text-center py-2 rounded-lg font-bold text-sm bg-purple-100 text-purple-700"; badge.innerText = "SALDO A FAVOR"; btnPay.classList.add('hidden'); } 
+                else if ((pur.paidAmount || 0) > 0) { badge.className = "mb-4 text-center py-2 rounded-lg font-bold text-sm bg-blue-100 text-blue-700"; badge.innerText = "COMPRA ABONADA"; btnPay.classList.remove('hidden'); } 
+                else { badge.className = "mb-4 text-center py-2 rounded-lg font-bold text-sm bg-red-100 text-red-700"; badge.innerText = "POR PAGAR"; btnPay.classList.remove('hidden'); }
+            }
+
+            const ulPayments = document.getElementById('pur-payments-list'); ulPayments.innerHTML = '';
+            if(pur.payments && pur.payments.length > 0) { pur.payments.forEach(pay => { ulPayments.innerHTML += `<li class="py-3 flex justify-between items-center"><div><p class="font-semibold text-gray-800">${pay.method}</p><p class="text-xs text-gray-500">${pay.date} | ${pay.reference || 'Sin ref'}</p></div><span class="font-bold text-teal-600">-$${pay.amount.toFixed(2)} (Egresos)</span></li>`; }); } 
+            else ulPayments.innerHTML = '<li class="py-4 text-center text-gray-400">Sin pagos registrados</li>';
+
+            const retContainer = document.getElementById('pur-returns-container');
+            if(pur.returns && pur.returns.length > 0) {
+                retContainer.classList.remove('hidden'); let retHtml = '<ul class="space-y-2">';
+                pur.returns.forEach(r => { retHtml += `<li><strong>${r.date}:</strong> Devueltos ${r.qty} unid. de ${r.productName}</li>`; });
+                document.getElementById('pur-returns-text').innerHTML = retHtml + '</ul>';
+            } else retContainer.classList.add('hidden');
+            lucide.createIcons();
+        }
+
+        window.editPurchase = function() {
+            if(!currentViewPurchase) return;
+            const pur = currentViewPurchase;
+            document.getElementById('form-universal-document').reset(); document.getElementById('univ-doc-type').value = 'compra'; document.getElementById('univ-doc-id').value = pur.id;
+            document.getElementById('doc-modal-title').innerText = "Editar Compra"; document.getElementById('doc-modal-title').className = "text-xl font-black text-teal-600";
+            document.getElementById('btn-submit-univ-doc').innerText = "Actualizar Compra"; document.getElementById('btn-submit-univ-doc').className = "px-8 py-2.5 bg-teal-600 text-white font-bold rounded-lg hover:bg-teal-700 transition shadow-md flex items-center";
+            
+            const clientSelect = document.getElementById('univ-doc-client'); clientSelect.innerHTML = '<option value="">Seleccione un proveedor...</option>';
+            allClients.filter(c => c.type === 'proveedor').forEach(c => { clientSelect.innerHTML += `<option value="${c.id}">${c.orgName}</option>`; });
+            clientSelect.value = pur.clientId;
+
+            document.getElementById('univ-doc-date').value = pur.date || ''; document.getElementById('univ-doc-notes').value = pur.notes || ''; document.getElementById('univ-doc-ship').value = pur.shipping || 0;
+            document.getElementById('univ-doc-condition-container').classList.remove('hidden'); document.getElementById('univ-doc-condition').value = pur.condition;
+            document.getElementById('univ-doc-condition').disabled = false; document.getElementById('univ-doc-expiry-container').classList.add('hidden');
+            
+            const tbody = document.getElementById('univ-doc-lines'); tbody.innerHTML = '';
+            pur.lines.forEach(line => {
+                const tr = document.createElement('tr'); tr.className = 'univ-line group hover:bg-slate-50 transition-colors border-b border-gray-100';
+                tr.innerHTML = `<td class="p-2"><select required class="line-product w-full border border-gray-300 rounded-md px-2 py-1.5 text-sm outline-none focus:border-indigo-500" onchange="window.calculateUnivDocTotals(this)">${getProductOptionsHTML()}</select></td><td class="p-2"><input type="number" required min="0.01" step="0.01" value="${line.qty}" class="line-qty w-full border border-gray-300 rounded-md px-2 py-1.5 text-sm outline-none focus:border-indigo-500 text-center" oninput="window.calculateUnivDocTotals()"></td><td class="p-2"><div class="flex items-center"><span class="text-gray-400 mr-1">$</span><input type="number" required step="0.01" value="${line.price}" class="line-price w-full border border-gray-300 rounded-md px-2 py-1.5 text-sm outline-none focus:border-indigo-500 text-right" oninput="window.calculateUnivDocTotals()"></div></td><td class="p-2"><div class="flex items-center"><input type="number" required step="0.01" value="${line.tax}" class="line-tax w-full border border-gray-300 rounded-md px-2 py-1.5 text-sm outline-none focus:border-indigo-500 text-right" oninput="window.calculateUnivDocTotals()"><span class="text-gray-400 ml-1">%</span></div></td><td class="p-2 text-right"><span class="line-total font-bold text-gray-800">$0.00</span></td><td class="p-2 text-center"><button type="button" onclick="window.removeUnivDocLine(this)" class="text-gray-300 hover:text-red-500 transition focus:outline-none"><i data-lucide="trash-2" class="w-5 h-5 mx-auto"></i></button></td>`;
+                tbody.appendChild(tr); tr.querySelector('.line-product').value = line.productId;
+            });
+            window.calculateUnivDocTotals(); lucide.createIcons(); document.getElementById('modal-document').classList.remove('hidden-screen');
+        };
+
+        window.generatePurchasePDF = function() {
+            if(!currentViewPurchase) return;
+            const element = document.getElementById('purchase-print-area'); const cName = (companyProfile.companyName || 'Empresa').substring(0,5);
+            const opt = { margin: 0.5, filename: `Compra_${cName}_${currentViewPurchase.date}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' } };
+            window.html2pdf().set(opt).from(element).save();
+        }
+
+        // ==========================================
+        // -- LÓGICA: FACTURAS (SALES)
         // ==========================================
 
         function loadInvoices() {
@@ -1597,7 +2139,7 @@
                 document.getElementById('dash-sales').innerText = `$${totalSales.toFixed(2)}`;
                 document.getElementById('dash-pending-inv').innerText = pendingInvoices;
                 if(currentViewClient && !document.getElementById('view-clientes-detalles').classList.contains('hidden-screen')) window.showClientDetails(currentViewClient);
-            });
+            }, (error) => console.error("Error cargando facturas", error));
         }
 
         window.showInvoiceDetails = function(invoiceId) {
@@ -1709,70 +2251,106 @@
             window.html2pdf().set(opt).from(element).save();
         }
 
-        window.openPaymentModal = function() {
-            if(!currentViewInvoice) return;
-            const balance = currentViewInvoice.total - (currentViewInvoice.paidAmount || 0);
+        // ==========================================
+        // -- LÓGICA COMPARTIDA DE PAGOS Y DEVOLUCIONES --
+        // ==========================================
+
+        window.openPaymentModal = function(type = 'factura') {
+            let currentDoc = type === 'compra' ? currentViewPurchase : currentViewInvoice;
+            if(!currentDoc) return;
+            document.getElementById('payment-target-type').value = type;
+            const balance = currentDoc.total - (currentDoc.paidAmount || 0);
             document.getElementById('pay-amount').value = balance.toFixed(2); document.getElementById('pay-date').valueAsDate = new Date(); document.getElementById('modal-payment').classList.remove('hidden-screen');
         }
 
-        document.getElementById('form-add-payment').addEventListener('submit', async (e) => {
-            e.preventDefault(); if(!currentViewInvoice) return;
+        window.handlePaymentSubmit = async function(e) {
+            e.preventDefault(); 
+            const type = document.getElementById('payment-target-type').value;
+            let currentDoc = type === 'compra' ? currentViewPurchase : currentViewInvoice;
+            if(!currentDoc) return;
+
             const btn = document.getElementById('btn-submit-payment'); btn.innerHTML = "Procesando..."; btn.disabled = true;
             const amount = parseFloat(document.getElementById('pay-amount').value);
             const newPayment = { amount, date: document.getElementById('pay-date').value, method: document.getElementById('pay-method').value, reference: document.getElementById('pay-ref').value };
-            try {
-                await updateDoc(doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'invoices', currentViewInvoice.id), { paidAmount: (currentViewInvoice.paidAmount || 0) + amount, payments: arrayUnion(newPayment) });
-                document.getElementById('modal-payment').classList.add('hidden-screen'); e.target.reset();
-                setTimeout(() => { const u = allInvoices.find(i => i.id === currentViewInvoice.id); if(u) window.showInvoiceDetails(u.id); }, 500);
-            } catch (error) { alert("Error registrando el pago"); } finally { btn.innerHTML = "Procesar Pago"; btn.disabled = false; }
-        });
+            
+            const colName = type === 'compra' ? 'purchases' : 'invoices';
 
-        window.openReturnModal = function() {
-            if(!currentViewInvoice) return;
+            try {
+                await updateDoc(doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, colName, currentDoc.id), { paidAmount: (currentDoc.paidAmount || 0) + amount, payments: arrayUnion(newPayment) });
+                document.getElementById('modal-payment').classList.add('hidden-screen'); e.target.reset();
+                setTimeout(() => { 
+                    if(type === 'compra') {
+                        const u = allPurchases.find(i => i.id === currentDoc.id); if(u) window.showPurchaseDetails(u.id); 
+                    } else {
+                        const u = allInvoices.find(i => i.id === currentDoc.id); if(u) window.showInvoiceDetails(u.id); 
+                    }
+                }, 500);
+            } catch (error) { alert("Error registrando el pago"); } finally { btn.innerHTML = "Procesar Pago"; btn.disabled = false; }
+        };
+
+        window.openReturnModal = function(type = 'factura') {
+            let currentDoc = type === 'compra' ? currentViewPurchase : currentViewInvoice;
+            if(!currentDoc) return;
+            document.getElementById('return-target-type').value = type;
+
             const tbody = document.getElementById('return-lines-body'); tbody.innerHTML = '';
-            currentViewInvoice.lines.forEach((line) => {
+            currentDoc.lines.forEach((line) => {
                 let alreadyReturned = 0;
-                if(currentViewInvoice.returns) { const pastRet = currentViewInvoice.returns.find(r => r.productId === line.productId); if(pastRet) alreadyReturned = pastRet.qty; }
+                if(currentDoc.returns) { const pastRet = currentDoc.returns.find(r => r.productId === line.productId); if(pastRet) alreadyReturned = pastRet.qty; }
                 const maxReturn = line.qty - alreadyReturned;
                 if (maxReturn > 0) {
                     tbody.innerHTML += `<tr><td class="p-2 py-3 font-medium">${line.productName}</td><td class="p-2 text-center text-gray-500">${line.qty} ${alreadyReturned > 0 ? `(Dev. ${alreadyReturned})` : ''}</td><td class="p-2"><input type="number" class="ret-qty w-full border rounded text-center py-1 outline-none focus:ring-1 focus:ring-orange-500" data-pid="${line.productId}" data-pname="${line.productName}" data-max="${maxReturn}" min="0" max="${maxReturn}" value="0"></td></tr>`;
                 }
             });
-            if (tbody.innerHTML === '') { tbody.innerHTML = '<tr><td colspan="3" class="p-4 text-center text-gray-400">Todos los productos devueltos.</td></tr>'; document.getElementById('btn-submit-return').classList.add('hidden'); } 
+            if (tbody.innerHTML === '') { tbody.innerHTML = '<tr><td colspan="3" class="p-4 text-center text-gray-400">Todos los ítems de este documento han sido devueltos.</td></tr>'; document.getElementById('btn-submit-return').classList.add('hidden'); } 
             else document.getElementById('btn-submit-return').classList.remove('hidden');
             document.getElementById('modal-return').classList.remove('hidden-screen');
         }
 
         window.processReturn = async function() {
-            if(!currentViewInvoice) return;
+            const type = document.getElementById('return-target-type').value;
+            let currentDoc = type === 'compra' ? currentViewPurchase : currentViewInvoice;
+            if(!currentDoc) return;
+
             const btn = document.getElementById('btn-submit-return'); btn.innerHTML = "Procesando..."; btn.disabled = true;
             const returnItems = [];
             document.querySelectorAll('.ret-qty').forEach(input => { const qty = parseInt(input.value || 0); if (qty > 0) returnItems.push({ productId: input.dataset.pid, productName: input.dataset.pname, qty: qty, date: new Date().toISOString().split('T')[0] }); });
-            if(returnItems.length === 0) { alert("Indique cantidad mayor a 0."); btn.innerHTML = "Aplicar"; btn.disabled = false; return; }
+            if(returnItems.length === 0) { alert("Indique cantidad mayor a 0."); btn.innerHTML = "Aplicar Devolución"; btn.disabled = false; return; }
+
+            const colName = type === 'compra' ? 'purchases' : 'invoices';
 
             try {
-                const invRef = doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'invoices', currentViewInvoice.id);
-                let newLines = JSON.parse(JSON.stringify(currentViewInvoice.lines));
+                const docRef = doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, colName, currentDoc.id);
+                let newLines = JSON.parse(JSON.stringify(currentDoc.lines));
                 returnItems.forEach(ret => { let line = newLines.find(l => l.productId === ret.productId); if (line) line.qty -= ret.qty; });
                 newLines = newLines.filter(l => l.qty > 0);
+                
                 let newSubtotal = 0; let newTax = 0;
                 newLines.forEach(l => { const base = l.qty * l.price; const tax = base * (l.tax / 100); newSubtotal += base; newTax += tax; });
-                let newTotal = newSubtotal + newTax + (currentViewInvoice.shipping || 0);
+                let newTotal = newSubtotal + newTax + (currentDoc.shipping || 0);
 
-                for (const ret of returnItems) await updateDoc(invRef, { returns: arrayUnion(ret) });
-                await updateDoc(invRef, { lines: newLines, subtotal: newSubtotal, tax: newTax, total: newTotal });
+                for (const ret of returnItems) await updateDoc(docRef, { returns: arrayUnion(ret) });
+                await updateDoc(docRef, { lines: newLines, subtotal: newSubtotal, tax: newTax, total: newTotal });
 
                 for (const ret of returnItems) {
                     const product = allProducts.find(p => p.id === ret.productId);
-                    if (product && product.trackStock) await updateDoc(doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'products', product.id), { stockCurrent: (product.stockCurrent || 0) + ret.qty });
+                    if (product && product.trackStock) {
+                        // Venta Devuelta (+ stock), Compra Devuelta (- stock)
+                        const stockChange = type === 'compra' ? -ret.qty : ret.qty;
+                        await updateDoc(doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'products', product.id), { stockCurrent: (product.stockCurrent || 0) + stockChange });
+                    }
                 }
                 document.getElementById('modal-return').classList.add('hidden-screen'); alert("Devolución aplicada con éxito.");
-                setTimeout(() => { const u = allInvoices.find(i => i.id === currentViewInvoice.id); if(u) window.showInvoiceDetails(u.id); }, 500);
+                setTimeout(() => { 
+                    if(type === 'compra') { const u = allPurchases.find(i => i.id === currentDoc.id); if(u) window.showPurchaseDetails(u.id); } 
+                    else { const u = allInvoices.find(i => i.id === currentDoc.id); if(u) window.showInvoiceDetails(u.id); }
+                }, 500);
             } catch (error) { console.error(error); alert("Error procesando la devolución."); } finally { btn.innerHTML = "Aplicar Devolución"; btn.disabled = false; }
         }
 
+
         // ==========================================
-        // -- MÓDULO: PRODUCTOS Y CLIENTES
+        // -- LÓGICA: PRODUCTOS Y CLIENTES
         // ==========================================
         
         function updateCategoryFilterDropdown() {
@@ -1799,16 +2377,16 @@
                 if (p.trackStock) stockBadge = (p.stockCurrent || 0) <= (p.stockMin || 0) ? `<span class="bg-red-50 text-red-600 px-1.5 py-0.5 rounded text-[10px] ml-2 border border-red-100 font-bold" title="Stock por debajo del mínimo">Stock: ${p.stockCurrent || 0}</span>` : `<span class="bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded text-[10px] ml-2 border border-blue-100 font-bold">Stock: ${p.stockCurrent || 0}</span>`;
                 const tr = document.createElement('tr');
                 tr.className = 'hover:bg-slate-50 transition-colors';
-                tr.innerHTML = `<td class="p-4 font-mono text-sm text-gray-500">${p.code}</td><td class="p-4"><div class="flex items-center">${imgHtml}<div><span class="font-bold text-gray-800">${p.name}</span><div class="text-xs font-normal text-gray-400 mt-0.5">${p.category || 'Sin categoría'}${stockBadge}</div></div></div></td><td class="p-4 capitalize text-sm"><span class="bg-gray-100 text-gray-600 px-2 py-1 rounded-md text-xs font-medium border">${p.type}</span></td><td class="p-4 text-gray-600">$${p.buyRate.toFixed(2)}</td><td class="p-4 font-black text-green-600">$${p.sellRate.toFixed(2)}</td><td class="p-4 text-center"><button onclick="window.editProduct('${p.id}')" class="text-indigo-600 hover:text-indigo-900 bg-indigo-50 p-2 rounded-lg transition" title="Editar Producto"><i data-lucide="edit-3" class="w-4 h-4"></i></button></td>`;
+                tr.innerHTML = `<td class="p-4 font-mono text-sm text-gray-500">${p.code}</td><td class="p-4"><div class="flex items-center">${imgHtml}<div><span class="font-bold text-gray-800">${p.name}</span><div class="text-xs font-normal text-gray-400 mt-0.5">${p.category || 'Sin categoría'} ${stockBadge}</div></div></div></td><td class="p-4 capitalize text-sm"><span class="bg-gray-100 text-gray-600 px-2 py-1 rounded-md text-xs font-medium border">${p.type}</span></td><td class="p-4 text-gray-600">$${p.buyRate.toFixed(2)}</td><td class="p-4 font-black text-green-600">$${p.sellRate.toFixed(2)}</td><td class="p-4 text-center"><button onclick="window.editProduct('${p.id}')" class="text-indigo-600 hover:text-indigo-900 bg-indigo-50 p-2 rounded-lg transition" title="Editar Producto"><i data-lucide="edit-3" class="w-4 h-4"></i></button></td>`;
                 tbody.appendChild(tr);
             });
             lucide.createIcons();
         }
 
-        document.getElementById('prod-track-stock').addEventListener('change', function() {
-            if(this.checked) document.getElementById('stock-fields-container').classList.remove('hidden');
+        window.toggleStockFields = function(checkbox) {
+            if(checkbox.checked) document.getElementById('stock-fields-container').classList.remove('hidden');
             else document.getElementById('stock-fields-container').classList.add('hidden');
-        });
+        };
 
         function populateProvidersDropdown(selectedValue = '') {
             const select = document.getElementById('prod-provider');
@@ -1817,7 +2395,7 @@
             allClients.filter(c => c.type === 'proveedor').forEach(p => { select.innerHTML += `<option value="${p.id}" ${p.id === selectedValue ? 'selected' : ''}>${p.orgName}</option>`; });
         }
 
-        document.getElementById('form-add-product').addEventListener('submit', async (e) => {
+        window.handleProductSubmit = async function(e) {
             e.preventDefault();
             const trackStock = document.getElementById('prod-track-stock').checked;
             const data = {
@@ -1831,9 +2409,9 @@
             try {
                 if(currentEditingProductId) { await updateDoc(doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'products', currentEditingProductId), data); currentEditingProductId = null; } 
                 else { data.createdAt = serverTimestamp(); await addDoc(collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'products'), data); }
-                e.target.reset(); document.getElementById('stock-fields-container').classList.add('hidden'); e.target.classList.add('hidden'); document.getElementById('btn-submit-product').innerText = "Guardar Producto";
+                e.target.reset(); document.getElementById('stock-fields-container').classList.add('hidden'); document.getElementById('form-add-product').classList.add('hidden'); document.getElementById('btn-submit-product').innerText = "Guardar Producto";
             } catch (error) { alert("Error guardando producto."); }
-        });
+        };
 
         window.openNewProductForm = function() {
             document.getElementById('form-add-product').reset(); populateProvidersDropdown(); document.getElementById('stock-fields-container').classList.add('hidden'); 
@@ -1845,7 +2423,7 @@
             document.getElementById('prod-type').value = p.type || 'producto'; document.getElementById('prod-name').value = p.name || ''; document.getElementById('prod-code').value = p.code || '';
             document.getElementById('prod-unit').value = p.unit || ''; document.getElementById('prod-category').value = p.category || ''; document.getElementById('prod-desc').value = p.description || '';
             document.getElementById('prod-image').value = p.image || ''; populateProvidersDropdown(p.providerId || ''); 
-            const ts = document.getElementById('prod-track-stock'); ts.checked = p.trackStock || false; ts.dispatchEvent(new Event('change'));
+            const ts = document.getElementById('prod-track-stock'); ts.checked = p.trackStock || false; window.toggleStockFields(ts);
             document.getElementById('prod-stock-initial').value = p.stockInitial || 0; document.getElementById('prod-stock-current').value = p.stockCurrent || 0; document.getElementById('prod-stock-min').value = p.stockMin || 0;
             document.getElementById('prod-buy').value = p.buyRate || 0; document.getElementById('prod-sell').value = p.sellRate || 0; document.getElementById('prod-tax').value = p.tax || 0;
             currentEditingProductId = p.id; document.getElementById('btn-submit-product').innerText = "Actualizar Producto";
@@ -1858,10 +2436,10 @@
                 allProducts = []; uniqueProductCategories.clear();
                 snapshot.forEach(docSnap => { const p = {id: docSnap.id, ...docSnap.data()}; allProducts.push(p); if(p.category) uniqueProductCategories.add(p.category); });
                 updateCategoryFilterDropdown(); window.renderProducts();
-            });
+            }, (error) => console.error("Error cargando productos", error));
         }
 
-        document.getElementById('form-add-client').addEventListener('submit', async (e) => {
+        window.handleClientSubmit = async function(e) {
             e.preventDefault();
             const data = {
                 type: document.getElementById('cli-type').value, orgName: document.getElementById('cli-org').value, contactName: document.getElementById('cli-name').value,
@@ -1871,11 +2449,11 @@
             try {
                 if (currentEditingClientId) { await updateDoc(doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'clients', currentEditingClientId), data); currentEditingClientId = null; document.getElementById('btn-submit-client').innerText = "Guardar"; } 
                 else { data.createdAt = serverTimestamp(); await addDoc(collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'clients'), data); }
-                e.target.reset(); e.target.classList.add('hidden');
+                e.target.reset(); document.getElementById('form-add-client').classList.add('hidden');
             } catch (error) { alert("Error guardando contacto."); }
-        });
+        };
 
-        window.openNewClientForm = function() { document.getElementById('form-add-client').reset(); currentEditingClientId = null; document.getElementById('btn-submit-client').innerText = "Guardar"; document.getElementById('form-add-client').classList.toggle('hidden'); }
+        window.openNewClientForm = function() { document.getElementById('form-add-client').reset(); currentEditingClientId = null; document.getElementById('btn-submit-client').innerText = "Guardar"; document.getElementById('form-add-client').classList.remove('hidden'); }
 
         window.editCurrentClient = function() {
             if(!currentViewClient) return;
@@ -1893,33 +2471,53 @@
                 snapshot.forEach(docSnap => {
                     const c = {id: docSnap.id, ...docSnap.data()}; allClients.push(c);
                     const card = document.createElement('div'); card.className = "bg-white p-5 rounded-xl border shadow-sm relative group cursor-pointer hover:border-indigo-400 transition"; card.onclick = () => window.showClientDetails(c);
-                    card.innerHTML = `<span class="absolute top-4 right-4 text-[10px] font-bold uppercase px-2 py-1 rounded-full ${c.type === 'cliente' ? 'bg-indigo-100 text-indigo-700' : 'bg-orange-100 text-orange-700'}">${c.type}</span><h3 class="font-bold text-lg text-gray-800 mb-1 pr-16 truncate group-hover:text-indigo-600">${c.orgName}</h3><p class="text-sm text-gray-500 mb-4">${c.contactName || 'Sin contacto'}</p><div class="text-sm text-gray-600 space-y-1"><p>📞 ${c.phone || 'N/D'}</p><p class="font-semibold text-green-600 mt-2">Límite: $${c.creditLimit.toFixed(2)}</p></div>`;
+                    card.innerHTML = `<span class="absolute top-4 right-4 text-[10px] font-bold uppercase px-2 py-1 rounded-full ${c.type === 'cliente' ? 'bg-indigo-100 text-indigo-700' : 'bg-orange-100 text-orange-700'}">${c.type}</span><h3 class="font-bold text-lg text-gray-800 mb-1 pr-16 truncate group-hover:text-indigo-600">${c.orgName}</h3><p class="text-sm text-gray-500 mb-4">${c.contactName || 'Sin contacto'}</p><div class="text-sm text-gray-600 space-y-1"><p>📞 ${c.phone || 'N/D'}</p><p class="font-semibold text-green-600 mt-2">Límite: $${(c.creditLimit||0).toFixed(2)}</p></div>`;
                     grid.appendChild(card);
                 });
                 if(currentViewClient && !document.getElementById('view-clientes-detalles').classList.contains('hidden-screen')) { const u = allClients.find(c => c.id === currentViewClient.id); if(u) window.showClientDetails(u); }
-            });
+            }, (error) => console.error("Error cargando clientes", error));
         }
         
         window.showClientDetails = function(client) {
             currentViewClient = client; document.querySelectorAll('.app-view').forEach(v => v.classList.add('hidden-screen'));
-            document.getElementById('cd-initial').innerText = client.orgName.charAt(0); document.getElementById('cd-org').innerText = client.orgName; document.getElementById('cd-name').innerText = client.contactName || 'Sin contacto asociado';
+            document.getElementById('cd-initial').innerText = client.orgName?.charAt(0) || 'C'; document.getElementById('cd-org').innerText = client.orgName || 'Desconocido'; document.getElementById('cd-name').innerText = client.contactName || 'Sin contacto asociado';
             const tb = document.getElementById('cd-type'); tb.innerText = client.type; tb.className = `inline-block mt-2 px-3 py-1 rounded-full text-xs font-bold uppercase ${client.type === 'cliente' ? 'bg-indigo-100 text-indigo-700' : 'bg-orange-100 text-orange-700'}`;
-            const cInv = allInvoices.filter(i => i.clientId === client.id); const tbody = document.getElementById('cd-hist-body'); tbody.innerHTML = '';
+            
+            const isSupplier = client.type === 'proveedor';
+            const cDocs = isSupplier ? allPurchases.filter(i => i.clientId === client.id) : allInvoices.filter(i => i.clientId === client.id);
+            const tbody = document.getElementById('cd-hist-body'); tbody.innerHTML = '';
             let tBilled = 0; let uCredit = 0;
-            if (cInv.length === 0) { document.getElementById('cd-hist-empty').classList.remove('hidden'); tbody.parentElement.parentElement.classList.add('hidden'); } 
+            
+            if (cDocs.length === 0) { document.getElementById('cd-hist-empty').classList.remove('hidden'); tbody.parentElement.parentElement.classList.add('hidden'); } 
             else {
                 document.getElementById('cd-hist-empty').classList.add('hidden'); tbody.parentElement.parentElement.classList.remove('hidden');
-                cInv.forEach(inv => {
-                    const isR = inv.type === 'devolucion'; if (!isR) tBilled += inv.total;
+                cDocs.forEach(inv => {
+                    const isR = ['devolucion', 'devolucion_compra'].includes(inv.type); 
+                    if (!isR) tBilled += inv.total;
                     const bal = inv.total - (inv.paidAmount || 0); if (!isR && inv.condition === 'credito' && bal > 0) uCredit += bal;
-                    const tr = document.createElement('tr'); tr.className = 'hover:bg-slate-50 transition-colors cursor-pointer'; tr.onclick = () => window.showInvoiceDetails(inv.id);
-                    let sL = ''; if (isR) sL = '<span class="text-orange-600 font-bold text-xs uppercase bg-orange-100 px-2 py-0.5 rounded">Devolución</span>'; else if (bal <= 0.01 && bal >= -0.01) sL = '<span class="text-green-600 font-bold text-xs uppercase bg-green-100 px-2 py-0.5 rounded">Pagada</span>'; else if (bal < -0.01) sL = '<span class="text-purple-600 font-bold text-xs uppercase bg-purple-100 px-2 py-0.5 rounded">A Favor</span>'; else if (inv.paidAmount > 0) sL = '<span class="text-blue-600 font-bold text-xs uppercase bg-blue-100 px-2 py-0.5 rounded">Parcial</span>'; else sL = '<span class="text-red-600 font-bold text-xs uppercase bg-red-100 px-2 py-0.5 rounded">Pendiente</span>';
-                    tr.innerHTML = `<td class="p-4">${inv.date}</td><td class="p-4 font-semibold ${isR ? 'text-orange-600' : 'text-indigo-600'}">${isR ? 'Nota de Crédito' : 'Factura'} <br/> ${sL}</td><td class="p-4 uppercase text-xs text-gray-500 font-bold">${isR ? 'N/A' : inv.condition}</td><td class="p-4 text-right font-bold text-gray-800">${isR ? '-' : ''}$${inv.total.toFixed(2)}</td><td class="p-4 text-right font-bold ${bal > 0 && !isR ? 'text-red-500' : 'text-green-500'}">${isR ? '' : '$'+bal.toFixed(2)}</td>`;
+                    const tr = document.createElement('tr'); tr.className = 'hover:bg-slate-50 transition-colors cursor-pointer border-b border-gray-100'; 
+                    tr.onclick = () => isSupplier ? window.showPurchaseDetails(inv.id) : window.showInvoiceDetails(inv.id);
+                    
+                    let sL = ''; 
+                    if (isR) sL = '<span class="text-orange-600 font-bold text-xs uppercase bg-orange-100 px-2 py-0.5 rounded">Devolución</span>'; 
+                    else if (bal <= 0.01 && bal >= -0.01) sL = isSupplier ? '<span class="text-teal-600 font-bold text-xs uppercase bg-teal-100 px-2 py-0.5 rounded">Pagada</span>' : '<span class="text-green-600 font-bold text-xs uppercase bg-green-100 px-2 py-0.5 rounded">Pagada</span>'; 
+                    else if (bal < -0.01) sL = '<span class="text-purple-600 font-bold text-xs uppercase bg-purple-100 px-2 py-0.5 rounded">A Favor</span>'; 
+                    else if (inv.paidAmount > 0) sL = '<span class="text-blue-600 font-bold text-xs uppercase bg-blue-100 px-2 py-0.5 rounded">Parcial</span>'; 
+                    else sL = '<span class="text-red-600 font-bold text-xs uppercase bg-red-100 px-2 py-0.5 rounded">Pendiente</span>';
+                    
+                    const labelDoc = isR ? 'Nota de Crédito' : (isSupplier ? 'Compra' : 'Factura');
+                    const colorDoc = isR ? 'text-orange-600' : (isSupplier ? 'text-teal-600' : 'text-indigo-600');
+
+                    tr.innerHTML = `<td class="p-4">${inv.date}</td><td class="p-4 font-semibold ${colorDoc}">${labelDoc} <br/> ${sL}</td><td class="p-4 uppercase text-[10px] text-gray-500 font-bold tracking-wider">${isR ? 'N/A' : inv.condition}</td><td class="p-4 text-right font-bold text-gray-800">${isR ? '-' : ''}$${inv.total.toFixed(2)}</td><td class="p-4 text-right font-bold ${bal > 0 && !isR ? 'text-red-500' : (isSupplier ? 'text-teal-500' : 'text-green-500')}">${isR || bal <= 0 ? '' : '$'+bal.toFixed(2)}</td>`;
                     tbody.appendChild(tr);
                 });
             }
-            document.getElementById('cd-hist-total').innerText = `$${tBilled.toFixed(2)}`; document.getElementById('cd-credit-limit').innerText = `$${client.creditLimit.toFixed(2)}`;
-            const rC = client.creditLimit - uCredit; const rE = document.getElementById('cd-credit-remaining'); rE.innerText = `$${rC.toFixed(2)}`; rE.className = rC < 0 ? "text-red-600" : "text-green-600";
+            document.getElementById('cd-hist-total').innerText = `$${tBilled.toFixed(2)}`; 
+            document.getElementById('cd-credit-limit').innerText = `$${(client.creditLimit || 0).toFixed(2)}`;
+            const rC = (client.creditLimit || 0) - uCredit; 
+            const rE = document.getElementById('cd-credit-remaining'); 
+            rE.innerText = `$${rC.toFixed(2)}`; rE.className = rC < 0 ? "text-red-600 text-lg font-bold" : "text-green-600 text-lg font-bold";
+            
             document.getElementById('cd-email').innerText = client.email || 'N/A'; document.getElementById('cd-phone').innerText = client.phone || 'N/A'; document.getElementById('cd-address').innerText = client.address || 'N/A'; document.getElementById('cd-shipping').innerText = client.shippingAddress || 'N/A';
             document.getElementById('view-clientes-detalles').classList.remove('hidden-screen'); lucide.createIcons();
         }
