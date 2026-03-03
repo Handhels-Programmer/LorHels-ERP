@@ -388,9 +388,6 @@
                             <button onclick="window.openDocumentModal('factura')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium flex items-center shadow transition">
                                 <i data-lucide="plus" class="w-4 h-4 mr-2"></i> Nueva Factura
                             </button>
-                            <button onclick="window.openDocumentModal('devolucion')" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-medium flex items-center shadow transition">
-                                <i data-lucide="corner-down-left" class="w-4 h-4 mr-2"></i> Nueva Devolución Libre
-                            </button>
                         </div>
                     </div>
                     <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
@@ -422,9 +419,6 @@
                             </button>
                             <button id="btn-inv-pay" onclick="window.openPaymentModal('factura')" class="flex items-center bg-green-600 hover:bg-green-700 text-white font-medium px-4 py-2 rounded-lg transition shadow-sm hidden">
                                 <i data-lucide="dollar-sign" class="w-4 h-4 mr-2"></i> Añadir Pago
-                            </button>
-                            <button id="btn-inv-return" onclick="window.openReturnModal('factura')" class="flex items-center bg-orange-100 text-orange-700 hover:bg-orange-200 font-medium px-4 py-2 rounded-lg transition hidden">
-                                <i data-lucide="corner-down-left" class="w-4 h-4 mr-2"></i> Devolución
                             </button>
                             <button onclick="window.generateInvoicePDF()" class="flex items-center bg-indigo-50 text-indigo-700 hover:bg-indigo-100 font-medium px-4 py-2 rounded-lg transition">
                                 <i data-lucide="file-down" class="w-4 h-4 mr-2"></i> Generar PDF
@@ -492,18 +486,97 @@
                                 <div id="inv-detail-status-badge" class="mb-4 text-center py-2 rounded-lg font-bold text-sm">Estado</div>
                                 <div class="space-y-2 text-sm">
                                     <div class="flex justify-between text-gray-600"><span>Total:</span> <span id="inv-detail-total" class="font-semibold"></span></div>
-                                    <div class="flex justify-between text-gray-600"><span>Pagado:</span> <span id="inv-detail-paid" class="text-green-600 font-semibold"></span></div>
+                                    <div class="flex justify-between text-gray-600"><span>Pagado/Abonado:</span> <span id="inv-detail-paid" class="text-green-600 font-semibold"></span></div>
                                     <div class="flex justify-between text-gray-800 pt-2 border-t font-bold text-lg"><span>Balance:</span> <span id="inv-detail-balance"></span></div>
                                 </div>
                             </div>
                             <div class="bg-white rounded-xl shadow-sm border overflow-hidden" id="inv-payments-panel">
-                                <div class="p-4 bg-slate-50 border-b font-bold text-gray-700">Historial de Pagos</div>
+                                <div class="p-4 bg-slate-50 border-b font-bold text-gray-700">Historial de Pagos/Notas</div>
                                 <div class="p-0"><ul id="inv-payments-list" class="divide-y text-sm"></ul></div>
                             </div>
-                            <div id="inv-returns-container" class="bg-white rounded-xl shadow-sm border overflow-hidden hidden">
-                                <div class="p-4 bg-orange-50 border-b font-bold text-orange-800">Devoluciones Aplicadas</div>
-                                <div class="p-4 text-sm text-gray-600" id="inv-returns-text"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VISTA: NOTAS DE CREDITO LISTA -->
+                <div id="view-nota_credito" class="app-view hidden-screen">
+                    <div class="flex justify-between items-center mb-6">
+                        <button onclick="window.openNewCreditNoteModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium flex items-center shadow transition">
+                            <i data-lucide="plus" class="w-4 h-4 mr-2"></i> Crear Nota de Crédito
+                        </button>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
+                        <table class="w-full text-left">
+                            <thead class="bg-slate-50 border-b">
+                                <tr>
+                                    <th class="p-4 font-semibold text-gray-600">Fecha</th>
+                                    <th class="p-4 font-semibold text-gray-600">Cliente</th>
+                                    <th class="p-4 font-semibold text-gray-600">Factura Ref.</th>
+                                    <th class="p-4 font-semibold text-gray-600 text-right">Monto Acreditado</th>
+                                </tr>
+                            </thead>
+                            <tbody id="credit-notes-table-body" class="divide-y"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- VISTA: NOTA DE CREDITO DETALLES -->
+                <div id="view-nota_credito-detalles" class="app-view hidden-screen space-y-6">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-2">
+                        <button onclick="window.navigateTo('nota_credito', '8. Nota de Crédito')" class="flex items-center text-slate-500 hover:text-indigo-600 font-medium transition">
+                            <i data-lucide="arrow-left" class="w-4 h-4 mr-2"></i> Volver a Notas de Crédito
+                        </button>
+                        <button onclick="window.generateCreditNotePDF()" class="flex items-center bg-indigo-50 text-indigo-700 hover:bg-indigo-100 font-medium px-4 py-2 rounded-lg transition">
+                            <i data-lucide="file-down" class="w-4 h-4 mr-2"></i> Generar PDF
+                        </button>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-sm border overflow-hidden max-w-4xl mx-auto">
+                        <div id="cn-print-area" class="pdf-container font-sans text-sm relative">
+                            <!-- Cabecera -->
+                            <div class="flex justify-between items-start border-b pb-6 mb-6">
+                                <div class="flex items-center space-x-4">
+                                    <img id="pdf-cn-comp-logo" src="" alt="Logo" class="h-16 w-16 object-contain hidden" />
+                                    <div>
+                                        <h1 class="text-3xl font-black text-gray-800 tracking-tight" id="pdf-cn-comp-name">Empresa</h1>
+                                        <p class="text-gray-500 mt-1" id="pdf-cn-comp-rnc"></p>
+                                        <p class="text-gray-500" id="pdf-cn-comp-address"></p>
+                                        <p class="text-gray-500" id="pdf-cn-comp-phone"></p>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <h2 class="text-2xl font-bold text-indigo-600 mb-1">NOTA DE CRÉDITO</h2>
+                                    <p class="text-gray-600 font-medium">Fecha: <span id="pdf-cn-date"></span></p>
+                                    <p class="text-gray-600">Factura Relacionada: <span id="pdf-cn-ref"></span></p>
+                                </div>
                             </div>
+                            <!-- Info Cliente -->
+                            <div class="mb-8">
+                                <h3 class="text-gray-500 font-semibold mb-1 uppercase text-xs tracking-wider">Cliente:</h3>
+                                <p class="text-lg font-bold text-gray-800" id="pdf-cn-cli-name"></p>
+                            </div>
+                            <table class="w-full text-left border-collapse pdf-table mb-6">
+                                <thead>
+                                    <tr>
+                                        <th>Descripción (Devolución)</th><th class="text-center">Cant. Devuelta</th><th class="text-right">Precio</th><th class="text-right">Imp.</th><th class="text-right">Total Crédito</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="pdf-cn-lines"></tbody>
+                            </table>
+                            <div class="flex flex-col sm:flex-row justify-between items-start mt-6">
+                                <div class="w-full sm:w-1/2 pr-4 mb-4 sm:mb-0">
+                                    <h4 class="text-xs font-bold text-gray-700 uppercase mb-2">Notas</h4>
+                                    <div class="text-xs text-gray-600 bg-slate-50 p-3 rounded border min-h-[60px] whitespace-pre-line" id="pdf-cn-notes"></div>
+                                </div>
+                                <div class="w-full sm:w-64">
+                                    <div class="flex justify-between py-1 text-gray-600"><span>Subtotal:</span><span id="pdf-cn-sub"></span></div>
+                                    <div class="flex justify-between py-1 text-gray-600"><span>Impuestos:</span><span id="pdf-cn-tax"></span></div>
+                                    <div class="flex justify-between py-2 mt-2 border-t-2 border-gray-800 text-lg font-bold text-gray-800">
+                                        <span>Total Acreditado:</span><span id="pdf-cn-total" class="text-indigo-600"></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-12 pt-6 border-t text-center text-sm text-gray-500 font-medium">El saldo ha sido aplicado a la factura correspondiente.</div>
                         </div>
                     </div>
                 </div>
@@ -612,7 +685,7 @@
                             <button onclick="window.openDocumentModal('compra')" class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg font-medium flex items-center shadow transition">
                                 <i data-lucide="plus" class="w-4 h-4 mr-2"></i> Nuevo Registro de Compra
                             </button>
-                            <button onclick="window.openDocumentModal('devolucion_compra')" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-medium flex items-center shadow transition">
+                            <button onclick="window.openReturnModal('compra')" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-medium flex items-center shadow transition">
                                 <i data-lucide="corner-down-left" class="w-4 h-4 mr-2"></i> Devolución a Proveedor
                             </button>
                         </div>
@@ -647,6 +720,7 @@
                             <button onclick="window.openPaymentModal('compra')" id="btn-pur-pay" class="flex items-center bg-teal-600 hover:bg-teal-700 text-white font-medium px-4 py-2 rounded-lg transition shadow-sm hidden">
                                 <i data-lucide="dollar-sign" class="w-4 h-4 mr-2"></i> Registrar Pago Emitido
                             </button>
+                            <!-- La opción de devolver artículos se movió al listado general, pero la dejamos como acceso rápido aquí también si se requiere -->
                             <button onclick="window.openReturnModal('compra')" id="btn-pur-return" class="flex items-center bg-orange-100 text-orange-700 hover:bg-orange-200 font-medium px-4 py-2 rounded-lg transition hidden">
                                 <i data-lucide="corner-down-left" class="w-4 h-4 mr-2"></i> Devolver Ítems
                             </button>
@@ -1023,6 +1097,81 @@
                 </div>
             </div>
 
+            <!-- MODAL DE NOTA DE CRÉDITO (NUEVO) -->
+            <div id="modal-credit-note" class="hidden-screen absolute inset-0 bg-slate-900/50 flex items-center justify-center z-50 p-4">
+                <div class="bg-white w-full max-w-4xl rounded-2xl shadow-xl flex flex-col max-h-[95vh] overflow-hidden">
+                    <div class="p-6 border-b shrink-0 flex justify-between items-center bg-gray-50">
+                        <h3 class="text-xl font-black text-indigo-600">Crear Nota de Crédito</h3>
+                        <button type="button" onclick="document.getElementById('modal-credit-note').classList.add('hidden-screen')" class="text-gray-400 hover:text-red-500 transition"><i data-lucide="x" class="w-6 h-6"></i></button>
+                    </div>
+                    
+                    <div class="p-6 overflow-y-auto custom-scrollbar flex-1">
+                        <form id="form-credit-note" onsubmit="window.handleCNSubmit(event)" class="space-y-6">
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-600 mb-1">Cliente *</label>
+                                    <select required id="cn-client" class="w-full border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500" onchange="window.onCNClientChange()">
+                                        <option value="">Seleccione un cliente...</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-600 mb-1">Factura a Acreditar/Devolver *</label>
+                                    <select required id="cn-invoice" class="w-full border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500" onchange="window.onCNInvoiceChange()">
+                                        <option value="">Seleccione primero un cliente...</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-600 mb-1">Fecha Emisión *</label>
+                                    <input required type="date" id="cn-date" class="w-full border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500">
+                                </div>
+                            </div>
+
+                            <p class="text-sm text-gray-500">Ingrese la cantidad de productos devueltos o cancelados. El monto se aplicará como saldo a favor en la factura y los artículos retornarán al inventario.</p>
+
+                            <div class="border rounded-xl overflow-hidden shadow-sm">
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-left border-collapse">
+                                        <thead>
+                                            <tr class="bg-slate-100 border-b text-[10px] uppercase text-gray-500 tracking-wider">
+                                                <th class="p-3 font-bold">Producto / Servicio</th>
+                                                <th class="p-3 font-bold text-center w-32">Facturado (Max)</th>
+                                                <th class="p-3 font-bold text-center w-32">Cant. Acreditar</th>
+                                                <th class="p-3 font-bold text-right w-32">Total ($)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="cn-lines" class="divide-y bg-white">
+                                            <tr><td colspan="4" class="p-4 text-center text-gray-400">Seleccione una factura para ver sus productos.</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <div class="flex flex-col md:flex-row justify-between items-start gap-6">
+                                <div class="w-full md:w-1/2">
+                                    <label class="block text-xs font-semibold text-gray-600 mb-1">Motivo / Notas</label>
+                                    <textarea id="cn-notes" rows="3" class="w-full border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Ej: Devolución por artículo defectuoso..."></textarea>
+                                </div>
+                                <div class="w-full md:w-72 bg-slate-50 p-5 rounded-xl border shadow-inner">
+                                    <div class="flex justify-between text-sm text-gray-600 mb-2"><span>Subtotal Crédito:</span> <span id="cn-sub">$0.00</span></div>
+                                    <div class="flex justify-between text-sm text-gray-600 mb-3 pb-3 border-b border-gray-200"><span>Impuestos Crédito:</span> <span id="cn-tax">$0.00</span></div>
+                                    <div class="flex justify-between text-2xl font-black text-gray-800 pt-2 border-t border-gray-300">
+                                        <span>Total:</span> <span id="cn-total" class="text-indigo-600">$0.00</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    
+                    <div class="p-6 border-t shrink-0 flex justify-end gap-3 bg-gray-50">
+                        <button type="button" onclick="document.getElementById('modal-credit-note').classList.add('hidden-screen')" class="px-6 py-2.5 text-gray-600 hover:bg-gray-200 rounded-lg transition font-medium">Cancelar</button>
+                        <button type="submit" form="form-credit-note" id="btn-submit-cn" class="px-8 py-2.5 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition shadow-md flex items-center">
+                            Generar y Aplicar Nota de Crédito
+                        </button>
+                    </div>
+                </div>
+            </div>
+
             <!-- MODAL DE GASTO -->
             <div id="modal-expense" class="hidden-screen absolute inset-0 bg-slate-900/50 flex items-center justify-center z-50 p-4">
                 <div class="bg-white w-full max-w-md rounded-2xl shadow-xl p-6">
@@ -1129,7 +1278,7 @@
                 </div>
             </div>
             
-            <!-- Modal de Pago -->
+            <!-- Modal de Pago para Facturas/Compras -->
             <div id="modal-payment" class="hidden-screen absolute inset-0 bg-slate-900/50 flex items-center justify-center z-50 p-4">
                 <div class="bg-white w-full max-w-md rounded-2xl shadow-xl p-6">
                     <h3 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2">Registrar Pago</h3>
@@ -1164,18 +1313,18 @@
                 </div>
             </div>
 
-            <!-- Modal de Devolución -->
+            <!-- Modal de Devolución (SOLO PARA COMPRAS A PROVEEDORES) -->
             <div id="modal-return" class="hidden-screen absolute inset-0 bg-slate-900/50 flex items-center justify-center z-50 p-4">
                 <div class="bg-white w-full max-w-2xl rounded-2xl shadow-xl p-6 flex flex-col max-h-[90vh]">
-                    <h3 class="text-xl font-bold text-orange-600 mb-2">Procesar Devolución</h3>
-                    <p class="text-sm text-gray-500 mb-4 border-b pb-2">Seleccione la cantidad a devolver por producto. El stock será reintegrado automáticamente.</p>
+                    <h3 class="text-xl font-bold text-orange-600 mb-2">Procesar Devolución a Proveedor</h3>
+                    <p class="text-sm text-gray-500 mb-4 border-b pb-2">Seleccione la cantidad a devolver. El stock será deducido automáticamente del inventario.</p>
                     <input type="hidden" id="return-target-type">
                     <div class="overflow-y-auto custom-scrollbar flex-1 mb-4">
                         <table class="w-full text-left border-collapse">
                             <thead class="bg-slate-50 text-xs uppercase text-gray-500 sticky top-0">
                                 <tr>
                                     <th class="p-2">Producto</th>
-                                    <th class="p-2 text-center">Registrado</th>
+                                    <th class="p-2 text-center">Comprado</th>
                                     <th class="p-2 text-center w-24">A Devolver</th>
                                 </tr>
                             </thead>
@@ -1292,6 +1441,9 @@
         let allExpenses = [];
         let allGlobalPayments = [];
         
+        let allCreditNotes = [];
+        let currentViewCreditNote = null;
+
         let companyStatusUnsubscribe = null;
         let expirationCheckInterval = null;
         
@@ -1427,8 +1579,6 @@
                             window.showScreen('pending');
                         }
                     } else {
-                        // Empresa no existe: en lugar de obligar registro,
-                        // lo mostramos en la pantalla de bienvenida logueada (pestaña Ingresar)
                         window.showScreen('welcome');
                         window.switchAuthTab('login');
                     }
@@ -1452,7 +1602,6 @@
             const pin = document.getElementById('reg-pin').value;
             const planEl = document.getElementById('reg-plan');
             try {
-                // Guardamos la cuenta segura en Firebase Auth
                 const userCredential = await createUserWithEmailAndPassword(auth, email, pin);
                 await setDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'companies', `company_${userCredential.user.uid}`), {
                     uid: userCredential.user.uid,
@@ -1607,6 +1756,7 @@
             loadPurchases();
             loadPurchaseOrders();
             loadExpenses();
+            loadCreditNotes();
         }
 
         window.navigateTo = function(viewId, viewLabel) {
@@ -1627,6 +1777,284 @@
                 document.getElementById('view-placeholder').classList.remove('hidden-screen');
                 document.getElementById('placeholder-title').innerText = `Módulo: ${viewLabel ? viewLabel.replace(/^[0-9]+\.\s/, '') : viewId}`;
             }
+        }
+
+        // ==========================================
+        // -- NOTAS DE CRÉDITO (NUEVO MÓDULO)
+        // ==========================================
+        
+        function loadCreditNotes() {
+            if(!currentUser) return;
+            onSnapshot(query(collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'credit_notes')), (snapshot) => {
+                const tbody = document.getElementById('credit-notes-table-body'); 
+                if(!tbody) return;
+                tbody.innerHTML = ''; allCreditNotes = [];
+                
+                const docs = snapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
+                docs.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+                docs.forEach(cn => {
+                    allCreditNotes.push(cn);
+                    const tr = document.createElement('tr');
+                    tr.className = 'hover:bg-slate-50 transition-colors cursor-pointer border-b border-gray-100';
+                    tr.onclick = () => window.showCreditNoteDetails(cn.id);
+                    tr.innerHTML = `
+                        <td class="p-4 font-medium text-gray-800">${cn.date}</td>
+                        <td class="p-4 font-bold text-indigo-600">${cn.clientName}</td>
+                        <td class="p-4 text-gray-600 text-sm">Ref: ${cn.invoiceRef || cn.invoiceId.substring(0,6)}</td>
+                        <td class="p-4 text-right font-black text-indigo-600">$${cn.total.toFixed(2)}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }, (error) => console.error("Error cargando notas de crédito", error));
+        }
+
+        window.openNewCreditNoteModal = function() {
+            document.getElementById('form-credit-note').reset();
+            document.getElementById('cn-date').valueAsDate = new Date();
+            
+            const clientSelect = document.getElementById('cn-client');
+            clientSelect.innerHTML = '<option value="">Seleccione un cliente...</option>';
+            allClients.filter(c => c.type === 'cliente').forEach(c => { 
+                clientSelect.innerHTML += `<option value="${c.id}">${c.orgName}</option>`; 
+            });
+            
+            document.getElementById('cn-invoice').innerHTML = '<option value="">Seleccione primero un cliente...</option>';
+            document.getElementById('cn-lines').innerHTML = '<tr><td colspan="4" class="p-4 text-center text-gray-400">Seleccione una factura para ver sus productos.</td></tr>';
+            
+            window.calculateCNTotals();
+            document.getElementById('modal-credit-note').classList.remove('hidden-screen');
+        }
+
+        window.onCNClientChange = function() {
+            const clientId = document.getElementById('cn-client').value;
+            const invSelect = document.getElementById('cn-invoice');
+            invSelect.innerHTML = '<option value="">Seleccione una Factura...</option>';
+            
+            if(!clientId) {
+                document.getElementById('cn-lines').innerHTML = '<tr><td colspan="4" class="p-4 text-center text-gray-400">Seleccione primero un cliente...</td></tr>';
+                window.calculateCNTotals();
+                return;
+            }
+            
+            // Buscar facturas del cliente
+            const clientInvoices = allInvoices.filter(i => i.clientId === clientId && i.type === 'factura');
+            clientInvoices.forEach(i => {
+                // Solo mostrar facturas si tienen balance pagado o pendiente (básicamente todas las válidas)
+                invSelect.innerHTML += `<option value="${i.id}">${i.date} - Total Original: $${i.total.toFixed(2)}</option>`;
+            });
+            
+            document.getElementById('cn-lines').innerHTML = '<tr><td colspan="4" class="p-4 text-center text-gray-400">Seleccione una factura para ver sus productos.</td></tr>';
+            window.calculateCNTotals();
+        }
+
+        window.onCNInvoiceChange = function() {
+            const invId = document.getElementById('cn-invoice').value;
+            const tbody = document.getElementById('cn-lines');
+            tbody.innerHTML = '';
+            
+            if(!invId) { 
+                tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-gray-400">Seleccione una factura para ver sus productos.</td></tr>';
+                window.calculateCNTotals(); 
+                return; 
+            }
+
+            const inv = allInvoices.find(i => i.id === invId);
+            
+            // Generar tabla de productos
+            inv.lines.forEach(l => {
+                // Calcular si ya fue devuelto en otra nota de crédito para este mismo ID
+                let creditedQty = 0;
+                allCreditNotes.forEach(cn => {
+                    if(cn.invoiceId === invId) {
+                        const lineMatch = cn.lines.find(cnl => cnl.productId === l.productId);
+                        if(lineMatch) creditedQty += lineMatch.qty;
+                    }
+                });
+
+                const maxQty = l.qty - creditedQty;
+                
+                if(maxQty > 0) {
+                    tbody.innerHTML += `
+                        <tr class="cn-line border-b border-gray-100 hover:bg-slate-50 transition">
+                            <td class="p-3 font-medium text-gray-700">${l.productName}</td>
+                            <td class="p-3 text-center text-sm text-gray-500">${l.qty} (Max. disp: ${maxQty})</td>
+                            <td class="p-3">
+                                <input type="number" class="cn-line-qty w-full border border-gray-300 rounded px-2 py-1.5 text-center outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition" 
+                                min="0" max="${maxQty}" value="0" 
+                                data-pid="${l.productId}" data-pname="${l.productName}" data-price="${l.price}" data-tax="${l.tax}" 
+                                oninput="window.calculateCNTotals()">
+                            </td>
+                            <td class="p-3 text-right font-bold text-gray-800 cn-line-total">$0.00</td>
+                        </tr>
+                    `;
+                }
+            });
+            
+            if(tbody.innerHTML === '') {
+                tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-orange-500">Todos los artículos de esta factura ya han sido acreditados/devueltos.</td></tr>';
+            }
+            window.calculateCNTotals();
+        }
+
+        window.calculateCNTotals = function() {
+            let subtotal = 0; 
+            let totalTax = 0;
+            
+            document.querySelectorAll('.cn-line').forEach(tr => {
+                const input = tr.querySelector('.cn-line-qty');
+                if(!input) return;
+                
+                const qty = parseInt(input.value) || 0;
+                const price = parseFloat(input.dataset.price) || 0;
+                const taxRate = parseFloat(input.dataset.tax) || 0;
+                
+                const lineBase = qty * price; 
+                const lineTax = lineBase * (taxRate / 100); 
+                const lineTotal = lineBase + lineTax;
+                
+                tr.querySelector('.cn-line-total').innerText = `$${lineTotal.toFixed(2)}`;
+                subtotal += lineBase; 
+                totalTax += lineTax;
+            });
+            
+            const grandTotal = subtotal + totalTax;
+            document.getElementById('cn-sub').innerText = `$${subtotal.toFixed(2)}`;
+            document.getElementById('cn-tax').innerText = `$${totalTax.toFixed(2)}`;
+            document.getElementById('cn-total').innerText = `$${grandTotal.toFixed(2)}`;
+            
+            const form = document.getElementById('form-credit-note');
+            form.dataset.calcSubtotal = subtotal; 
+            form.dataset.calcTax = totalTax; 
+            form.dataset.calcTotal = grandTotal;
+        }
+
+        window.handleCNSubmit = async function(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btn-submit-cn');
+            const originalBtnText = btn.innerHTML;
+            
+            const invId = document.getElementById('cn-invoice').value;
+            if(!invId) { alert("Debe seleccionar una factura."); return; }
+            
+            const form = document.getElementById('form-credit-note');
+            const totalAmount = parseFloat(form.dataset.calcTotal || 0);
+            
+            if(totalAmount <= 0) { alert("Debe indicar al menos un artículo para devolver/acreditar."); return; }
+
+            btn.disabled = true; btn.innerHTML = "Procesando...";
+
+            const lines = [];
+            document.querySelectorAll('.cn-line-qty').forEach(input => {
+                const qty = parseInt(input.value) || 0;
+                if (qty > 0) {
+                    lines.push({
+                        productId: input.dataset.pid,
+                        productName: input.dataset.pname,
+                        qty: qty,
+                        price: parseFloat(input.dataset.price),
+                        tax: parseFloat(input.dataset.tax)
+                    });
+                }
+            });
+
+            const inv = allInvoices.find(i => i.id === invId);
+            const client = allClients.find(c => c.id === document.getElementById('cn-client').value);
+
+            const cnData = {
+                clientId: client.id,
+                clientName: client.orgName,
+                clientEmail: client.email || '',
+                clientPhone: client.phone || '',
+                clientAddress: client.address || '',
+                invoiceId: invId,
+                invoiceRef: inv.date,
+                date: document.getElementById('cn-date').value,
+                notes: document.getElementById('cn-notes').value,
+                subtotal: parseFloat(form.dataset.calcSubtotal || 0),
+                tax: parseFloat(form.dataset.calcTax || 0),
+                total: totalAmount,
+                lines: lines,
+                createdAt: serverTimestamp()
+            };
+
+            try {
+                // 1. Guardar la Nota de Crédito en su propia colección
+                const cnRef = await addDoc(collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'credit_notes'), cnData);
+                
+                // 2. Aplicar el monto de la nota de crédito como PAGO a la factura original
+                const newPayment = { 
+                    amount: totalAmount, 
+                    date: document.getElementById('cn-date').value, 
+                    method: 'Nota de Crédito', 
+                    reference: `NC-${cnRef.id.substring(0,6)}` 
+                };
+                
+                await updateDoc(doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'invoices', invId), {
+                    paidAmount: (inv.paidAmount || 0) + totalAmount,
+                    payments: arrayUnion(newPayment)
+                });
+
+                // 3. Devolver los productos al inventario (sumar Stock)
+                for (const line of lines) {
+                    const product = allProducts.find(p => p.id === line.productId);
+                    if (product && product.trackStock) {
+                        await updateDoc(doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'products', product.id), { 
+                            stockCurrent: (product.stockCurrent || 0) + line.qty 
+                        });
+                    }
+                }
+
+                alert("Nota de Crédito procesada exitosamente. Se ha aplicado el saldo a favor a la factura y se restauró el stock.");
+                document.getElementById('modal-credit-note').classList.add('hidden-screen'); 
+                window.navigateTo('nota_credito', '8. Nota de Crédito');
+                
+            } catch (error) { 
+                console.error(error); alert("Error al procesar la Nota de Crédito."); 
+            } finally { 
+                btn.disabled = false; btn.innerHTML = originalBtnText; 
+            }
+        };
+
+        window.showCreditNoteDetails = function(cnId) {
+            const cn = allCreditNotes.find(c => c.id === cnId); if(!cn) return;
+            currentViewCreditNote = cn;
+            
+            document.querySelectorAll('.app-view').forEach(v => v.classList.add('hidden-screen'));
+            document.getElementById('view-nota_credito-detalles').classList.remove('hidden-screen');
+
+            const logoImg = document.getElementById('pdf-cn-comp-logo');
+            if (companyProfile.logo) { logoImg.src = companyProfile.logo; logoImg.classList.remove('hidden'); } else logoImg.classList.add('hidden');
+
+            document.getElementById('pdf-cn-comp-name').innerText = companyProfile.companyName || 'Empresa';
+            document.getElementById('pdf-cn-comp-rnc').innerText = `RNC: ${companyProfile.rnc || ''}`;
+            document.getElementById('pdf-cn-comp-address').innerText = companyProfile.address || '';
+            document.getElementById('pdf-cn-comp-phone').innerText = companyProfile.phone ? `Tel: ${companyProfile.phone}` : '';
+            
+            document.getElementById('pdf-cn-date').innerText = cn.date; 
+            document.getElementById('pdf-cn-ref').innerText = cn.invoiceRef || cn.invoiceId; 
+            document.getElementById('pdf-cn-cli-name').innerText = cn.clientName;
+            
+            const pdfLines = document.getElementById('pdf-cn-lines'); pdfLines.innerHTML = '';
+            cn.lines.forEach(l => {
+                const lTotal = (l.qty * l.price) * (1 + (l.tax/100));
+                pdfLines.innerHTML += `<tr><td class="font-medium">${l.productName}</td><td class="text-center">${l.qty}</td><td class="text-right">$${l.price.toFixed(2)}</td><td class="text-right">${l.tax}%</td><td class="text-right font-semibold text-indigo-600">$${lTotal.toFixed(2)}</td></tr>`;
+            });
+
+            document.getElementById('pdf-cn-sub').innerText = `$${cn.subtotal.toFixed(2)}`; 
+            document.getElementById('pdf-cn-tax').innerText = `$${cn.tax.toFixed(2)}`; 
+            document.getElementById('pdf-cn-total').innerText = `$${cn.total.toFixed(2)}`;
+            document.getElementById('pdf-cn-notes').innerText = cn.notes ? cn.notes : 'Generado automáticamente por devolución.';
+            
+            lucide.createIcons();
+        }
+
+        window.generateCreditNotePDF = function() {
+            if(!currentViewCreditNote) return;
+            const element = document.getElementById('cn-print-area'); 
+            const cName = (companyProfile.companyName || 'Empresa').substring(0,5);
+            const opt = { margin: 0.5, filename: `NotaCredito_${cName}_${currentViewCreditNote.date}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' } };
+            window.html2pdf().set(opt).from(element).save();
         }
 
         // ==========================================
@@ -1719,11 +2147,6 @@
                 title.innerText = "Nueva Cotización"; title.className = "text-xl font-black text-blue-600";
                 submitBtn.innerText = "Guardar Cotización"; submitBtn.className = "px-8 py-2.5 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition shadow-md flex items-center";
                 conditionCont.classList.add('hidden'); expiryCont.classList.remove('hidden');
-            } else if (docType === 'devolucion') {
-                title.innerText = "Nueva Devolución (Nota Libre)"; title.className = "text-xl font-black text-orange-600";
-                submitBtn.innerText = "Guardar Devolución"; submitBtn.className = "px-8 py-2.5 bg-orange-600 text-white font-bold rounded-lg hover:bg-orange-700 transition shadow-md flex items-center";
-                conditionCont.classList.remove('hidden'); document.getElementById('univ-doc-condition').value = 'contado'; document.getElementById('univ-doc-condition').disabled = true;
-                expiryCont.classList.add('hidden');
             } else if (docType === 'compra') {
                 title.innerText = "Nuevo Registro de Compra"; title.className = "text-xl font-black text-teal-600";
                 submitBtn.innerText = "Guardar Compra"; submitBtn.className = "px-8 py-2.5 bg-teal-600 text-white font-bold rounded-lg hover:bg-teal-700 transition shadow-md flex items-center";
@@ -1839,7 +2262,7 @@
                     document.getElementById('modal-document').classList.add('hidden-screen'); 
                     window.navigateTo(docType === 'cotizacion' ? 'cotizaciones' : 'orden_compra', docType === 'cotizacion' ? '3. Cotizaciones' : '5. Orden de Compra');
                 } else {
-                    const condition = (docType === 'devolucion' || docType === 'devolucion_compra') ? 'contado' : document.getElementById('univ-doc-condition').value;
+                    const condition = (docType === 'devolucion_compra') ? 'contado' : document.getElementById('univ-doc-condition').value;
                     baseData.type = docType; baseData.condition = condition;
                     
                     if (docId) {
@@ -1853,7 +2276,6 @@
                                 if(prod && prod.trackStock) {
                                     let oldChange = 0;
                                     if (docType === 'factura') oldChange = oLine.qty;
-                                    else if (docType === 'devolucion') oldChange = -oLine.qty;
                                     else if (docType === 'compra') oldChange = -oLine.qty;
                                     else if (docType === 'devolucion_compra') oldChange = oLine.qty;
                                     
@@ -1868,7 +2290,6 @@
                             if(prod && prod.trackStock) {
                                 let newChange = 0;
                                 if (docType === 'factura') newChange = -nLine.qty;
-                                else if (docType === 'devolucion') newChange = nLine.qty;
                                 else if (docType === 'compra') newChange = nLine.qty;
                                 else if (docType === 'devolucion_compra') newChange = -nLine.qty;
                                 
@@ -1892,7 +2313,6 @@
                             if (product && product.trackStock) {
                                 let change = 0;
                                 if (docType === 'factura') change = -line.qty;
-                                else if (docType === 'devolucion') change = line.qty;
                                 else if (docType === 'compra') change = line.qty;
                                 else if (docType === 'devolucion_compra') change = -line.qty;
                                 
@@ -2341,7 +2761,7 @@
                     if (!isReturn && balance > 0.01) pendingInvoices++;
 
                     let statusBadge = '';
-                    if (isReturn) statusBadge = '<span class="bg-orange-100 text-orange-700 px-2 py-1 rounded text-xs font-bold border border-orange-200">DEVOLUCIÓN</span>';
+                    if (isReturn) statusBadge = '<span class="bg-orange-100 text-orange-700 px-2 py-1 rounded text-xs font-bold border border-orange-200">DEVOLUCIÓN (Antigua)</span>';
                     else if (balance <= 0.01 && balance >= -0.01) statusBadge = '<span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-bold border border-green-200">Pagada</span>';
                     else if (balance < -0.01) statusBadge = '<span class="bg-purple-100 text-purple-700 px-2 py-1 rounded text-xs font-bold border border-purple-200">Saldo A Favor</span>';
                     else if (inv.paidAmount > 0) statusBadge = '<span class="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs font-bold border border-blue-200">Parcial</span>';
@@ -2377,7 +2797,7 @@
             document.getElementById('pdf-comp-address').innerText = companyProfile.address || ''; document.getElementById('pdf-comp-phone').innerText = companyProfile.phone ? `Tel: ${companyProfile.phone}` : '';
             let socials = []; if (companyProfile.instagram) socials.push(`IG: ${companyProfile.instagram}`); if (companyProfile.facebook) socials.push(`FB: ${companyProfile.facebook}`);
             document.getElementById('pdf-comp-socials').innerText = socials.join(' | ');
-            document.getElementById('pdf-doc-title').innerText = isReturn ? "NOTA DE CRÉDITO" : "FACTURA";
+            document.getElementById('pdf-doc-title').innerText = isReturn ? "DEVOLUCIÓN (Antigua)" : "FACTURA";
 
             const pdfStatus = document.getElementById('pdf-inv-status'); const condContainer = document.getElementById('pdf-inv-cond-container');
             
@@ -2412,14 +2832,13 @@
 
             const badge = document.getElementById('inv-detail-status-badge');
             const btnPay = document.getElementById('btn-inv-pay');
-            const btnReturn = document.getElementById('btn-inv-return');
             const btnEdit = document.getElementById('btn-inv-edit');
             
             if (isReturn) {
                 badge.className = "mb-4 text-center py-2 rounded-lg font-bold text-sm bg-orange-100 text-orange-800 border border-orange-200"; badge.innerText = "NOTA DE CRÉDITO";
-                btnPay.classList.add('hidden'); btnReturn.classList.add('hidden'); btnEdit.classList.add('hidden'); document.getElementById('inv-payments-panel').classList.add('hidden');
+                btnPay.classList.add('hidden'); btnEdit.classList.add('hidden'); document.getElementById('inv-payments-panel').classList.add('hidden');
             } else {
-                document.getElementById('inv-payments-panel').classList.remove('hidden'); btnReturn.classList.remove('hidden'); btnEdit.classList.remove('hidden'); 
+                document.getElementById('inv-payments-panel').classList.remove('hidden'); btnEdit.classList.remove('hidden'); 
                 if (balance <= 0.01 && balance >= -0.01) { badge.className = "mb-4 text-center py-2 rounded-lg font-bold text-sm bg-green-100 text-green-700"; badge.innerText = "FACTURA PAGADA"; btnPay.classList.add('hidden'); } 
                 else if (balance < -0.01) { badge.className = "mb-4 text-center py-2 rounded-lg font-bold text-sm bg-purple-100 text-purple-700"; badge.innerText = "SALDO A FAVOR"; btnPay.classList.add('hidden'); } 
                 else if ((inv.paidAmount || 0) > 0) { badge.className = "mb-4 text-center py-2 rounded-lg font-bold text-sm bg-blue-100 text-blue-700"; badge.innerText = "PAGO PARCIAL"; btnPay.classList.remove('hidden'); } 
@@ -2427,15 +2846,14 @@
             }
 
             const ulPayments = document.getElementById('inv-payments-list'); ulPayments.innerHTML = '';
-            if(inv.payments && inv.payments.length > 0) { inv.payments.forEach(pay => { ulPayments.innerHTML += `<li class="py-3 flex justify-between items-center"><div><p class="font-semibold text-gray-800">${pay.method}</p><p class="text-xs text-gray-500">${pay.date} | ${pay.reference || 'Sin ref'}</p></div><span class="font-bold text-green-600">+$${pay.amount.toFixed(2)}</span></li>`; }); } 
-            else ulPayments.innerHTML = '<li class="py-4 text-center text-gray-400">Sin pagos registrados</li>';
+            if(inv.payments && inv.payments.length > 0) { 
+                inv.payments.forEach(pay => { 
+                    const isCred = pay.method === 'Nota de Crédito';
+                    ulPayments.innerHTML += `<li class="py-3 flex justify-between items-center"><div><p class="font-semibold text-gray-800">${pay.method}</p><p class="text-xs text-gray-500">${pay.date} | ${pay.reference || 'Sin ref'}</p></div><span class="font-bold ${isCred ? 'text-indigo-600' : 'text-green-600'}">+${isCred ? '' : '$'}$${pay.amount.toFixed(2)}</span></li>`; 
+                }); 
+            } 
+            else ulPayments.innerHTML = '<li class="py-4 text-center text-gray-400">Sin pagos/notas registradas</li>';
 
-            const retContainer = document.getElementById('inv-returns-container');
-            if(inv.returns && inv.returns.length > 0) {
-                retContainer.classList.remove('hidden'); let retHtml = '<ul class="space-y-2">';
-                inv.returns.forEach(r => { retHtml += `<li><strong>${r.date}:</strong> Devueltos ${r.qty} unid. de ${r.productName}</li>`; });
-                document.getElementById('inv-returns-text').innerHTML = retHtml + '</ul>';
-            } else retContainer.classList.add('hidden');
             lucide.createIcons();
         }
 
@@ -2507,8 +2925,9 @@
             } catch (error) { alert("Error registrando el pago"); } finally { btn.innerHTML = "Procesar Pago"; btn.disabled = false; }
         };
 
-        window.openReturnModal = function(type = 'factura') {
-            let currentDoc = type === 'compra' ? currentViewPurchase : currentViewInvoice;
+        window.openReturnModal = function(type = 'compra') {
+            // Nota: Este modal ahora SOLO se usa para devoluciones a proveedores
+            let currentDoc = type === 'compra' ? currentViewPurchase : null;
             if(!currentDoc) return;
             document.getElementById('return-target-type').value = type;
 
@@ -2528,7 +2947,7 @@
 
         window.processReturn = async function() {
             const type = document.getElementById('return-target-type').value;
-            let currentDoc = type === 'compra' ? currentViewPurchase : currentViewInvoice;
+            let currentDoc = type === 'compra' ? currentViewPurchase : null;
             if(!currentDoc) return;
 
             const btn = document.getElementById('btn-submit-return'); btn.innerHTML = "Procesando..."; btn.disabled = true;
@@ -2536,7 +2955,7 @@
             document.querySelectorAll('.ret-qty').forEach(input => { const qty = parseInt(input.value || 0); if (qty > 0) returnItems.push({ productId: input.dataset.pid, productName: input.dataset.pname, qty: qty, date: new Date().toISOString().split('T')[0] }); });
             if(returnItems.length === 0) { alert("Indique cantidad mayor a 0."); btn.innerHTML = "Aplicar Devolución"; btn.disabled = false; return; }
 
-            const colName = type === 'compra' ? 'purchases' : 'invoices';
+            const colName = 'purchases';
 
             try {
                 const docRef = doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, colName, currentDoc.id);
@@ -2554,19 +2973,16 @@
                 for (const ret of returnItems) {
                     const product = allProducts.find(p => p.id === ret.productId);
                     if (product && product.trackStock) {
-                        // Venta Devuelta (+ stock), Compra Devuelta (- stock)
-                        const stockChange = type === 'compra' ? -ret.qty : ret.qty;
+                        const stockChange = -ret.qty;
                         await updateDoc(doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'products', product.id), { stockCurrent: (product.stockCurrent || 0) + stockChange });
                     }
                 }
                 document.getElementById('modal-return').classList.add('hidden-screen'); alert("Devolución aplicada con éxito.");
                 setTimeout(() => { 
-                    if(type === 'compra') { const u = allPurchases.find(i => i.id === currentDoc.id); if(u) window.showPurchaseDetails(u.id); } 
-                    else { const u = allInvoices.find(i => i.id === currentDoc.id); if(u) window.showInvoiceDetails(u.id); }
+                    const u = allPurchases.find(i => i.id === currentDoc.id); if(u) window.showPurchaseDetails(u.id); 
                 }, 500);
             } catch (error) { console.error(error); alert("Error procesando la devolución."); } finally { btn.innerHTML = "Aplicar Devolución"; btn.disabled = false; }
         }
-
 
         // ==========================================
         // -- LÓGICA: PRODUCTOS Y CLIENTES
