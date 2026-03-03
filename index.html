@@ -849,6 +849,59 @@
                     </div>
                 </div>
 
+                <!-- VISTA: INVENTARIO (NUEVO) -->
+                <div id="view-inventario" class="app-view hidden-screen space-y-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold text-gray-800 hidden md:block">Control de Inventario</h2>
+                        <div class="flex items-center space-x-4 w-full md:w-auto justify-between md:justify-end">
+                            <select id="inv-filter" onchange="window.renderInventory()" class="border border-gray-300 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500 bg-white shadow-sm text-sm">
+                                <option value="all">Ver Todos (Con Stock)</option>
+                                <option value="low">Ver Alertas de Stock Bajo</option>
+                            </select>
+                            <button onclick="window.openInventoryAdjModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium flex items-center shadow transition shrink-0">
+                                <i data-lucide="clipboard-edit" class="w-4 h-4 mr-2"></i> Ajuste / Toma Física
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                        <div class="bg-white p-5 rounded-xl shadow-sm border border-l-4 border-l-indigo-500">
+                            <h3 class="text-xs font-bold uppercase tracking-wider mb-1 text-gray-500">Valor de Inventario</h3>
+                            <div class="text-2xl font-black text-indigo-700" id="inv-stat-value">$0.00</div>
+                            <p class="text-xs text-gray-400 mt-1">Costo total de artículos en stock</p>
+                        </div>
+                        <div class="bg-white p-5 rounded-xl shadow-sm border border-l-4 border-l-red-500">
+                            <h3 class="text-xs font-bold uppercase tracking-wider mb-1 text-gray-500">Alertas de Stock</h3>
+                            <div class="text-2xl font-black text-red-600" id="inv-stat-alerts">0</div>
+                            <p class="text-xs text-gray-400 mt-1">Artículos bajo el nivel mínimo</p>
+                        </div>
+                        <div class="bg-white p-5 rounded-xl shadow-sm border border-l-4 border-l-green-500">
+                            <h3 class="text-xs font-bold uppercase tracking-wider mb-1 text-gray-500">Artículos Controlados</h3>
+                            <div class="text-2xl font-black text-green-700" id="inv-stat-items">0</div>
+                            <p class="text-xs text-gray-400 mt-1">Total de productos con seguimiento</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead class="bg-slate-50 border-b">
+                                    <tr>
+                                        <th class="p-4 font-semibold text-gray-600">Código / SKU</th>
+                                        <th class="p-4 font-semibold text-gray-600">Producto</th>
+                                        <th class="p-4 font-semibold text-gray-600 text-center">Stock Actual</th>
+                                        <th class="p-4 font-semibold text-gray-600 text-center">Mínimo</th>
+                                        <th class="p-4 font-semibold text-gray-600 text-right">Costo Unit.</th>
+                                        <th class="p-4 font-semibold text-gray-600 text-right">Valor Total</th>
+                                        <th class="p-4 font-semibold text-gray-600 text-center">Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="inventory-table-body" class="divide-y text-sm"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- VISTA: PRODUCTOS -->
                 <div id="view-productos" class="app-view hidden-screen">
                     <div class="flex justify-between items-center mb-6">
@@ -1380,6 +1433,51 @@
                             <button type="submit" id="btn-confirm-convert" class="px-6 py-2 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 transition shadow-sm flex items-center">
                                 <i data-lucide="check-circle" class="w-4 h-4 mr-2"></i> Confirmar
                             </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- MODAL DE AJUSTE DE INVENTARIO / TOMA FÍSICA -->
+            <div id="modal-inventory-adj" class="hidden-screen absolute inset-0 bg-slate-900/50 flex items-center justify-center z-50 p-4">
+                <div class="bg-white w-full max-w-md rounded-2xl shadow-xl p-6">
+                    <div class="flex justify-between items-center mb-4 border-b pb-2">
+                        <h3 class="text-xl font-bold text-indigo-600">Ajuste de Inventario</h3>
+                        <button type="button" onclick="document.getElementById('modal-inventory-adj').classList.add('hidden-screen')" class="text-gray-400 hover:text-red-500 transition"><i data-lucide="x" class="w-6 h-6"></i></button>
+                    </div>
+                    <form id="form-inventory-adj" onsubmit="window.handleInventoryAdjSubmit(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 mb-1">Producto *</label>
+                            <select required id="adj-product" class="w-full border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500">
+                                <option value="">Seleccione un producto...</option>
+                            </select>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-600 mb-1">Tipo de Ajuste *</label>
+                                <select required id="adj-type" class="w-full border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500">
+                                    <option value="in">Entrada (+)</option>
+                                    <option value="out">Salida / Merma (-)</option>
+                                    <option value="set">Toma Física (=)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-600 mb-1">Cantidad *</label>
+                                <input required type="number" step="0.01" min="0" id="adj-qty" class="w-full border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Ej: 10">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 mb-1">Motivo / Notas *</label>
+                            <input required type="text" id="adj-reason" class="w-full border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Ej: Conteo de fin de mes">
+                        </div>
+                        <div class="bg-blue-50 border border-blue-200 text-blue-800 p-3 rounded text-xs">
+                            <i data-lucide="info" class="w-4 h-4 inline-block mb-1 mr-1"></i>
+                            <b>Entrada/Salida:</b> Suma o resta a la cantidad actual.<br>
+                            <b>Toma Física:</b> Reemplaza el stock actual por la cantidad indicada.
+                        </div>
+                        <div class="flex justify-end gap-3 mt-6">
+                            <button type="button" onclick="document.getElementById('modal-inventory-adj').classList.add('hidden-screen')" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition">Cancelar</button>
+                            <button type="submit" id="btn-submit-inv-adj" class="px-6 py-2 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition shadow-sm">Aplicar Ajuste</button>
                         </div>
                     </form>
                 </div>
@@ -3071,6 +3169,7 @@
                 allProducts = []; uniqueProductCategories.clear();
                 snapshot.forEach(docSnap => { const p = {id: docSnap.id, ...docSnap.data()}; allProducts.push(p); if(p.category) uniqueProductCategories.add(p.category); });
                 updateCategoryFilterDropdown(); window.renderProducts();
+                if(typeof window.renderInventory === 'function') window.renderInventory();
             }, (error) => console.error("Error cargando productos", error));
         }
 
@@ -3284,6 +3383,131 @@
                 console.error(error); alert("Error registrando el pago.");
             } finally {
                 btn.innerHTML = "Aplicar Pago"; btn.disabled = false;
+            }
+        }
+
+        // ==========================================
+        // -- INVENTARIO (CONTROL, AJUSTES Y TOMA FÍSICA) --
+        // ==========================================
+
+        window.renderInventory = function() {
+            const tbody = document.getElementById('inventory-table-body');
+            if(!tbody) return;
+            tbody.innerHTML = '';
+            
+            let totalValue = 0;
+            let lowStockCount = 0;
+            let trackedItems = 0;
+
+            const filter = document.getElementById('inv-filter')?.value || 'all';
+
+            // Filter only products that track stock
+            const stockProducts = allProducts.filter(p => p.type === 'producto' && p.trackStock);
+            
+            stockProducts.forEach(p => {
+                const current = parseFloat(p.stockCurrent || 0);
+                const min = parseFloat(p.stockMin || 0);
+                const isLow = current <= min;
+                
+                totalValue += (current * (p.buyRate || 0));
+                if(isLow) lowStockCount++;
+                trackedItems++;
+
+                if (filter === 'low' && !isLow) return; 
+
+                const badge = isLow ? `<span class="bg-red-100 text-red-700 px-2 py-1 rounded-md text-[10px] uppercase font-bold border border-red-200"><i data-lucide="alert-triangle" class="w-3 h-3 inline"></i> Bajo</span>` : `<span class="bg-green-100 text-green-700 px-2 py-1 rounded-md text-[10px] uppercase font-bold border border-green-200"><i data-lucide="check" class="w-3 h-3 inline"></i> Normal</span>`;
+                
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition-colors border-b border-gray-100">
+                        <td class="p-4 font-mono text-xs text-gray-500">${p.code || 'N/A'}</td>
+                        <td class="p-4 font-bold text-gray-800">${p.name}<div class="text-xs font-normal text-gray-400">${p.category || 'General'}</div></td>
+                        <td class="p-4 text-center font-black ${isLow ? 'text-red-600' : 'text-gray-800'} text-lg">${current} <span class="text-xs font-normal text-gray-400">${p.unit || 'uds'}</span></td>
+                        <td class="p-4 text-center text-sm text-gray-500">${min}</td>
+                        <td class="p-4 text-right text-gray-600 text-sm">$${(p.buyRate || 0).toFixed(2)}</td>
+                        <td class="p-4 text-right font-bold text-indigo-700">$${(current * (p.buyRate || 0)).toFixed(2)}</td>
+                        <td class="p-4 text-center">${badge}</td>
+                    </tr>
+                `;
+            });
+
+            if (stockProducts.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="p-8 text-center text-gray-400">No hay productos configurados con control de stock. Active la opción "Control de Stock" al editar un producto.</td></tr>';
+            }
+
+            document.getElementById('inv-stat-value').innerText = `$${totalValue.toFixed(2)}`;
+            document.getElementById('inv-stat-alerts').innerText = lowStockCount;
+            document.getElementById('inv-stat-items').innerText = trackedItems;
+            
+            lucide.createIcons();
+        }
+
+        window.openInventoryAdjModal = function() {
+            document.getElementById('form-inventory-adj').reset();
+            const select = document.getElementById('adj-product');
+            select.innerHTML = '<option value="">Seleccione un producto...</option>';
+            
+            // Popula los que manejan stock
+            const stockProducts = allProducts.filter(p => p.type === 'producto' && p.trackStock);
+            stockProducts.forEach(p => {
+                select.innerHTML += `<option value="${p.id}">${p.code ? '['+p.code+'] ' : ''}${p.name} (Stock: ${p.stockCurrent || 0})</option>`;
+            });
+
+            document.getElementById('modal-inventory-adj').classList.remove('hidden-screen');
+        }
+
+        window.handleInventoryAdjSubmit = async function(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btn-submit-inv-adj');
+            btn.disabled = true; btn.innerHTML = "Procesando...";
+            
+            const prodId = document.getElementById('adj-product').value;
+            const type = document.getElementById('adj-type').value;
+            const qty = parseFloat(document.getElementById('adj-qty').value);
+            const reason = document.getElementById('adj-reason').value;
+
+            const product = allProducts.find(p => p.id === prodId);
+            if(!product) { alert("Producto no encontrado."); btn.disabled = false; btn.innerHTML = "Aplicar Ajuste"; return; }
+
+            let newStock = parseFloat(product.stockCurrent || 0);
+            let qtyChange = 0;
+
+            if (type === 'in') {
+                newStock += qty;
+                qtyChange = qty;
+            } else if (type === 'out') {
+                newStock -= qty;
+                qtyChange = -qty;
+            } else if (type === 'set') {
+                qtyChange = qty - newStock;
+                newStock = qty; 
+            }
+
+            try {
+                // Update Product
+                await updateDoc(doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'products', prodId), {
+                    stockCurrent: newStock
+                });
+
+                // Record Log (History of inventory)
+                await addDoc(collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'inventory_logs'), {
+                    productId: prodId,
+                    productName: product.name,
+                    productCode: product.code || '',
+                    type: type, 
+                    qtyChange: qtyChange,
+                    previousStock: product.stockCurrent || 0,
+                    newStock: newStock,
+                    reason: reason,
+                    date: new Date().toISOString(),
+                    createdAt: serverTimestamp()
+                });
+
+                document.getElementById('modal-inventory-adj').classList.add('hidden-screen');
+                alert(`Inventario ajustado correctamente. Nuevo stock de ${product.name}: ${newStock}`);
+            } catch(error) {
+                console.error(error); alert("Error al ajustar inventario.");
+            } finally {
+                btn.disabled = false; btn.innerHTML = "Aplicar Ajuste";
             }
         }
     </script>
