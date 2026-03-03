@@ -751,6 +751,30 @@
                     </div>
                 </div>
 
+                <!-- VISTA: PAGOS GLOBALES (Módulo Añadido) -->
+                <div id="view-pagos" class="app-view hidden-screen space-y-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <button onclick="window.openGlobalPaymentModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-lg font-bold flex items-center shadow-lg shadow-indigo-100 transition">
+                            <i data-lucide="plus-circle" class="w-5 h-5 mr-2"></i> Nuevo Cobro / Pago
+                        </button>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
+                        <table class="w-full text-left">
+                            <thead class="bg-slate-50 border-b">
+                                <tr>
+                                    <th class="p-4 font-semibold text-gray-600">Fecha</th>
+                                    <th class="p-4 font-semibold text-gray-600">Tipo de Movimiento</th>
+                                    <th class="p-4 font-semibold text-gray-600">Contacto / Entidad</th>
+                                    <th class="p-4 font-semibold text-gray-600">Método</th>
+                                    <th class="p-4 font-semibold text-gray-600">Referencia</th>
+                                    <th class="p-4 font-semibold text-gray-600 text-right">Monto</th>
+                                </tr>
+                            </thead>
+                            <tbody id="payments-table-body" class="divide-y"></tbody>
+                        </table>
+                    </div>
+                </div>
+
                 <!-- VISTA: PRODUCTOS -->
                 <div id="view-productos" class="app-view hidden-screen">
                     <div class="flex justify-between items-center mb-6">
@@ -1048,6 +1072,62 @@
                     </form>
                 </div>
             </div>
+
+            <!-- MODAL GLOBAL DE PAGO (NUEVO) -->
+            <div id="modal-global-payment" class="hidden-screen absolute inset-0 bg-slate-900/50 flex items-center justify-center z-50 p-4">
+                <div class="bg-white w-full max-w-md rounded-2xl shadow-xl p-6">
+                    <div class="flex justify-between items-center mb-4 border-b pb-2">
+                        <h3 class="text-xl font-bold text-indigo-600">Registrar Cobro / Pago</h3>
+                        <button type="button" onclick="document.getElementById('modal-global-payment').classList.add('hidden-screen')" class="text-gray-400 hover:text-red-500 transition"><i data-lucide="x" class="w-6 h-6"></i></button>
+                    </div>
+                    <form id="form-global-payment" onsubmit="window.handleGlobalPaymentSubmit(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 mb-1">Tipo de Operación *</label>
+                            <select required id="gp-type" onchange="window.updateGlobalPaymentDocs()" class="w-full border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500">
+                                <option value="factura">Cobro de Factura (Ingreso)</option>
+                                <option value="compra">Pago a Proveedor (Egreso)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 mb-1">Documento Pendiente *</label>
+                            <select required id="gp-doc" onchange="window.updateGlobalPaymentBalance()" class="w-full border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500">
+                                <option value="">Seleccione un documento...</option>
+                            </select>
+                        </div>
+                        <div class="bg-slate-50 p-3 rounded border text-sm flex justify-between items-center">
+                            <span class="font-semibold text-gray-600">Balance Pendiente:</span>
+                            <span id="gp-balance" class="font-black text-gray-800">$0.00</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-600 mb-1">Monto a Pagar ($) *</label>
+                                <input required type="number" step="0.01" min="0.01" id="gp-amount" class="w-full border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-600 mb-1">Fecha *</label>
+                                <input required type="date" id="gp-date" class="w-full border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 mb-1">Método de Pago *</label>
+                            <select id="gp-method" class="w-full border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500">
+                                <option value="Efectivo">Efectivo</option>
+                                <option value="Transferencia">Transferencia Bancaria</option>
+                                <option value="Tarjeta">Tarjeta Crédito/Débito</option>
+                                <option value="Cheque">Cheque</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 mb-1">Referencia / Notas</label>
+                            <input type="text" id="gp-ref" placeholder="Ej. Depósito #12345" class="w-full border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div class="flex justify-end gap-3 mt-6">
+                            <button type="button" onclick="document.getElementById('modal-global-payment').classList.add('hidden-screen')" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition">Cancelar</button>
+                            <button type="submit" id="btn-submit-global-payment" class="px-6 py-2 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition">Aplicar Pago</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
             
             <!-- Modal de Pago -->
             <div id="modal-payment" class="hidden-screen absolute inset-0 bg-slate-900/50 flex items-center justify-center z-50 p-4">
@@ -1210,6 +1290,7 @@
         let currentViewPurchaseOrder = null;
 
         let allExpenses = [];
+        let allGlobalPayments = [];
         
         let companyStatusUnsubscribe = null;
         let expirationCheckInterval = null;
@@ -2129,6 +2210,7 @@
                 });
 
                 if(currentViewClient && !document.getElementById('view-clientes-detalles').classList.contains('hidden-screen')) window.showClientDetails(currentViewClient);
+                if (typeof window.renderPaymentsList === 'function') window.renderPaymentsList();
             }, (error) => console.error("Error cargando compras", error));
         }
 
@@ -2275,6 +2357,7 @@
                 document.getElementById('dash-sales').innerText = `$${totalSales.toFixed(2)}`;
                 document.getElementById('dash-pending-inv').innerText = pendingInvoices;
                 if(currentViewClient && !document.getElementById('view-clientes-detalles').classList.contains('hidden-screen')) window.showClientDetails(currentViewClient);
+                if (typeof window.renderPaymentsList === 'function') window.renderPaymentsList();
             }, (error) => console.error("Error cargando facturas", error));
         }
 
@@ -2658,6 +2741,135 @@
             document.getElementById('view-clientes-detalles').classList.remove('hidden-screen'); lucide.createIcons();
         }
 
+        // ==========================================
+        // -- PAGOS GLOBALES (Módulo Añadido)
+        // ==========================================
+        window.renderPaymentsList = function() {
+            const tbody = document.getElementById('payments-table-body');
+            if(!tbody) return;
+            tbody.innerHTML = '';
+            allGlobalPayments = [];
+
+            allInvoices.forEach(inv => {
+                if(inv.payments && inv.payments.length > 0) {
+                    inv.payments.forEach(p => {
+                        allGlobalPayments.push({...p, docType: 'factura', docId: inv.id, entityName: inv.clientName, docDate: inv.date});
+                    });
+                }
+            });
+
+            allPurchases.forEach(pur => {
+                if(pur.payments && pur.payments.length > 0) {
+                    pur.payments.forEach(p => {
+                        allGlobalPayments.push({...p, docType: 'compra', docId: pur.id, entityName: pur.clientName, docDate: pur.date});
+                    });
+                }
+            });
+
+            allGlobalPayments.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            if (allGlobalPayments.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="p-8 text-center text-gray-400">No hay pagos ni cobros registrados.</td></tr>';
+            } else {
+                allGlobalPayments.forEach(p => {
+                    const isIngreso = p.docType === 'factura';
+                    const badge = isIngreso ? '<span class="bg-green-100 text-green-700 px-2 py-1 rounded text-[10px] font-bold uppercase">Cobro (Ingreso)</span>' : '<span class="bg-blue-100 text-blue-700 px-2 py-1 rounded text-[10px] font-bold uppercase">Pago (Egreso)</span>';
+                    const prefix = isIngreso ? '+' : '-';
+                    const color = isIngreso ? 'text-green-600' : 'text-blue-600';
+
+                    tbody.innerHTML += `
+                        <tr class="hover:bg-slate-50 transition-colors border-b border-gray-100">
+                            <td class="p-4 font-medium text-gray-800">${p.date}</td>
+                            <td class="p-4">${badge}<div class="text-xs text-gray-500 mt-1">Doc: ${p.docDate}</div></td>
+                            <td class="p-4 font-bold text-gray-700">${p.entityName}</td>
+                            <td class="p-4 text-sm text-gray-600">${p.method}</td>
+                            <td class="p-4 text-sm text-gray-500">${p.reference || 'N/A'}</td>
+                            <td class="p-4 text-right font-black ${color}">${prefix}$${parseFloat(p.amount).toFixed(2)}</td>
+                        </tr>
+                    `;
+                });
+            }
+            lucide.createIcons();
+        }
+
+        window.openGlobalPaymentModal = function() {
+            document.getElementById('form-global-payment').reset();
+            document.getElementById('gp-date').valueAsDate = new Date();
+            document.getElementById('gp-balance').innerText = '$0.00';
+            window.updateGlobalPaymentDocs();
+            document.getElementById('modal-global-payment').classList.remove('hidden-screen');
+        }
+
+        window.updateGlobalPaymentDocs = function() {
+            const type = document.getElementById('gp-type').value;
+            const docSelect = document.getElementById('gp-doc');
+            docSelect.innerHTML = '<option value="">Seleccione un documento...</option>';
+
+            const docs = type === 'factura' ? allInvoices : allPurchases;
+            docs.forEach(d => {
+                if(d.type === 'devolucion' || d.type === 'devolucion_compra') return;
+                
+                const balance = d.total - (d.paidAmount || 0);
+                if(balance > 0.01) {
+                    docSelect.innerHTML += `<option value="${d.id}" data-balance="${balance}">${d.date} | ${d.clientName} | Total: $${d.total.toFixed(2)} | Pend: $${balance.toFixed(2)}</option>`;
+                }
+            });
+            window.updateGlobalPaymentBalance();
+        }
+
+        window.updateGlobalPaymentBalance = function() {
+            const docSelect = document.getElementById('gp-doc');
+            const option = docSelect.options[docSelect.selectedIndex];
+            if(option && option.value) {
+                const bal = parseFloat(option.dataset.balance);
+                document.getElementById('gp-balance').innerText = `$${bal.toFixed(2)}`;
+                document.getElementById('gp-amount').value = bal.toFixed(2);
+                document.getElementById('gp-amount').max = bal.toFixed(2);
+            } else {
+                document.getElementById('gp-balance').innerText = '$0.00';
+                document.getElementById('gp-amount').value = '';
+                document.getElementById('gp-amount').removeAttribute('max');
+            }
+        }
+
+        window.handleGlobalPaymentSubmit = async function(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btn-submit-global-payment');
+            const docId = document.getElementById('gp-doc').value;
+            if(!docId) return alert("Seleccione un documento pendiente.");
+
+            btn.innerHTML = "Procesando..."; btn.disabled = true;
+
+            const type = document.getElementById('gp-type').value;
+            const amount = parseFloat(document.getElementById('gp-amount').value);
+            const date = document.getElementById('gp-date').value;
+            const method = document.getElementById('gp-method').value;
+            const reference = document.getElementById('gp-ref').value;
+
+            const colName = type === 'factura' ? 'invoices' : 'purchases';
+            const docsList = type === 'factura' ? allInvoices : allPurchases;
+            const currentDoc = docsList.find(d => d.id === docId);
+
+            if(!currentDoc) {
+                 btn.innerHTML = "Aplicar Pago"; btn.disabled = false;
+                 return alert("Documento no encontrado.");
+            }
+
+            const newPayment = { amount, date, method, reference };
+
+            try {
+                await updateDoc(doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, colName, currentDoc.id), {
+                    paidAmount: (currentDoc.paidAmount || 0) + amount,
+                    payments: arrayUnion(newPayment)
+                });
+                document.getElementById('modal-global-payment').classList.add('hidden-screen');
+                alert("Pago registrado exitosamente.");
+            } catch (error) {
+                console.error(error); alert("Error registrando el pago.");
+            } finally {
+                btn.innerHTML = "Aplicar Pago"; btn.disabled = false;
+            }
+        }
     </script>
 </body>
 </html>
