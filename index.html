@@ -4,13 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LorHels ERP</title>
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- html2pdf for PDF Generation -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     
     <style>
@@ -28,13 +24,11 @@
 </head>
 <body class="bg-gray-50 text-gray-800 h-screen overflow-hidden">
 
-    <!-- PANTALLA DE CARGA -->
     <div id="screen-loading" class="h-screen w-screen flex flex-col items-center justify-center bg-slate-50 z-50 fixed inset-0">
         <i data-lucide="loader-2" class="w-12 h-12 text-indigo-600 animate-spin mb-4"></i>
         <p class="text-gray-600 font-medium">Iniciando LorHels ERP...</p>
     </div>
 
-    <!-- PANTALLA DE BIENVENIDA (LOGIN / REGISTRO) -->
     <div id="screen-welcome" class="hidden-screen h-screen w-screen bg-slate-100 flex items-center justify-center p-6 z-40 fixed inset-0 overflow-y-auto">
         <div class="bg-white w-full max-w-4xl rounded-2xl shadow-2xl overflow-hidden flex flex-col md:flex-row my-8">
             <div class="w-full md:w-1/3 bg-slate-900 p-8 text-white flex flex-col justify-between">
@@ -49,13 +43,11 @@
             </div>
             
             <div class="w-full md:w-2/3 p-8">
-                <!-- Pestañas de Navegación -->
                 <div class="flex border-b border-gray-200 mb-6">
                     <button id="tab-login" onclick="window.switchAuthTab('login')" class="px-6 py-3 font-bold text-indigo-600 border-b-2 border-indigo-600 transition">Ingresar</button>
                     <button id="tab-register" onclick="window.switchAuthTab('register')" class="px-6 py-3 font-bold text-gray-500 hover:text-indigo-600 transition">Crear Empresa</button>
                 </div>
 
-                <!-- FORMULARIO DE INGRESO (LOGIN) -->
                 <form id="form-login-company" onsubmit="window.handleLogin(event)" class="space-y-4">
                     <h3 class="text-2xl font-bold text-gray-800 mb-6">Acceso a mi Empresa</h3>
                     <div>
@@ -77,7 +69,6 @@
                     </button>
                 </form>
 
-                <!-- FORMULARIO DE REGISTRO -->
                 <form id="form-register-company" onsubmit="window.handleRegisterCompany(event)" class="space-y-4 hidden">
                     <h3 class="text-xl font-bold text-gray-800 mb-4">Registro de Nueva Empresa</h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -143,7 +134,6 @@
         </div>
     </div>
 
-    <!-- PANTALLA PENDIENTE DE APROBACIÓN -->
     <div id="screen-pending" class="hidden-screen h-screen w-screen bg-slate-50 flex flex-col items-center justify-center p-6 text-center z-40 fixed inset-0">
         <div class="bg-white p-10 rounded-2xl shadow-xl border max-w-md w-full relative">
             <button onclick="window.logout()" class="absolute top-4 right-4 text-sm text-gray-500 hover:text-red-500"><i data-lucide="log-out" class="w-5 h-5"></i></button>
@@ -164,7 +154,6 @@
         </div>
     </div>
 
-    <!-- PANTALLA SUSCRIPCIÓN VENCIDA -->
     <div id="screen-expired" class="hidden-screen h-screen w-screen bg-slate-50 flex flex-col items-center justify-center p-6 text-center z-40 fixed inset-0">
         <div class="bg-white p-10 rounded-2xl shadow-xl border max-w-md w-full relative">
             <button onclick="window.logout()" class="absolute top-4 right-4 text-sm text-gray-500 hover:text-red-500"><i data-lucide="log-out" class="w-5 h-5"></i></button>
@@ -185,7 +174,6 @@
         </div>
     </div>
 
-    <!-- LOGIN ADMINISTRADOR -->
     <div id="screen-admin-login" class="hidden-screen h-screen w-screen bg-slate-900 flex items-center justify-center p-6 z-50 fixed inset-0">
         <div class="bg-white p-8 rounded-2xl shadow-2xl max-w-sm w-full">
             <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">Admin LorHels</h2>
@@ -198,7 +186,6 @@
         </div>
     </div>
 
-    <!-- PANEL DE ADMINISTRADOR -->
     <div id="screen-admin-dashboard" class="hidden-screen h-screen w-screen bg-slate-100 p-8 z-40 fixed inset-0 overflow-y-auto">
         <div class="max-w-6xl mx-auto">
             <div class="flex justify-between items-center mb-8">
@@ -222,10 +209,8 @@
         </div>
     </div>
 
-    <!-- APLICACIÓN PRINCIPAL (LorHels ERP) -->
     <div id="screen-main" class="hidden-screen h-screen w-screen flex">
         
-        <!-- Sidebar -->
         <aside class="w-64 bg-slate-900 text-slate-300 flex flex-col hidden md:flex h-screen overflow-y-auto custom-scrollbar shadow-xl z-20 shrink-0">
             <div class="p-6 border-b border-slate-800 sticky top-0 bg-slate-900 z-10 flex flex-col items-center text-center">
                 <div id="sidebar-logo-container"></div>
@@ -234,13 +219,10 @@
                 <div id="sidebar-company-plan" class="mt-2 text-[10px] font-bold uppercase tracking-wider bg-indigo-500/30 text-indigo-200 px-2 py-1 rounded-full inline-block">Plan</div>
             </div>
             <nav class="flex-1 px-3 py-4 space-y-1" id="main-nav">
-                <!-- Generado dinámicamente por JS -->
-            </nav>
+                </nav>
         </aside>
 
-        <!-- Contenido Principal -->
         <main class="flex-1 flex flex-col h-screen overflow-hidden bg-slate-50 relative">
-            <!-- Header -->
             <header class="bg-white shadow-sm h-16 flex items-center px-6 justify-between border-b z-10 shrink-0">
                 <h2 id="header-title" class="text-xl font-bold text-gray-800 capitalize">Dashboard</h2>
                 <div class="flex items-center space-x-4">
@@ -251,10 +233,8 @@
                 </div>
             </header>
 
-            <!-- Vistas Dinámicas -->
             <div class="flex-1 overflow-auto p-6" id="main-content-area">
                 
-                <!-- VISTA: DASHBOARD -->
                 <div id="view-dashboard" class="app-view space-y-6">
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                         <div class="p-6 rounded-xl border bg-indigo-50 text-indigo-700 border-indigo-100 relative shadow-sm">
@@ -280,7 +260,6 @@
                     </div>
                 </div>
 
-                <!-- VISTA: COTIZACIONES LISTA -->
                 <div id="view-cotizaciones" class="app-view hidden-screen">
                     <div class="flex justify-between items-center mb-6">
                         <button onclick="window.openDocumentModal('cotizacion')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center shadow transition">
@@ -303,7 +282,6 @@
                     </div>
                 </div>
 
-                <!-- VISTA: COTIZACION DETALLES -->
                 <div id="view-cotizacion-detalles" class="app-view hidden-screen space-y-6">
                     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-2">
                         <button onclick="window.navigateTo('cotizaciones', '3. Cotizaciones')" class="flex items-center text-slate-500 hover:text-indigo-600 font-medium transition">
@@ -327,7 +305,6 @@
 
                     <div class="bg-white rounded-xl shadow-sm border overflow-hidden max-w-4xl mx-auto">
                         <div id="quote-print-area" class="pdf-container font-sans text-sm relative">
-                            <!-- Cabecera y datos inyectados por JS -->
                             <div class="flex justify-between items-start border-b pb-6 mb-6">
                                 <div class="flex items-center space-x-4">
                                     <img id="pdf-quo-comp-logo" src="" alt="Logo" class="h-16 w-16 object-contain hidden" />
@@ -346,7 +323,6 @@
                                     <p class="text-gray-600">Válida Hasta: <span id="pdf-quo-expiry"></span></p>
                                 </div>
                             </div>
-                            <!-- Info Cliente -->
                             <div class="mb-8">
                                 <h3 class="text-gray-500 font-semibold mb-1 uppercase text-xs tracking-wider">Cotizar a:</h3>
                                 <p class="text-lg font-bold text-gray-800" id="pdf-quo-cli-name"></p>
@@ -381,7 +357,6 @@
                     </div>
                 </div>
 
-                <!-- VISTA: FACTURAS LISTA -->
                 <div id="view-facturas" class="app-view hidden-screen">
                     <div class="flex justify-between items-center mb-6">
                         <div class="flex space-x-3">
@@ -407,7 +382,6 @@
                     </div>
                 </div>
 
-                <!-- VISTA: FACTURA DETALLES (PDF y Pagos) -->
                 <div id="view-factura-detalles" class="app-view hidden-screen space-y-6">
                     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-2">
                         <button onclick="window.navigateTo('facturas', '2. Facturas')" class="flex items-center text-slate-500 hover:text-indigo-600 font-medium transition">
@@ -498,7 +472,6 @@
                     </div>
                 </div>
 
-                <!-- VISTA: NOTAS DE CREDITO LISTA -->
                 <div id="view-nota_credito" class="app-view hidden-screen">
                     <div class="flex justify-between items-center mb-6">
                         <button onclick="window.openNewCreditNoteModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium flex items-center shadow transition">
@@ -520,7 +493,6 @@
                     </div>
                 </div>
 
-                <!-- VISTA: NOTA DE CREDITO DETALLES -->
                 <div id="view-nota_credito-detalles" class="app-view hidden-screen space-y-6">
                     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-2">
                         <button onclick="window.navigateTo('nota_credito', '8. Nota de Crédito')" class="flex items-center text-slate-500 hover:text-indigo-600 font-medium transition">
@@ -533,7 +505,6 @@
 
                     <div class="bg-white rounded-xl shadow-sm border overflow-hidden max-w-4xl mx-auto">
                         <div id="cn-print-area" class="pdf-container font-sans text-sm relative">
-                            <!-- Cabecera -->
                             <div class="flex justify-between items-start border-b pb-6 mb-6">
                                 <div class="flex items-center space-x-4">
                                     <img id="pdf-cn-comp-logo" src="" alt="Logo" class="h-16 w-16 object-contain hidden" />
@@ -550,7 +521,6 @@
                                     <p class="text-gray-600">Factura Relacionada: <span id="pdf-cn-ref"></span></p>
                                 </div>
                             </div>
-                            <!-- Info Cliente -->
                             <div class="mb-8">
                                 <h3 class="text-gray-500 font-semibold mb-1 uppercase text-xs tracking-wider">Cliente:</h3>
                                 <p class="text-lg font-bold text-gray-800" id="pdf-cn-cli-name"></p>
@@ -581,7 +551,6 @@
                     </div>
                 </div>
 
-                <!-- VISTA: ORDENES DE COMPRA LISTA -->
                 <div id="view-orden_compra" class="app-view hidden-screen">
                     <div class="flex justify-between items-center mb-6">
                         <button onclick="window.openDocumentModal('orden_compra')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center shadow transition">
@@ -604,7 +573,6 @@
                     </div>
                 </div>
 
-                <!-- VISTA: ORDEN DE COMPRA DETALLES -->
                 <div id="view-orden_compra-detalles" class="app-view hidden-screen space-y-6">
                     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-2">
                         <button onclick="window.navigateTo('orden_compra', '5. Orden de Compra')" class="flex items-center text-slate-500 hover:text-indigo-600 font-medium transition">
@@ -678,7 +646,6 @@
                     </div>
                 </div>
 
-                <!-- VISTA: COMPRAS LISTA -->
                 <div id="view-compras" class="app-view hidden-screen">
                     <div class="flex justify-between items-center mb-6">
                         <div class="flex space-x-3">
@@ -707,7 +674,6 @@
                     </div>
                 </div>
 
-                <!-- VISTA: COMPRA DETALLES -->
                 <div id="view-compra-detalles" class="app-view hidden-screen space-y-6">
                     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-2">
                         <button onclick="window.navigateTo('compras', '4. Compras')" class="flex items-center text-slate-500 hover:text-indigo-600 font-medium transition">
@@ -720,7 +686,6 @@
                             <button onclick="window.openPaymentModal('compra')" id="btn-pur-pay" class="flex items-center bg-teal-600 hover:bg-teal-700 text-white font-medium px-4 py-2 rounded-lg transition shadow-sm hidden">
                                 <i data-lucide="dollar-sign" class="w-4 h-4 mr-2"></i> Registrar Pago Emitido
                             </button>
-                            <!-- La opción de devolver artículos se movió al listado general, pero la dejamos como acceso rápido aquí también si se requiere -->
                             <button onclick="window.openReturnModal('compra')" id="btn-pur-return" class="flex items-center bg-orange-100 text-orange-700 hover:bg-orange-200 font-medium px-4 py-2 rounded-lg transition hidden">
                                 <i data-lucide="corner-down-left" class="w-4 h-4 mr-2"></i> Devolver Ítems
                             </button>
@@ -802,7 +767,6 @@
                     </div>
                 </div>
 
-                <!-- VISTA: GASTOS -->
                 <div id="view-gastos" class="app-view hidden-screen space-y-6">
                     <div class="flex justify-between items-center mb-6">
                         <button onclick="window.openExpenseModal()" class="bg-rose-600 hover:bg-rose-700 text-white px-5 py-2.5 rounded-lg font-bold flex items-center shadow-lg shadow-rose-100 transition">
@@ -825,7 +789,6 @@
                     </div>
                 </div>
 
-                <!-- VISTA: PAGOS GLOBALES -->
                 <div id="view-pagos" class="app-view hidden-screen space-y-6">
                     <div class="flex justify-between items-center mb-6">
                         <button onclick="window.openGlobalPaymentModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-lg font-bold flex items-center shadow-lg shadow-indigo-100 transition">
@@ -849,7 +812,6 @@
                     </div>
                 </div>
 
-                <!-- VISTA: INVENTARIO -->
                 <div id="view-inventario" class="app-view hidden-screen space-y-6">
                     <div class="flex justify-between items-center mb-6">
                         <h2 class="text-2xl font-bold text-gray-800 hidden md:block">Control de Inventario</h2>
@@ -902,7 +864,6 @@
                     </div>
                 </div>
 
-                <!-- VISTA: PRODUCTOS -->
                 <div id="view-productos" class="app-view hidden-screen">
                     <div class="flex justify-between items-center mb-6">
                         <div class="flex items-center space-x-4">
@@ -958,7 +919,6 @@
                     </div>
                 </div>
 
-                <!-- VISTA: CLIENTES LISTA -->
                 <div id="view-clientes" class="app-view hidden-screen">
                     <div class="flex justify-between items-center mb-6">
                         <button onclick="window.openNewClientForm()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium flex items-center shadow transition">
@@ -985,7 +945,6 @@
                     <div id="clients-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
                 </div>
 
-                <!-- VISTA: CLIENTES DETALLES -->
                 <div id="view-clientes-detalles" class="app-view hidden-screen space-y-6">
                     <div class="flex justify-between items-center mb-4">
                         <button onclick="window.navigateTo('clientes', '10. Clientes/Prov.')" class="flex items-center text-slate-500 hover:text-indigo-600 font-medium transition">
@@ -1045,7 +1004,6 @@
                     </div>
                 </div>
 
-                <!-- VISTA: COMISIONES (NUEVO MODULO COMPLETO) -->
                 <div id="view-comisiones" class="app-view hidden-screen space-y-6">
                     <div class="flex justify-between items-center mb-6 border-b pb-4">
                         <div class="flex space-x-6">
@@ -1064,7 +1022,6 @@
                         </div>
                     </div>
 
-                    <!-- Panel Agentes -->
                     <div id="panel-agentes" class="bg-white rounded-xl shadow-sm border overflow-hidden">
                         <table class="w-full text-left">
                             <thead class="bg-slate-50 border-b">
@@ -1079,7 +1036,6 @@
                         </table>
                     </div>
 
-                    <!-- Panel Comisiones -->
                     <div id="panel-comisiones" class="bg-white rounded-xl shadow-sm border overflow-hidden hidden">
                         <table class="w-full text-left">
                             <thead class="bg-slate-50 border-b">
@@ -1097,7 +1053,6 @@
                     </div>
                 </div>
 
-                <!-- VISTA: PLACEHOLDER -->
                 <div id="view-placeholder" class="app-view hidden-screen h-full flex items-center justify-center">
                     <div class="bg-white border border-dashed border-gray-300 rounded-2xl p-12 text-center max-w-lg">
                         <i data-lucide="settings" class="w-16 h-16 text-gray-300 mx-auto mb-4 animate-spin" style="animation-duration: 3s;"></i>
@@ -1107,9 +1062,6 @@
                 </div>
             </div>
             
-            <!-- OVERLAYS / MODALS (Position Absolute) -->
-
-            <!-- FORMULARIO UNIVERSAL DE DOCUMENTOS (Modal Flotante) -->
             <div id="modal-document" class="hidden-screen absolute inset-0 bg-slate-900/50 flex items-center justify-center z-50 p-4">
                 <div class="bg-white w-full max-w-5xl rounded-2xl shadow-xl flex flex-col max-h-[95vh] overflow-hidden">
                     <div class="p-6 border-b shrink-0 flex justify-between items-center bg-gray-50">
@@ -1122,7 +1074,7 @@
                             <input type="hidden" id="univ-doc-type">
                             <input type="hidden" id="univ-doc-id">
                             
-                            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
                                 <div class="md:col-span-2">
                                     <label id="label-univ-client" class="block text-xs font-semibold text-gray-600 mb-1">Cliente *</label>
                                     <select required id="univ-doc-client" class="w-full border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500"></select>
@@ -1139,9 +1091,17 @@
                                         <option value="credito">A Crédito</option>
                                     </select>
                                 </div>
+                                
                                 <div id="univ-doc-expiry-container" class="hidden">
                                     <label class="block text-xs font-semibold text-gray-600 mb-1">Válida/Entrega Hasta</label>
                                     <input type="date" id="univ-doc-expiry" class="w-full border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500">
+                                </div>
+
+                                <div id="univ-doc-agent-container" class="hidden">
+                                    <label class="block text-xs font-semibold text-gray-600 mb-1">Vendedor (Opcional)</label>
+                                    <select id="univ-doc-agent" class="w-full border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500">
+                                        <option value="">Sin vendedor</option>
+                                    </select>
                                 </div>
                             </div>
 
@@ -1202,7 +1162,6 @@
                 </div>
             </div>
 
-            <!-- MODAL DE NOTA DE CRÉDITO (NUEVO) -->
             <div id="modal-credit-note" class="hidden-screen absolute inset-0 bg-slate-900/50 flex items-center justify-center z-50 p-4">
                 <div class="bg-white w-full max-w-4xl rounded-2xl shadow-xl flex flex-col max-h-[95vh] overflow-hidden">
                     <div class="p-6 border-b shrink-0 flex justify-between items-center bg-gray-50">
@@ -1277,7 +1236,6 @@
                 </div>
             </div>
 
-            <!-- MODAL DE GASTO -->
             <div id="modal-expense" class="hidden-screen absolute inset-0 bg-slate-900/50 flex items-center justify-center z-50 p-4">
                 <div class="bg-white w-full max-w-md rounded-2xl shadow-xl p-6">
                     <div class="flex justify-between items-center mb-4 border-b pb-2">
@@ -1327,7 +1285,6 @@
                 </div>
             </div>
 
-            <!-- MODAL GLOBAL DE PAGO -->
             <div id="modal-global-payment" class="hidden-screen absolute inset-0 bg-slate-900/50 flex items-center justify-center z-50 p-4">
                 <div class="bg-white w-full max-w-md rounded-2xl shadow-xl p-6">
                     <div class="flex justify-between items-center mb-4 border-b pb-2">
@@ -1383,7 +1340,6 @@
                 </div>
             </div>
             
-            <!-- Modal de Pago para Facturas/Compras -->
             <div id="modal-payment" class="hidden-screen absolute inset-0 bg-slate-900/50 flex items-center justify-center z-50 p-4">
                 <div class="bg-white w-full max-w-md rounded-2xl shadow-xl p-6">
                     <h3 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2">Registrar Pago</h3>
@@ -1418,7 +1374,6 @@
                 </div>
             </div>
 
-            <!-- Modal de Devolución -->
             <div id="modal-return" class="hidden-screen absolute inset-0 bg-slate-900/50 flex items-center justify-center z-50 p-4">
                 <div class="bg-white w-full max-w-2xl rounded-2xl shadow-xl p-6 flex flex-col max-h-[90vh]">
                     <h3 class="text-xl font-bold text-orange-600 mb-2">Procesar Devolución a Proveedor</h3>
@@ -1444,7 +1399,6 @@
                 </div>
             </div>
 
-            <!-- Modal para Aprobar Orden -> Compra -->
             <div id="modal-convert-order" class="hidden-screen absolute inset-0 bg-slate-900/50 flex items-center justify-center z-50 p-4">
                 <div class="bg-white w-full max-w-md rounded-2xl shadow-xl p-6">
                     <h3 class="text-xl font-bold text-teal-600 mb-2">Registrar Compra</h3>
@@ -1467,7 +1421,6 @@
                 </div>
             </div>
 
-            <!-- Modal para Aprobar Cotización -> Factura -->
             <div id="modal-convert-quote" class="hidden-screen absolute inset-0 bg-slate-900/50 flex items-center justify-center z-50 p-4">
                 <div class="bg-white w-full max-w-md rounded-2xl shadow-xl p-6">
                     <h3 class="text-xl font-bold text-indigo-600 mb-2">Convertir a Factura</h3>
@@ -1490,7 +1443,6 @@
                 </div>
             </div>
 
-            <!-- MODAL DE AJUSTE DE INVENTARIO / TOMA FÍSICA -->
             <div id="modal-inventory-adj" class="hidden-screen absolute inset-0 bg-slate-900/50 flex items-center justify-center z-50 p-4">
                 <div class="bg-white w-full max-w-md rounded-2xl shadow-xl p-6">
                     <div class="flex justify-between items-center mb-4 border-b pb-2">
@@ -1535,7 +1487,6 @@
                 </div>
             </div>
 
-            <!-- MODAL DE AGENTE DE COMISION -->
             <div id="modal-agent" class="hidden-screen absolute inset-0 bg-slate-900/50 flex items-center justify-center z-50 p-4">
                 <div class="bg-white w-full max-w-md rounded-2xl shadow-xl p-6">
                     <div class="flex justify-between items-center mb-4 border-b pb-2">
@@ -1570,7 +1521,6 @@
                 </div>
             </div>
 
-            <!-- MODAL DE COMISIÓN -->
             <div id="modal-commission" class="hidden-screen absolute inset-0 bg-slate-900/50 flex items-center justify-center z-50 p-4">
                 <div class="bg-white w-full max-w-md rounded-2xl shadow-xl p-6">
                     <div class="flex justify-between items-center mb-4 border-b pb-2">
@@ -1622,7 +1572,6 @@
         </main>
     </div>
 
-    <!-- SCRIPT PRINCIPAL -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -2023,6 +1972,40 @@
         // ==========================================
         // -- COMISIONES Y AGENTES (MÓDULO NUEVO) --
         // ==========================================
+
+        // NUEVA FUNCIÓN: Genera comisión automática proporcional al pago
+        window.generateAutomaticCommission = async function(invoiceId, paymentAmount, invoiceData) {
+            // Si la factura no tiene agente, no hacemos nada
+            if (!invoiceData.agentId) return;
+
+            // Buscamos los datos del agente para saber su %
+            const agent = allAgents.find(a => a.id === invoiceData.agentId);
+            if (!agent || !agent.commissionBase) return;
+
+            // Calculamos el monto de la comisión basado en el pago recibido
+            const commissionAmount = paymentAmount * (agent.commissionBase / 100);
+
+            if (commissionAmount <= 0) return;
+
+            const commData = {
+                agentId: agent.id,
+                agentName: agent.name,
+                invoiceId: invoiceId,
+                invoiceRef: `Factura: ${invoiceData.date} - ${invoiceData.clientName}`,
+                amount: commissionAmount,
+                date: new Date().toISOString().split('T')[0],
+                status: 'pendiente', // Queda pendiente para que el admin la pague después
+                notes: `Comisión automática por pago de $${paymentAmount.toFixed(2)} (${agent.commissionBase}%)`,
+                createdAt: serverTimestamp()
+            };
+
+            try {
+                await addDoc(collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'commissions'), commData);
+                console.log("Comisión automática generada con éxito.");
+            } catch(e) {
+                console.error("Error generando comisión automática", e);
+            }
+        }
 
         window.switchCommissionTab = function(tab) {
             document.getElementById('panel-agentes').classList.add('hidden');
@@ -2657,6 +2640,18 @@
             clientSelect.innerHTML = `<option value="">Seleccione un ${isPurchaseGroup ? 'proveedor' : 'cliente'}...</option>`;
             allClients.filter(c => c.type === (isPurchaseGroup ? 'proveedor' : 'cliente')).forEach(c => { clientSelect.innerHTML += `<option value="${c.id}">${c.orgName}</option>`; });
 
+            // --- NUEVO: Cargar Agentes en el select ---
+            const agentCont = document.getElementById('univ-doc-agent-container');
+            const agentSelect = document.getElementById('univ-doc-agent');
+            if (docType === 'factura' || docType === 'cotizacion') {
+                agentCont.classList.remove('hidden');
+                agentSelect.innerHTML = '<option value="">Sin vendedor</option>';
+                allAgents.forEach(a => { agentSelect.innerHTML += `<option value="${a.id}">${a.name} (${a.commissionBase || 0}%)</option>`; });
+            } else {
+                agentCont.classList.add('hidden');
+                agentSelect.value = '';
+            }
+
             document.getElementById('univ-doc-date').valueAsDate = new Date();
             document.getElementById('univ-doc-lines').innerHTML = '';
             window.addUnivDocLine(); window.calculateUnivDocTotals();
@@ -2735,7 +2730,9 @@
                 clientId: clientId, clientName: client ? client.orgName : 'Desconocido', clientEmail: client ? client.email : '',
                 clientPhone: client ? client.phone : '', clientAddress: client ? client.address : '', date: document.getElementById('univ-doc-date').value,
                 notes: document.getElementById('univ-doc-notes').value, subtotal: parseFloat(form.dataset.calcSubtotal || 0),
-                tax: parseFloat(form.dataset.calcTax || 0), shipping: parseFloat(form.dataset.calcShipping || 0), total: totalAmount, lines: lines, createdAt: serverTimestamp()
+                tax: parseFloat(form.dataset.calcTax || 0), shipping: parseFloat(form.dataset.calcShipping || 0), total: totalAmount, lines: lines,
+                agentId: document.getElementById('univ-doc-agent').value || null, // <-- NUEVO: Agente
+                createdAt: serverTimestamp()
             };
 
             let collectionName = 'invoices';
@@ -2796,8 +2793,13 @@
                             payments.push({ date: new Date().toISOString().split('T')[0], amount: totalAmount, method: 'Efectivo', reference: 'Automático' });
                         }
                         baseData.paidAmount = paidAmount; baseData.payments = payments; baseData.returns = [];
-                        await addDoc(collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, collectionName), baseData);
+                        const docRef = await addDoc(collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, collectionName), baseData);
                         
+                        // <-- NUEVO: GENERAR COMISIÓN AUTOMÁTICA AL CONTADO -->
+                        if (condition === 'contado' && docType === 'factura' && baseData.agentId) {
+                            await window.generateAutomaticCommission(docRef.id, totalAmount, baseData);
+                        }
+
                         for (const line of lines) {
                             const product = allProducts.find(p => p.id === line.productId);
                             if (product && product.trackStock) {
@@ -2904,6 +2906,14 @@
             allClients.filter(c => c.type === 'cliente').forEach(c => { clientSelect.innerHTML += `<option value="${c.id}">${c.orgName}</option>`; });
             clientSelect.value = quo.clientId;
 
+            // --- Cargar agente ---
+            const agentCont = document.getElementById('univ-doc-agent-container');
+            const agentSelect = document.getElementById('univ-doc-agent');
+            agentCont.classList.remove('hidden');
+            agentSelect.innerHTML = '<option value="">Sin vendedor</option>';
+            allAgents.forEach(a => { agentSelect.innerHTML += `<option value="${a.id}">${a.name} (${a.commissionBase || 0}%)</option>`; });
+            agentSelect.value = quo.agentId || '';
+
             document.getElementById('univ-doc-date').value = quo.date || ''; document.getElementById('univ-doc-expiry').value = quo.expiryDate || '';
             document.getElementById('univ-doc-notes').value = quo.notes || ''; document.getElementById('univ-doc-ship').value = quo.shipping || 0;
             document.getElementById('univ-doc-condition-container').classList.add('hidden'); document.getElementById('univ-doc-expiry-container').classList.remove('hidden');
@@ -2943,9 +2953,17 @@
                 if (condition === 'contado') { paidAmount = totalAmount; payments.push({ date: new Date().toISOString().split('T')[0], amount: totalAmount, method: 'Efectivo', reference: `Pago al contado (Desde Cotización)` }); }
                 const invoiceData = {
                     type: 'factura', condition: condition, clientId: currentViewQuote.clientId, clientName: currentViewQuote.clientName, clientEmail: currentViewQuote.clientEmail || '', clientPhone: currentViewQuote.clientPhone || '', clientAddress: currentViewQuote.clientAddress || '',
-                    date: new Date().toISOString().split('T')[0], notes: currentViewQuote.notes, subtotal: currentViewQuote.subtotal, tax: currentViewQuote.tax, shipping: currentViewQuote.shipping || 0, total: totalAmount, paidAmount: paidAmount, payments: payments, returns: [], lines: currentViewQuote.lines, createdAt: serverTimestamp()
+                    date: new Date().toISOString().split('T')[0], notes: currentViewQuote.notes, subtotal: currentViewQuote.subtotal, tax: currentViewQuote.tax, shipping: currentViewQuote.shipping || 0, total: totalAmount, paidAmount: paidAmount, payments: payments, returns: [], lines: currentViewQuote.lines, 
+                    agentId: currentViewQuote.agentId || null, // <-- NUEVO: Pasar el vendedor
+                    createdAt: serverTimestamp()
                 };
-                await addDoc(collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'invoices'), invoiceData);
+                const newInvRef = await addDoc(collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'invoices'), invoiceData);
+                
+                // <-- NUEVO: Generar comisión si se facturó de contado y la cotización tenía vendedor
+                if (condition === 'contado' && invoiceData.agentId) {
+                    await window.generateAutomaticCommission(newInvRef.id, totalAmount, invoiceData);
+                }
+
                 for (const line of currentViewQuote.lines) {
                     const product = allProducts.find(p => p.id === line.productId);
                     if (product && product.trackStock) await updateDoc(doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'products', product.id), { stockCurrent: (product.stockCurrent || 0) - line.qty });
@@ -3034,6 +3052,8 @@
             const clientSelect = document.getElementById('univ-doc-client'); clientSelect.innerHTML = '<option value="">Seleccione un proveedor...</option>';
             allClients.filter(c => c.type === 'proveedor').forEach(c => { clientSelect.innerHTML += `<option value="${c.id}">${c.orgName}</option>`; });
             clientSelect.value = po.clientId;
+
+            document.getElementById('univ-doc-agent-container').classList.add('hidden'); // Ocultar vendedor en compras
 
             document.getElementById('univ-doc-date').value = po.date || ''; document.getElementById('univ-doc-expiry').value = po.expiryDate || '';
             document.getElementById('univ-doc-notes').value = po.notes || ''; document.getElementById('univ-doc-ship').value = po.shipping || 0;
