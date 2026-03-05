@@ -1125,20 +1125,47 @@
                         </table>
                     </div>
 
-                    <div id="panel-comisiones" class="bg-white rounded-xl shadow-sm border overflow-hidden hidden">
-                        <table class="w-full text-left">
-                            <thead class="bg-slate-50 border-b">
-                                <tr>
-                                    <th class="p-4 font-semibold text-gray-600">Fecha</th>
-                                    <th class="p-4 font-semibold text-gray-600">Agente</th>
-                                    <th class="p-4 font-semibold text-gray-600">Referencia (Factura)</th>
-                                    <th class="p-4 font-semibold text-gray-600">Estado</th>
-                                    <th class="p-4 font-semibold text-gray-600 text-right">Monto</th>
-                                    <th class="p-4 font-semibold text-gray-600 text-center">Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody id="commissions-table-body" class="divide-y"></tbody>
-                        </table>
+                    <div id="panel-comisiones" class="space-y-4 hidden">
+                        
+                        <div class="bg-white p-4 rounded-xl shadow-sm border flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+                            <div class="flex flex-col sm:flex-row items-start sm:items-center w-full lg:w-auto gap-2">
+                                <label class="text-sm font-semibold text-gray-600 whitespace-nowrap">Filtrar por Agente:</label>
+                                <select id="filter-comm-agent" onchange="window.filterCommissions()" class="w-full sm:w-64 border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-50 text-sm">
+                                    <option value="all">Todos los Agentes</option>
+                                </select>
+                            </div>
+                            
+                            <div class="flex flex-wrap gap-3 text-sm w-full lg:w-auto justify-start lg:justify-end">
+                                <div class="bg-slate-50 px-4 py-2 rounded-lg border w-full sm:w-auto">
+                                    <span class="text-gray-500 block text-[10px] uppercase font-bold">Total Generado</span>
+                                    <span id="comm-stat-total" class="font-black text-gray-800 text-lg">$0.00</span>
+                                </div>
+                                <div class="bg-green-50 px-4 py-2 rounded-lg border border-green-100 w-full sm:w-auto">
+                                    <span class="text-green-600 block text-[10px] uppercase font-bold">Total Pagado</span>
+                                    <span id="comm-stat-paid" class="font-black text-green-700 text-lg">$0.00</span>
+                                </div>
+                                <div class="bg-yellow-50 px-4 py-2 rounded-lg border border-yellow-100 w-full sm:w-auto">
+                                    <span class="text-yellow-700 block text-[10px] uppercase font-bold">Total Pendiente (Deuda)</span>
+                                    <span id="comm-stat-pending" class="font-black text-yellow-800 text-lg">$0.00</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
+                            <table class="w-full text-left">
+                                <thead class="bg-slate-50 border-b">
+                                    <tr>
+                                        <th class="p-4 font-semibold text-gray-600">Fecha</th>
+                                        <th class="p-4 font-semibold text-gray-600">Agente</th>
+                                        <th class="p-4 font-semibold text-gray-600">Referencia (Factura)</th>
+                                        <th class="p-4 font-semibold text-gray-600">Estado</th>
+                                        <th class="p-4 font-semibold text-gray-600 text-right">Monto</th>
+                                        <th class="p-4 font-semibold text-gray-600 text-center">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="commissions-table-body" class="divide-y"></tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
 
@@ -2302,55 +2329,94 @@
         function loadCommissions() {
             if(!currentUser) return;
             onSnapshot(query(collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'commissions')), (snapshot) => {
-                const tbody = document.getElementById('commissions-table-body');
-                if(!tbody) return;
-                tbody.innerHTML = '';
                 allCommissions = [];
-                
                 const docs = snapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
+                // Ordenar de la más reciente a la más antigua
                 docs.sort((a, b) => new Date(b.date) - new Date(a.date));
-
-                docs.forEach(comm => {
-                    allCommissions.push(comm);
-                    
-                    const badge = comm.status === 'pagada' 
-                        ? '<span class="bg-green-100 text-green-700 px-2 py-1 rounded-md text-[10px] uppercase font-bold border border-green-200">Pagada</span>'
-                        : '<span class="bg-yellow-100 text-yellow-700 px-2 py-1 rounded-md text-[10px] uppercase font-bold border border-yellow-200">Pendiente</span>';
-
-                    const invoiceRefText = comm.invoiceRef ? `Factura: ${comm.invoiceRef}` : (comm.notes || 'Sin referencia');
-
-                    const tr = document.createElement('tr');
-                    tr.className = 'hover:bg-slate-50 transition-colors border-b border-gray-100';
-                    tr.innerHTML = `
-                        <td class="p-4 font-medium text-gray-800">${comm.date}</td>
-                        <td class="p-4 font-bold text-gray-700">${comm.agentName}</td>
-                        <td class="p-4 text-sm text-gray-600 truncate max-w-[200px]" title="${invoiceRefText}">${invoiceRefText}</td>
-                        <td class="p-4">${badge}</td>
-                        <td class="p-4 text-right font-black text-green-600">$${comm.amount.toFixed(2)}</td>
-                        <td class="p-4 text-center">
-                            ${comm.status === 'pendiente' ? `<button onclick="window.payCommission('${comm.id}')" class="text-green-600 hover:text-green-800 bg-green-50 px-2 py-1 rounded transition text-xs font-bold mr-2" title="Marcar como pagada">Pagar</button>` : ''}
-                            <button onclick="window.deleteCommission('${comm.id}')" class="text-red-500 hover:text-red-700 bg-red-50 p-1.5 rounded transition" title="Eliminar Comisión"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
-                        </td>
-                    `;
-                    tbody.appendChild(tr);
-                });
+                allCommissions = docs;
                 
-                if (allCommissions.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-gray-400">No hay comisiones registradas.</td></tr>';
-                }
-                lucide.createIcons();
+                // Ejecutar el filtro (que a su vez dibuja la tabla y los totales)
+                window.filterCommissions();
             });
         }
 
-        function updateAgentDropdowns() {
-            const select = document.getElementById('comm-agent');
-            if(!select) return;
-            const currentVal = select.value;
-            select.innerHTML = '<option value="">Seleccione un agente...</option>';
-            allAgents.forEach(ag => {
-                select.innerHTML += `<option value="${ag.id}" data-base="${ag.commissionBase || 0}">${ag.name} (${ag.commissionBase || 0}%)</option>`;
+        // NUEVA FUNCIÓN: Filtra por agente, calcula totales y dibuja la tabla
+        window.filterCommissions = function() {
+            const agentId = document.getElementById('filter-comm-agent').value;
+            const tbody = document.getElementById('commissions-table-body');
+            if(!tbody) return;
+            
+            tbody.innerHTML = '';
+            
+            // Si elige 'all' muestra todos, si no, filtra por el ID del agente
+            let filtered = allCommissions;
+            if (agentId !== 'all') {
+                filtered = allCommissions.filter(c => c.agentId === agentId);
+            }
+
+            let totalGen = 0, totalPaid = 0, totalPend = 0;
+
+            filtered.forEach(comm => {
+                // Sumar para los indicadores
+                totalGen += comm.amount;
+                if (comm.status === 'pagada') totalPaid += comm.amount;
+                else totalPend += comm.amount;
+
+                const badge = comm.status === 'pagada' 
+                    ? '<span class="bg-green-100 text-green-700 px-2 py-1 rounded-md text-[10px] uppercase font-bold border border-green-200">Pagada</span>'
+                    : '<span class="bg-yellow-100 text-yellow-700 px-2 py-1 rounded-md text-[10px] uppercase font-bold border border-yellow-200">Pendiente</span>';
+
+                const invoiceRefText = comm.invoiceRef ? `Factura: ${comm.invoiceRef}` : (comm.notes || 'Sin referencia');
+
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-slate-50 transition-colors border-b border-gray-100';
+                tr.innerHTML = `
+                    <td class="p-4 font-medium text-gray-800">${comm.date}</td>
+                    <td class="p-4 font-bold text-gray-700">${comm.agentName}</td>
+                    <td class="p-4 text-sm text-gray-600 truncate max-w-[200px]" title="${invoiceRefText}">${invoiceRefText}</td>
+                    <td class="p-4">${badge}</td>
+                    <td class="p-4 text-right font-black text-green-600">$${comm.amount.toFixed(2)}</td>
+                    <td class="p-4 text-center">
+                        ${comm.status === 'pendiente' ? `<button onclick="window.payCommission('${comm.id}')" class="text-green-600 hover:text-green-800 bg-green-50 px-2 py-1 rounded transition text-xs font-bold mr-2" title="Marcar como pagada">Pagar</button>` : ''}
+                        <button onclick="window.deleteCommission('${comm.id}')" class="text-red-500 hover:text-red-700 bg-red-50 p-1.5 rounded transition" title="Eliminar Comisión"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
             });
-            select.value = currentVal;
+            
+            if (filtered.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-gray-400">No hay comisiones registradas para este filtro.</td></tr>';
+            }
+
+            // Actualizar tarjetas de resumen en pantalla
+            document.getElementById('comm-stat-total').innerText = `$${totalGen.toFixed(2)}`;
+            document.getElementById('comm-stat-paid').innerText = `$${totalPaid.toFixed(2)}`;
+            document.getElementById('comm-stat-pending').innerText = `$${totalPend.toFixed(2)}`;
+
+            lucide.createIcons();
+        };
+
+        function updateAgentDropdowns() {
+            const selectNew = document.getElementById('comm-agent');
+            const selectFilter = document.getElementById('filter-comm-agent'); // El nuevo select del filtro
+            
+            if(!selectNew) return;
+            
+            const currentVal = selectNew.value;
+            let filterCurrentVal = 'all';
+            
+            if(selectFilter) filterCurrentVal = selectFilter.value;
+
+            selectNew.innerHTML = '<option value="">Seleccione un agente...</option>';
+            if(selectFilter) selectFilter.innerHTML = '<option value="all">Todos los Agentes</option>';
+
+            allAgents.forEach(ag => {
+                selectNew.innerHTML += `<option value="${ag.id}" data-base="${ag.commissionBase || 0}">${ag.name} (${ag.commissionBase || 0}%)</option>`;
+                if(selectFilter) selectFilter.innerHTML += `<option value="${ag.id}">${ag.name}</option>`;
+            });
+            
+            selectNew.value = currentVal;
+            if(selectFilter) selectFilter.value = filterCurrentVal;
         }
 
         window.openAgentModal = function() {
@@ -2409,8 +2475,15 @@
             // Llenar facturas disponibles
             const invSelect = document.getElementById('comm-invoice');
             invSelect.innerHTML = '<option value="">Opcional: Seleccione una factura...</option>';
+            
             allInvoices.filter(i => i.type === 'factura').forEach(inv => {
-                invSelect.innerHTML += `<option value="${inv.id}" data-total="${inv.total}">${inv.date} - ${inv.clientName} ($${inv.total.toFixed(2)})</option>`;
+                // NUEVO: Verificamos si la factura ya existe en alguna comisión
+                const yaTieneComision = allCommissions.some(c => c.invoiceId === inv.id);
+                
+                // Si no tiene comisión, la mostramos en la lista
+                if (!yaTieneComision) {
+                    invSelect.innerHTML += `<option value="${inv.id}" data-total="${inv.total}">${inv.date} - ${inv.clientName} ($${inv.total.toFixed(2)})</option>`;
+                }
             });
 
             document.getElementById('modal-commission').classList.remove('hidden-screen');
@@ -2437,22 +2510,34 @@
 
         window.handleCommissionSubmit = async function(e) {
             e.preventDefault();
+            
+            const invSelect = document.getElementById('comm-invoice');
+            const invId = invSelect.value;
+
+            // NUEVO CANDADO: Evitar duplicados justo antes de guardar
+            if (invId) {
+                const yaTieneComision = allCommissions.some(c => c.invoiceId === invId);
+                if (yaTieneComision) {
+                    window.showToast("Esta factura ya tiene una comisión registrada.", "warning");
+                    return; // Detenemos la ejecución
+                }
+            }
+
             const btn = document.getElementById('btn-submit-commission');
             btn.innerHTML = "Procesando..."; btn.disabled = true;
 
             const agentId = document.getElementById('comm-agent').value;
             const agentOpt = document.getElementById('comm-agent').options[document.getElementById('comm-agent').selectedIndex];
             
-            const invSelect = document.getElementById('comm-invoice');
             let invoiceRef = '';
-            if (invSelect.value) {
+            if (invId) {
                 invoiceRef = invSelect.options[invSelect.selectedIndex].text;
             }
 
             const data = {
                 agentId: agentId,
                 agentName: agentOpt.text.split(' (')[0],
-                invoiceId: invSelect.value || null,
+                invoiceId: invId || null,
                 invoiceRef: invoiceRef,
                 amount: parseFloat(document.getElementById('comm-amount').value || 0),
                 date: document.getElementById('comm-date').value,
@@ -2464,9 +2549,9 @@
             try {
                 await addDoc(collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'commissions'), data);
                 document.getElementById('modal-commission').classList.add('hidden-screen');
-                window.showToast("Comisión registrada con éxito.");
+                window.showToast("Comisión registrada con éxito.", "success");
             } catch(error) {
-                console.error(error); window.showToast("Error guardando comisión.");
+                console.error(error); window.showToast("Error guardando comisión.", "error");
             } finally {
                 btn.innerHTML = "Guardar"; btn.disabled = false;
             }
