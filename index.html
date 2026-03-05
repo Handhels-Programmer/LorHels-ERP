@@ -242,26 +242,70 @@
             <div class="flex-1 overflow-auto p-6" id="main-content-area">
                 
                 <div id="view-dashboard" class="app-view space-y-6">
+                    <div class="flex items-center justify-between mb-2">
+                        <h2 class="text-2xl font-bold text-gray-800">Resumen General</h2>
+                        <p class="text-sm text-gray-500">Métricas actualizadas en tiempo real</p>
+                    </div>
+
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <div class="p-6 rounded-xl border bg-indigo-50 text-indigo-700 border-indigo-100 relative shadow-sm">
-                            <h3 class="text-xs font-bold uppercase tracking-wider mb-2 opacity-80">Ventas Netas</h3>
-                            <div class="text-3xl font-black mb-1" id="dash-sales">$0.00</div>
-                            <div class="text-sm font-medium opacity-80">Registradas</div>
+                        <div class="bg-white p-5 rounded-xl border shadow-sm flex items-center justify-between border-l-4 border-l-blue-500 hover:shadow-md transition">
+                            <div>
+                                <h3 class="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">Total Facturado</h3>
+                                <div class="text-2xl font-black text-blue-700" id="dash-facturas">$0.00</div>
+                            </div>
+                            <div class="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-500"><i data-lucide="file-text" class="w-5 h-5"></i></div>
                         </div>
-                        <div class="p-6 rounded-xl border bg-red-50 text-red-700 border-red-100 relative shadow-sm">
-                            <h3 class="text-xs font-bold uppercase tracking-wider mb-2 opacity-80">Cotizaciones</h3>
-                            <div class="text-3xl font-black mb-1" id="dash-quotes">0</div>
-                            <div class="text-sm font-medium opacity-80">Pendientes</div>
+                        <div class="bg-white p-5 rounded-xl border shadow-sm flex items-center justify-between border-l-4 border-l-red-500 hover:shadow-md transition">
+                            <div>
+                                <h3 class="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">Egresos (Compras+Gastos)</h3>
+                                <div class="text-2xl font-black text-red-600" id="dash-egresos">$0.00</div>
+                            </div>
+                            <div class="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center text-red-500"><i data-lucide="shopping-cart" class="w-5 h-5"></i></div>
                         </div>
-                        <div class="p-6 rounded-xl border bg-orange-50 text-orange-700 border-orange-100 relative shadow-sm">
-                            <h3 class="text-xs font-bold uppercase tracking-wider mb-2 opacity-80">Facturas Pendientes</h3>
-                            <div class="text-3xl font-black mb-1" id="dash-pending-inv">0</div>
-                            <div class="text-sm font-medium opacity-80">Por cobrar</div>
+                        <div class="bg-white p-5 rounded-xl border shadow-sm flex items-center justify-between border-l-4 border-l-green-500 hover:shadow-md transition">
+                            <div>
+                                <h3 class="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">Ganancias (Aprox)</h3>
+                                <div class="text-2xl font-black text-green-600" id="dash-ganancias">$0.00</div>
+                            </div>
+                            <div class="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center text-green-500"><i data-lucide="trending-up" class="w-5 h-5"></i></div>
                         </div>
-                        <div class="p-6 rounded-xl border bg-green-50 text-green-700 border-green-100 relative shadow-sm">
-                            <h3 class="text-xs font-bold uppercase tracking-wider mb-2 opacity-80">Productos</h3>
-                            <div class="text-3xl font-black mb-1" id="dash-product-count">0</div>
-                            <div class="text-sm font-medium opacity-80">En catálogo</div>
+                        <div class="bg-white p-5 rounded-xl border shadow-sm flex items-center justify-between border-l-4 border-l-purple-500 hover:shadow-md transition">
+                            <div>
+                                <h3 class="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">Pagos Recibidos</h3>
+                                <div class="text-2xl font-black text-purple-700" id="dash-pagos">$0.00</div>
+                            </div>
+                            <div class="w-10 h-10 rounded-full bg-purple-50 flex items-center justify-center text-purple-500"><i data-lucide="credit-card" class="w-5 h-5"></i></div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
+                        <div class="bg-white p-5 rounded-xl border shadow-sm flex items-center justify-between border-l-4 border-l-orange-500 hover:shadow-md transition">
+                            <div>
+                                <h3 class="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">Por Cobrar (Créditos)</h3>
+                                <div class="text-xl font-black text-orange-600" id="dash-cxc">$0.00</div>
+                            </div>
+                            <div class="w-10 h-10 rounded-full bg-orange-50 flex items-center justify-center text-orange-500"><i data-lucide="arrow-down-right" class="w-5 h-5"></i></div>
+                        </div>
+                        <div class="bg-white p-5 rounded-xl border shadow-sm flex items-center justify-between border-l-4 border-l-rose-500 hover:shadow-md transition">
+                            <div>
+                                <h3 class="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">Por Pagar (Deudas)</h3>
+                                <div class="text-xl font-black text-rose-600" id="dash-cxp">$0.00</div>
+                            </div>
+                            <div class="w-10 h-10 rounded-full bg-rose-50 flex items-center justify-center text-rose-500"><i data-lucide="arrow-up-right" class="w-5 h-5"></i></div>
+                        </div>
+                        <div class="bg-white p-5 rounded-xl border shadow-sm flex items-center justify-between border-l-4 border-l-yellow-500 hover:shadow-md transition">
+                            <div>
+                                <h3 class="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">Comisiones Pend.</h3>
+                                <div class="text-xl font-black text-yellow-600" id="dash-comisiones">$0.00</div>
+                            </div>
+                            <div class="w-10 h-10 rounded-full bg-yellow-50 flex items-center justify-center text-yellow-500"><i data-lucide="percent" class="w-5 h-5"></i></div>
+                        </div>
+                        <div class="bg-white p-5 rounded-xl border shadow-sm flex items-center justify-between border-l-4 border-l-teal-500 hover:shadow-md transition">
+                            <div>
+                                <h3 class="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">Cotiz. Pendientes</h3>
+                                <div class="text-2xl font-black text-teal-600" id="dash-cotizaciones">0</div>
+                            </div>
+                            <div class="w-10 h-10 rounded-full bg-teal-50 flex items-center justify-center text-teal-500"><i data-lucide="file-spreadsheet" class="w-5 h-5"></i></div>
                         </div>
                     </div>
                 </div>
@@ -2338,6 +2382,7 @@
                 // Ejecutar el filtro (que a su vez dibuja la tabla y los totales)
                 window.filterCommissions();
             });
+            window.updateDashboard();
         }
 
         // NUEVA FUNCIÓN: Filtra por agente, calcula totales y dibuja la tabla
@@ -2897,6 +2942,7 @@
                     tbody.appendChild(tr);
                 });
             }, (error) => console.error("Error cargando gastos", error));
+            window.updateDashboard();
         }
 
         window.openExpenseModal = function() {
@@ -3224,6 +3270,7 @@
                 });
                 const dashQ = document.getElementById('dash-quotes'); if(dashQ) dashQ.innerText = pendingQuotesCount;
             }, (error) => console.error("Error cargando cotizaciones", error));
+            window.updateDashboard();
         }
 
         window.showQuoteDetails = function(quoteId) {
@@ -3614,6 +3661,7 @@
                 if(currentViewClient && !document.getElementById('view-clientes-detalles').classList.contains('hidden-screen')) window.showClientDetails(currentViewClient);
                 if (typeof window.renderPaymentsList === 'function') window.renderPaymentsList();
             }, (error) => console.error("Error cargando compras", error));
+            window.updateDashboard();
         }
 
         window.showPurchaseDetails = function(purchaseId) {
@@ -3793,11 +3841,12 @@ tr.innerHTML = `
                     tbody.appendChild(tr);
                 });
 
-                document.getElementById('dash-sales').innerText = `$${totalSales.toFixed(2)}`;
+                // document.getElementById('dash-sales').innerText = `$${totalSales.toFixed(2)}`;
                 document.getElementById('dash-pending-inv').innerText = pendingInvoices;
                 if(currentViewClient && !document.getElementById('view-clientes-detalles').classList.contains('hidden-screen')) window.showClientDetails(currentViewClient);
                 if (typeof window.renderPaymentsList === 'function') window.renderPaymentsList();
             }, (error) => console.error("Error cargando facturas", error));
+            window.updateDashboard();
         }
 
         window.showInvoiceDetails = function(invoiceId) {
@@ -4275,6 +4324,7 @@ tr.innerHTML = `
                 });
             }
             lucide.createIcons();
+            window.updateDashboard();
         }
 
         window.openGlobalPaymentModal = function() {
@@ -4765,6 +4815,70 @@ tr.innerHTML = `
                 toast.classList.add('translate-x-full', 'opacity-0');
                 setTimeout(() => toast.remove(), 300); // Espera a que termine la animación para borrarlo del HTML
             }, 3500);
+        };
+
+        // ==========================================
+        // -- ACTUALIZAR DASHBOARD PRINCIPAL --
+        // ==========================================
+        window.updateDashboard = function() {
+            // 1. Facturas y CXC (Cuentas por Cobrar)
+            let facturasTotal = 0;
+            let cxcTotal = 0;
+            allInvoices.forEach(inv => {
+                if (inv.type === 'factura') {
+                    facturasTotal += inv.total;
+                    const balance = inv.total - (inv.paidAmount || 0);
+                    if (balance > 0.01) cxcTotal += balance;
+                }
+            });
+
+            // 2. Compras y CXP (Cuentas por Pagar)
+            let comprasTotal = 0;
+            let cxpTotal = 0;
+            allPurchases.forEach(pur => {
+                if (pur.type === 'compra') {
+                    comprasTotal += pur.total;
+                    const balance = pur.total - (pur.paidAmount || 0);
+                    if (balance > 0.01) cxpTotal += balance;
+                }
+            });
+
+            // 3. Gastos
+            let gastosTotal = 0;
+            allExpenses.forEach(ex => gastosTotal += (parseFloat(ex.amount) || 0));
+
+            // 4. Cálculos cruzados
+            let egresosTotal = comprasTotal + gastosTotal;
+            let ganancias = facturasTotal - egresosTotal;
+
+            // 5. Pagos Recibidos (Flujo de caja)
+            let pagosRecibidos = 0;
+            allGlobalPayments.forEach(p => {
+                if (p.docType === 'factura') pagosRecibidos += parseFloat(p.amount || 0);
+            });
+
+            // 6. Comisiones
+            let comisionesPend = 0;
+            allCommissions.forEach(c => {
+                if (c.status === 'pendiente') comisionesPend += (c.amount || 0);
+            });
+
+            // 7. Cotizaciones
+            let cotizacionesPend = 0;
+            allQuotes.forEach(q => {
+                if (q.status === 'pendiente') cotizacionesPend++;
+            });
+
+            // Inyectar en el HTML
+            document.getElementById('dash-facturas').innerText = `$${facturasTotal.toFixed(2)}`;
+            document.getElementById('dash-egresos').innerText = `$${egresosTotal.toFixed(2)}`;
+            document.getElementById('dash-ganancias').innerText = `$${ganancias.toFixed(2)}`;
+            document.getElementById('dash-pagos').innerText = `$${pagosRecibidos.toFixed(2)}`;
+            
+            document.getElementById('dash-cxc').innerText = `$${cxcTotal.toFixed(2)}`;
+            document.getElementById('dash-cxp').innerText = `$${cxpTotal.toFixed(2)}`;
+            document.getElementById('dash-comisiones').innerText = `$${comisionesPend.toFixed(2)}`;
+            document.getElementById('dash-cotizaciones').innerText = cotizacionesPend;
         };
 
     </script>
