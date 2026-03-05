@@ -242,71 +242,108 @@
             <div class="flex-1 overflow-auto p-6" id="main-content-area">
                 
                 <div id="view-dashboard" class="app-view space-y-6">
-                    <div class="flex items-center justify-between mb-2">
-                        <h2 class="text-2xl font-bold text-gray-800">Resumen General</h2>
-                        <p class="text-sm text-gray-500">Métricas actualizadas en tiempo real</p>
+                    <div class="flex flex-col md:flex-row items-start md:items-center justify-between mb-2 gap-4">
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-800">Resumen General</h2>
+                            <p class="text-sm text-gray-500">Métricas actualizadas en tiempo real</p>
+                        </div>
+                        <div class="flex flex-wrap gap-2">
+                            <button onclick="window.openDocumentModal('factura')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded-lg text-sm font-medium flex items-center shadow transition">
+                                <i data-lucide="plus" class="w-4 h-4 mr-1"></i> Factura
+                            </button>
+                            <button onclick="window.openExpenseModal()" class="bg-rose-600 hover:bg-rose-700 text-white px-3 py-2 rounded-lg text-sm font-medium flex items-center shadow transition">
+                                <i data-lucide="receipt" class="w-4 h-4 mr-1"></i> Gasto
+                            </button>
+                            <button onclick="window.openNewClientForm()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg text-sm font-medium flex items-center shadow transition">
+                                <i data-lucide="user-plus" class="w-4 h-4 mr-1"></i> Cliente
+                            </button>
+                        </div>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <div class="bg-white p-5 rounded-xl border shadow-sm flex items-center justify-between border-l-4 border-l-blue-500 hover:shadow-md transition">
+                        <div onclick="window.navigateTo('facturas', '2. Facturas')" class="bg-white p-5 rounded-xl border shadow-sm flex items-center justify-between border-l-4 border-l-blue-500 hover:shadow-md hover:bg-blue-50 transition cursor-pointer group">
                             <div>
-                                <h3 class="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">Total Facturado</h3>
+                                <h3 class="text-[11px] font-bold text-gray-500 group-hover:text-blue-600 uppercase tracking-wider mb-1 transition">Total Facturado</h3>
                                 <div class="text-2xl font-black text-blue-700" id="dash-facturas">$0.00</div>
                             </div>
-                            <div class="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-500"><i data-lucide="file-text" class="w-5 h-5"></i></div>
+                            <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600"><i data-lucide="file-text" class="w-5 h-5"></i></div>
                         </div>
-                        <div class="bg-white p-5 rounded-xl border shadow-sm flex items-center justify-between border-l-4 border-l-red-500 hover:shadow-md transition">
+                        <div onclick="window.navigateTo('compras', '4. Compras')" class="bg-white p-5 rounded-xl border shadow-sm flex items-center justify-between border-l-4 border-l-red-500 hover:shadow-md hover:bg-red-50 transition cursor-pointer group">
                             <div>
-                                <h3 class="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">Egresos (Compras+Gastos)</h3>
+                                <h3 class="text-[11px] font-bold text-gray-500 group-hover:text-red-600 uppercase tracking-wider mb-1 transition">Egresos (Compras+Gastos)</h3>
                                 <div class="text-2xl font-black text-red-600" id="dash-egresos">$0.00</div>
                             </div>
-                            <div class="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center text-red-500"><i data-lucide="shopping-cart" class="w-5 h-5"></i></div>
+                            <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center text-red-600"><i data-lucide="shopping-cart" class="w-5 h-5"></i></div>
                         </div>
-                        <div class="bg-white p-5 rounded-xl border shadow-sm flex items-center justify-between border-l-4 border-l-green-500 hover:shadow-md transition">
+                        <div onclick="window.navigateTo('informes', '13. Informes')" class="bg-white p-5 rounded-xl border shadow-sm flex items-center justify-between border-l-4 border-l-green-500 hover:shadow-md hover:bg-green-50 transition cursor-pointer group">
                             <div>
-                                <h3 class="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">Ganancias (Aprox)</h3>
+                                <h3 class="text-[11px] font-bold text-gray-500 group-hover:text-green-600 uppercase tracking-wider mb-1 transition">Ganancias (Aprox)</h3>
                                 <div class="text-2xl font-black text-green-600" id="dash-ganancias">$0.00</div>
                             </div>
-                            <div class="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center text-green-500"><i data-lucide="trending-up" class="w-5 h-5"></i></div>
+                            <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-600"><i data-lucide="trending-up" class="w-5 h-5"></i></div>
                         </div>
-                        <div class="bg-white p-5 rounded-xl border shadow-sm flex items-center justify-between border-l-4 border-l-purple-500 hover:shadow-md transition">
+                        <div onclick="window.navigateTo('pagos', '7. Pagos')" class="bg-white p-5 rounded-xl border shadow-sm flex items-center justify-between border-l-4 border-l-purple-500 hover:shadow-md hover:bg-purple-50 transition cursor-pointer group">
                             <div>
-                                <h3 class="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">Pagos Recibidos</h3>
+                                <h3 class="text-[11px] font-bold text-gray-500 group-hover:text-purple-600 uppercase tracking-wider mb-1 transition">Pagos Recibidos</h3>
                                 <div class="text-2xl font-black text-purple-700" id="dash-pagos">$0.00</div>
                             </div>
-                            <div class="w-10 h-10 rounded-full bg-purple-50 flex items-center justify-center text-purple-500"><i data-lucide="credit-card" class="w-5 h-5"></i></div>
+                            <div class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-purple-600"><i data-lucide="credit-card" class="w-5 h-5"></i></div>
                         </div>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
-                        <div class="bg-white p-5 rounded-xl border shadow-sm flex items-center justify-between border-l-4 border-l-orange-500 hover:shadow-md transition">
+                        <div onclick="window.navigateTo('facturas', '2. Facturas')" class="bg-white p-5 rounded-xl border shadow-sm flex items-center justify-between border-l-4 border-l-orange-500 hover:shadow-md hover:bg-orange-50 transition cursor-pointer group">
                             <div>
-                                <h3 class="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">Por Cobrar (Créditos)</h3>
+                                <h3 class="text-[11px] font-bold text-gray-500 group-hover:text-orange-600 uppercase tracking-wider mb-1 transition">Por Cobrar (CXC)</h3>
                                 <div class="text-xl font-black text-orange-600" id="dash-cxc">$0.00</div>
                             </div>
-                            <div class="w-10 h-10 rounded-full bg-orange-50 flex items-center justify-center text-orange-500"><i data-lucide="arrow-down-right" class="w-5 h-5"></i></div>
+                            <div class="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-600"><i data-lucide="arrow-down-right" class="w-5 h-5"></i></div>
                         </div>
-                        <div class="bg-white p-5 rounded-xl border shadow-sm flex items-center justify-between border-l-4 border-l-rose-500 hover:shadow-md transition">
+                        <div onclick="window.navigateTo('compras', '4. Compras')" class="bg-white p-5 rounded-xl border shadow-sm flex items-center justify-between border-l-4 border-l-rose-500 hover:shadow-md hover:bg-rose-50 transition cursor-pointer group">
                             <div>
-                                <h3 class="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">Por Pagar (Deudas)</h3>
+                                <h3 class="text-[11px] font-bold text-gray-500 group-hover:text-rose-600 uppercase tracking-wider mb-1 transition">Por Pagar (CXP)</h3>
                                 <div class="text-xl font-black text-rose-600" id="dash-cxp">$0.00</div>
                             </div>
-                            <div class="w-10 h-10 rounded-full bg-rose-50 flex items-center justify-center text-rose-500"><i data-lucide="arrow-up-right" class="w-5 h-5"></i></div>
+                            <div class="w-10 h-10 rounded-full bg-rose-100 flex items-center justify-center text-rose-600"><i data-lucide="arrow-up-right" class="w-5 h-5"></i></div>
                         </div>
-                        <div class="bg-white p-5 rounded-xl border shadow-sm flex items-center justify-between border-l-4 border-l-yellow-500 hover:shadow-md transition">
+                        <div onclick="window.navigateTo('comisiones', '11. Comisiones')" class="bg-white p-5 rounded-xl border shadow-sm flex items-center justify-between border-l-4 border-l-yellow-500 hover:shadow-md hover:bg-yellow-50 transition cursor-pointer group">
                             <div>
-                                <h3 class="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">Comisiones Pend.</h3>
+                                <h3 class="text-[11px] font-bold text-gray-500 group-hover:text-yellow-600 uppercase tracking-wider mb-1 transition">Comisiones Pend.</h3>
                                 <div class="text-xl font-black text-yellow-600" id="dash-comisiones">$0.00</div>
                             </div>
-                            <div class="w-10 h-10 rounded-full bg-yellow-50 flex items-center justify-center text-yellow-500"><i data-lucide="percent" class="w-5 h-5"></i></div>
+                            <div class="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-600"><i data-lucide="percent" class="w-5 h-5"></i></div>
                         </div>
-                        <div class="bg-white p-5 rounded-xl border shadow-sm flex items-center justify-between border-l-4 border-l-teal-500 hover:shadow-md transition">
+                        <div onclick="window.navigateTo('cotizaciones', '3. Cotizaciones')" class="bg-white p-5 rounded-xl border shadow-sm flex items-center justify-between border-l-4 border-l-teal-500 hover:shadow-md hover:bg-teal-50 transition cursor-pointer group">
                             <div>
-                                <h3 class="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">Cotiz. Pendientes</h3>
+                                <h3 class="text-[11px] font-bold text-gray-500 group-hover:text-teal-600 uppercase tracking-wider mb-1 transition">Cotiz. Pendientes</h3>
                                 <div class="text-2xl font-black text-teal-600" id="dash-cotizaciones">0</div>
                             </div>
-                            <div class="w-10 h-10 rounded-full bg-teal-50 flex items-center justify-center text-teal-500"><i data-lucide="file-spreadsheet" class="w-5 h-5"></i></div>
+                            <div class="w-10 h-10 rounded-full bg-teal-100 flex items-center justify-center text-teal-600"><i data-lucide="file-spreadsheet" class="w-5 h-5"></i></div>
                         </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
+                        
+                        <div class="lg:col-span-2 bg-white rounded-xl border shadow-sm p-5 flex flex-col">
+                            <h3 class="font-bold text-gray-700 mb-4 flex items-center"><i data-lucide="activity" class="w-4 h-4 mr-2 text-blue-500"></i> Actividad (Últimos 7 días)</h3>
+                            <div class="relative flex-1 w-full min-h-[250px]">
+                                <canvas id="chart-dashboard"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-xl border shadow-sm overflow-hidden flex flex-col">
+                            <div class="p-4 bg-slate-50 border-b flex justify-between items-center shrink-0">
+                                <h3 class="font-bold text-gray-700 flex items-center"><i data-lucide="alert-circle" class="w-4 h-4 mr-2 text-orange-500"></i> Por Cobrar</h3>
+                                <button onclick="window.navigateTo('facturas', '2. Facturas')" class="text-xs text-indigo-600 font-bold hover:underline">Ver todas</button>
+                            </div>
+                            <div class="overflow-x-auto flex-1">
+                                <table class="w-full text-left text-sm">
+                                    <tbody id="dash-pending-table" class="divide-y">
+                                        </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
                     </div>
                 </div>
 
@@ -4824,11 +4861,16 @@ tr.innerHTML = `
             // 1. Facturas y CXC (Cuentas por Cobrar)
             let facturasTotal = 0;
             let cxcTotal = 0;
+            let pendingInvoicesList = []; // Para la tabla interactiva
+
             allInvoices.forEach(inv => {
                 if (inv.type === 'factura') {
                     facturasTotal += inv.total;
                     const balance = inv.total - (inv.paidAmount || 0);
-                    if (balance > 0.01) cxcTotal += balance;
+                    if (balance > 0.01) {
+                        cxcTotal += balance;
+                        pendingInvoicesList.push({ ...inv, pendingBalance: balance });
+                    }
                 }
             });
 
@@ -4869,7 +4911,7 @@ tr.innerHTML = `
                 if (q.status === 'pendiente') cotizacionesPend++;
             });
 
-            // Inyectar en el HTML
+            // --- INYECTAR EN HTML (TARJETAS) ---
             document.getElementById('dash-facturas').innerText = `$${facturasTotal.toFixed(2)}`;
             document.getElementById('dash-egresos').innerText = `$${egresosTotal.toFixed(2)}`;
             document.getElementById('dash-ganancias').innerText = `$${ganancias.toFixed(2)}`;
@@ -4879,6 +4921,122 @@ tr.innerHTML = `
             document.getElementById('dash-cxp').innerText = `$${cxpTotal.toFixed(2)}`;
             document.getElementById('dash-comisiones').innerText = `$${comisionesPend.toFixed(2)}`;
             document.getElementById('dash-cotizaciones').innerText = cotizacionesPend;
+
+            // --- INYECTAR EN HTML (MINI-TABLA INTERACTIVA) ---
+            const pendingTbody = document.getElementById('dash-pending-table');
+            pendingTbody.innerHTML = '';
+            
+            // Ordenar por fecha (las más antiguas primero, porque son las que urgen cobrar)
+            pendingInvoicesList.sort((a, b) => new Date(a.date) - new Date(b.date));
+            
+            pendingInvoicesList.slice(0, 5).forEach(inv => {
+                const s = companyProfile?.settings || {};
+                const pref = s.prefFac || 'FAC-';
+                const numStr = inv.docNumber ? String(inv.docNumber).padStart(4, '0') : inv.id.substring(0,4).toUpperCase();
+
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-orange-50 cursor-pointer transition border-b border-gray-100 group';
+                tr.onclick = () => window.showInvoiceDetails(inv.id);
+                tr.innerHTML = `
+                    <td class="p-3 pl-4 text-gray-500 w-24">${inv.date}</td>
+                    <td class="p-3 font-semibold text-gray-700 group-hover:text-indigo-600 transition">
+                        ${inv.clientName} <span class="text-[10px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded ml-2">${pref}${numStr}</span>
+                    </td>
+                    <td class="p-3 text-right font-black text-orange-600 pr-4">Deuda: $${inv.pendingBalance.toFixed(2)}</td>
+                    <td class="p-3 w-10 pr-4 text-right">
+                        <i data-lucide="chevron-right" class="w-4 h-4 text-gray-400 group-hover:text-indigo-600"></i>
+                    </td>
+                `;
+                pendingTbody.appendChild(tr);
+            });
+
+            if(pendingInvoicesList.length === 0) {
+                pendingTbody.innerHTML = '<tr><td colspan="4" class="p-6 text-center text-gray-400 font-medium"><i data-lucide="check-circle" class="w-8 h-8 text-green-400 mx-auto mb-2"></i> ¡Excelente! No hay facturas pendientes de cobro.</td></tr>';
+            }
+
+            // --- NUEVO: CALCULAR DATOS PARA EL GRÁFICO (Últimos 7 días) ---
+            const last7Days = [];
+            const salesData = [0, 0, 0, 0, 0, 0, 0];
+            const expData = [0, 0, 0, 0, 0, 0, 0];
+            
+            // 1. Obtener las fechas de los últimos 7 días (Formato YYYY-MM-DD)
+            for(let i=6; i>=0; i--) {
+                let d = new Date();
+                d.setDate(d.getDate() - i);
+                last7Days.push(d.toISOString().split('T')[0]); 
+            }
+
+            // 2. Sumar las ventas en su día correspondiente
+            allInvoices.forEach(inv => {
+                if(inv.type === 'factura') {
+                    const idx = last7Days.indexOf(inv.date);
+                    if(idx !== -1) salesData[idx] += inv.total;
+                }
+            });
+
+            // 3. Sumar los egresos en su día correspondiente (Compras + Gastos)
+            allPurchases.forEach(pur => {
+                if(pur.type === 'compra') {
+                    const idx = last7Days.indexOf(pur.date);
+                    if(idx !== -1) expData[idx] += pur.total;
+                }
+            });
+            allExpenses.forEach(ex => {
+                const idx = last7Days.indexOf(ex.date);
+                if(idx !== -1) expData[idx] += parseFloat(ex.amount || 0);
+            });
+
+            // 4. Formatear fechas para que se vean bonitas (Ej: "05/03")
+            const displayLabels = last7Days.map(d => {
+                const parts = d.split('-');
+                return `${parts[2]}/${parts[1]}`; // Día/Mes
+            });
+
+            // 5. Dibujar Gráfico con Chart.js
+            if(window.chartDash) window.chartDash.destroy(); // Destruir gráfico anterior si existe
+            
+            const ctxDash = document.getElementById('chart-dashboard');
+            if(ctxDash) {
+                window.chartDash = new Chart(ctxDash.getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        labels: displayLabels,
+                        datasets: [
+                            { 
+                                label: 'Ventas ($)', 
+                                data: salesData, 
+                                borderColor: '#3b82f6', // Azul
+                                backgroundColor: 'rgba(59, 130, 246, 0.1)', 
+                                fill: true, 
+                                tension: 0.4, // Suaviza la línea
+                                borderWidth: 2,
+                                pointRadius: 3
+                            },
+                            { 
+                                label: 'Egresos ($)', 
+                                data: expData, 
+                                borderColor: '#ef4444', // Rojo
+                                backgroundColor: 'rgba(239, 68, 68, 0.05)', 
+                                fill: true, 
+                                tension: 0.4,
+                                borderWidth: 2,
+                                pointRadius: 3
+                            }
+                        ]
+                    },
+                    options: { 
+                        responsive: true, 
+                        maintainAspectRatio: false, 
+                        plugins: { legend: { position: 'top' } }, 
+                        scales: { 
+                            y: { beginAtZero: true, ticks: { callback: function(value) { return '$' + value; } } } 
+                        },
+                        interaction: { mode: 'index', intersect: false }
+                    }
+                });
+            }
+
+            lucide.createIcons(); // Refrescar iconos
         };
 
     </script>
