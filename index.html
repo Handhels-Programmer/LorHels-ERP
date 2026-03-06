@@ -426,6 +426,9 @@
                             <button onclick="window.generateQuotePDF()" class="flex items-center bg-indigo-50 text-indigo-700 hover:bg-indigo-100 font-medium px-4 py-2 rounded-lg transition">
                                 <i data-lucide="file-down" class="w-4 h-4 mr-2"></i> Generar PDF
                             </button>
+                            <button onclick="window.sendViaWhatsApp('cotizacion')" class="flex items-center bg-green-50 text-green-600 hover:bg-green-100 font-bold px-4 py-2 rounded-lg transition shadow-sm border border-green-200">
+                                <i data-lucide="message-circle" class="w-4 h-4 mr-2"></i> Enviar por WhatsApp
+                            </button>
                         </div>
                     </div>
 
@@ -534,6 +537,9 @@
                             </button>
                             <button onclick="window.generateInvoicePDF()" class="flex items-center bg-indigo-50 text-indigo-700 hover:bg-indigo-100 font-medium px-4 py-2 rounded-lg transition">
                                 <i data-lucide="file-down" class="w-4 h-4 mr-2"></i> Generar PDF
+                            </button>
+                            <button onclick="window.sendViaWhatsApp('factura')" class="flex items-center bg-green-50 text-green-600 hover:bg-green-100 font-bold px-4 py-2 rounded-lg transition shadow-sm border border-green-200">
+                                <i data-lucide="message-circle" class="w-4 h-4 mr-2"></i> Enviar por WhatsApp
                             </button>
                         </div>
                     </div>
@@ -5039,6 +5045,73 @@ tr.innerHTML = `
             lucide.createIcons(); // Refrescar iconos
         };
 
+
+        // ==========================================
+        // -- ENVÍO POR WHATSAPP --
+        // ==========================================
+        window.sendViaWhatsApp = function(type) {
+            // Saber si estamos en una factura o cotización
+            const doc = type === 'factura' ? currentViewInvoice : currentViewQuote;
+            if (!doc) return;
+
+            let phone = doc.clientPhone || '';
+            // Limpiar el teléfono (quitar espacios, guiones o paréntesis)
+            phone = phone.replace(/[\s\-\(\)]/g, '');
+            
+            // Validar que el cliente tenga teléfono
+            if (!phone) {
+                window.showToast("El cliente no tiene un número de teléfono registrado.", "warning");
+                return;
+            }
+
+            // Si el número tiene 10 dígitos (estándar en RD: 809, 829, 849), le agregamos el +1
+            if (phone.length === 10) {
+                phone = '1' + phone;
+            }
+
+            // Cargar configuraciones de la empresa
+            const s = companyProfile.settings || {};
+            const currency = s.currency || 'RD$';
+            const companyName = companyProfile.companyName || 'Nuestra empresa';
+            
+            let docLabel = '';
+            let docNumber = '';
+            
+            // Armar el prefijo correcto
+            if (type === 'factura') {
+                const pref = s.prefFac || 'FAC-';
+                const numStr = doc.docNumber ? String(doc.docNumber).padStart(4, '0') : doc.id.substring(0,4).toUpperCase();
+                docLabel = 'la factura';
+                docNumber = `${pref}${numStr}`;
+            } else {
+                const pref = s.prefCot || 'COT-';
+                const numStr = doc.docNumber ? String(doc.docNumber).padStart(4, '0') : doc.id.substring(0,4).toUpperCase();
+                docLabel = 'la cotización';
+                docNumber = `${pref}${numStr}`;
+            }
+
+            // Armar el mensaje para WhatsApp
+            let message = `¡Hola *${doc.clientName}*! 👋\n\nTe saludamos desde *${companyName}*.\n\nTe compartimos los detalles de ${docLabel} *${docNumber}*.\n\n*Total:* ${currency}${doc.total.toFixed(2)}\n*Fecha:* ${doc.date}\n\n`;
+            
+            // Si es factura, mostrar el balance pendiente
+            if (type === 'factura') {
+                const balance = doc.total - (doc.paidAmount || 0);
+                if (balance > 0.01) {
+                    message += `*Balance pendiente:* ${currency}${balance.toFixed(2)}\n\n`;
+                } else {
+                    message += `*Estado:* PAGADA ✅\n\n`;
+                }
+            }
+            
+            message += `Quedamos a tu disposición para cualquier consulta. ¡Gracias por preferirnos!`;
+
+            // Convertir el texto a formato URL y abrir WhatsApp
+            const encodedMessage = encodeURIComponent(message);
+            const whatsappUrl = `https://wa.me/${phone}?text=${encodedMessage}`;
+            
+            window.open(whatsappUrl, '_blank');
+        };
+        
     </script>
 </body>
 </html>
