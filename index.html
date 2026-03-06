@@ -1126,9 +1126,14 @@
                         <button onclick="window.navigateTo('clientes', '10. Clientes/Prov.')" class="flex items-center text-slate-500 hover:text-indigo-600 font-medium transition">
                             <i data-lucide="arrow-left" class="w-4 h-4 mr-2"></i> Volver a la lista
                         </button>
-                        <button onclick="window.editCurrentClient()" class="flex items-center text-indigo-600 hover:text-indigo-800 font-medium transition bg-indigo-50 px-3 py-1.5 rounded-lg">
-                            <i data-lucide="edit" class="w-4 h-4 mr-2"></i> Editar Info
-                        </button>
+                        <div class="flex flex-wrap gap-2">
+                            <button id="btn-toggle-client" onclick="window.toggleCurrentClientStatus()" class="flex items-center text-orange-600 hover:text-orange-800 font-medium transition bg-orange-50 px-3 py-1.5 rounded-lg">
+                                <i data-lucide="archive" class="w-4 h-4 mr-2"></i> Archivar
+                            </button>
+                            <button onclick="window.editCurrentClient()" class="flex items-center text-indigo-600 hover:text-indigo-800 font-medium transition bg-indigo-50 px-3 py-1.5 rounded-lg">
+                                <i data-lucide="edit" class="w-4 h-4 mr-2"></i> Editar Info
+                            </button>
+                        </div>
                     </div>
 
                     <div class="bg-white p-8 rounded-2xl shadow-sm border flex flex-col md:flex-row items-start gap-6">
@@ -2416,16 +2421,24 @@
         function loadCommissions() {
             if(!currentUser) return;
             onSnapshot(query(collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'commissions')), (snapshot) => {
-                allCommissions = [];
+                
+                // 1. Mapeamos y ordenamos los datos
                 const docs = snapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
-                // Ordenar de la más reciente a la más antigua
                 docs.sort((a, b) => new Date(b.date) - new Date(a.date));
+                
+                // 2. Guardamos en la variable global (CRÍTICO para el Dashboard)
                 allCommissions = docs;
                 
-                // Ejecutar el filtro (que a su vez dibuja la tabla y los totales)
-                window.filterCommissions();
+                // 3. Actualizamos la tabla del módulo de comisiones
+                if (typeof window.filterCommissions === 'function') {
+                    window.filterCommissions();
+                }
+                
+                // 4. NUEVO: Forzamos al Dashboard a recalcular ahora que ya tenemos las comisiones
+                if (typeof window.updateDashboard === 'function') {
+                    window.updateDashboard();
+                }
             });
-            window.updateDashboard();
         }
 
         // NUEVA FUNCIÓN: Filtra por agente, calcula totales y dibuja la tabla
@@ -2971,8 +2984,11 @@
                 const docs = snapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
                 docs.sort((a, b) => new Date(b.date) - new Date(a.date));
 
+                // 1. Llenamos la variable global primero
+                allExpenses = docs;
+
+                // 2. Dibujamos la tabla de gastos
                 docs.forEach(ex => {
-                    allExpenses.push(ex);
                     const tr = document.createElement('tr');
                     tr.className = 'hover:bg-slate-50 transition-colors border-b border-gray-100';
                     tr.innerHTML = `
@@ -2980,12 +2996,17 @@
                         <td class="p-4 font-bold text-rose-600">${ex.category}</td>
                         <td class="p-4 text-gray-600">${ex.desc}</td>
                         <td class="p-4 text-sm text-gray-500">${ex.method}</td>
-                        <td class="p-4 text-right font-black text-rose-600">$${(ex.amount || 0).toFixed(2)}</td>
+                        <td class="p-4 text-right font-black text-rose-600">$${(parseFloat(ex.amount) || 0).toFixed(2)}</td>
                     `;
                     tbody.appendChild(tr);
                 });
+
+                // 3. NUEVO: Forzamos al Dashboard a recalcular ahora que ya tenemos los gastos
+                if (typeof window.updateDashboard === 'function') {
+                    window.updateDashboard();
+                }
+
             }, (error) => console.error("Error cargando gastos", error));
-            window.updateDashboard();
         }
 
         window.openExpenseModal = function() {
@@ -3023,7 +3044,10 @@
         
         function getProductOptionsHTML() {
             let html = '<option value="">Seleccione un producto...</option>';
-            allProducts.forEach(p => { html += `<option value="${p.id}" data-price="${p.sellRate || 0}" data-tax="${p.tax || 0}">${p.name} ($${(p.sellRate || 0).toFixed(2)})</option>`; });
+            // NUEVO: Filtramos para que solo aparezcan los activos
+            allProducts.filter(p => p.active !== false).forEach(p => { 
+                html += `<option value="${p.id}" data-price="${p.sellRate || 0}" data-tax="${p.tax || 0}">${p.name} ($${(p.sellRate || 0).toFixed(2)})</option>`; 
+            });
             return html;
         }
 
@@ -3065,7 +3089,9 @@
             document.getElementById('label-univ-client').innerText = isPurchaseGroup ? 'Proveedor *' : 'Cliente *';
             const clientSelect = document.getElementById('univ-doc-client');
             clientSelect.innerHTML = `<option value="">Seleccione un ${isPurchaseGroup ? 'proveedor' : 'cliente'}...</option>`;
-            allClients.filter(c => c.type === (isPurchaseGroup ? 'proveedor' : 'cliente')).forEach(c => { clientSelect.innerHTML += `<option value="${c.id}">${c.orgName}</option>`; });
+            allClients.filter(c => c.type === (isPurchaseGroup ? 'proveedor' : 'cliente') && c.active !== false).forEach(c => { 
+                clientSelect.innerHTML += `<option value="${c.id}">${c.orgName}</option>`; 
+            });
 
             // --- NUEVO: Cargar Agentes en el select ---
             const agentCont = document.getElementById('univ-doc-agent-container');
@@ -4143,12 +4169,33 @@ tr.innerHTML = `
             if(dashCount) dashCount.innerText = allProducts.length;
 
             filteredProducts.forEach(p => {
+                const isActive = p.active !== false;
                 const imgHtml = p.image ? `<img src="${p.image}" class="w-8 h-8 rounded-lg object-cover border mr-3 shrink-0">` : `<div class="w-8 h-8 rounded-lg bg-gray-100 border mr-3 flex items-center justify-center text-gray-400 shrink-0"><i data-lucide="image" class="w-4 h-4"></i></div>`;
+                
                 let stockBadge = '';
                 if (p.trackStock) stockBadge = (p.stockCurrent || 0) <= (p.stockMin || 0) ? `<span class="bg-red-50 text-red-600 px-1.5 py-0.5 rounded text-[10px] ml-2 border border-red-100 font-bold" title="Stock por debajo del mínimo">Stock: ${p.stockCurrent || 0}</span>` : `<span class="bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded text-[10px] ml-2 border border-blue-100 font-bold">Stock: ${p.stockCurrent || 0}</span>`;
+                
+                // Etiqueta de archivado
+                const statusBadge = isActive ? '' : '<span class="bg-gray-200 text-gray-600 px-2 py-1 rounded text-[10px] font-bold uppercase ml-2">Archivado</span>';
+                
+                // Botón dinámico (Archivar o Restaurar)
+                const actionIcon = isActive ? 'archive' : 'refresh-ccw';
+                const actionTitle = isActive ? 'Archivar Producto' : 'Restaurar Producto';
+                const actionColor = isActive ? 'text-orange-600 hover:bg-orange-50' : 'text-green-600 hover:bg-green-50';
+
                 const tr = document.createElement('tr');
-                tr.className = 'hover:bg-slate-50 transition-colors';
-                tr.innerHTML = `<td class="p-4 font-mono text-sm text-gray-500">${p.code}</td><td class="p-4"><div class="flex items-center">${imgHtml}<div><span class="font-bold text-gray-800">${p.name}</span><div class="text-xs font-normal text-gray-400 mt-0.5">${p.category || 'Sin categoría'} ${stockBadge}</div></div></div></td><td class="p-4 capitalize text-sm"><span class="bg-gray-100 text-gray-600 px-2 py-1 rounded-md text-xs font-medium border">${p.type}</span></td><td class="p-4 text-gray-600">$${p.buyRate.toFixed(2)}</td><td class="p-4 font-black text-green-600">$${p.sellRate.toFixed(2)}</td><td class="p-4 text-center"><button onclick="window.editProduct('${p.id}')" class="text-indigo-600 hover:text-indigo-900 bg-indigo-50 p-2 rounded-lg transition" title="Editar Producto"><i data-lucide="edit-3" class="w-4 h-4"></i></button></td>`;
+                tr.className = `transition-colors ${isActive ? 'hover:bg-slate-50' : 'bg-gray-50 opacity-75'}`; // Oscurecemos la fila si está archivado
+                tr.innerHTML = `
+                    <td class="p-4 font-mono text-sm text-gray-500">${p.code}</td>
+                    <td class="p-4"><div class="flex items-center">${imgHtml}<div><span class="font-bold text-gray-800">${p.name}</span>${statusBadge}<div class="text-xs font-normal text-gray-400 mt-0.5">${p.category || 'Sin categoría'} ${stockBadge}</div></div></div></td>
+                    <td class="p-4 capitalize text-sm"><span class="bg-gray-100 text-gray-600 px-2 py-1 rounded-md text-xs font-medium border">${p.type}</span></td>
+                    <td class="p-4 text-gray-600">$${p.buyRate.toFixed(2)}</td>
+                    <td class="p-4 font-black text-green-600">$${p.sellRate.toFixed(2)}</td>
+                    <td class="p-4 text-center whitespace-nowrap">
+                        <button onclick="window.editProduct('${p.id}')" class="text-indigo-600 hover:text-indigo-900 bg-indigo-50 p-2 rounded-lg transition mr-1" title="Editar Producto"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
+                        <button onclick="window.toggleProductStatus('${p.id}', ${isActive})" class="${actionColor} p-2 rounded-lg transition" title="${actionTitle}"><i data-lucide="${actionIcon}" class="w-4 h-4"></i></button>
+                    </td>
+                `;
                 tbody.appendChild(tr);
             });
             lucide.createIcons();
@@ -4266,8 +4313,13 @@ tr.innerHTML = `
                 const grid = document.getElementById('clients-grid'); if(!grid) return; grid.innerHTML = ''; allClients = [];
                 snapshot.forEach(docSnap => {
                     const c = {id: docSnap.id, ...docSnap.data()}; allClients.push(c);
-                    const card = document.createElement('div'); card.className = "bg-white p-5 rounded-xl border shadow-sm relative group cursor-pointer hover:border-indigo-400 transition"; card.onclick = () => window.showClientDetails(c);
-                    card.innerHTML = `<span class="absolute top-4 right-4 text-[10px] font-bold uppercase px-2 py-1 rounded-full ${c.type === 'cliente' ? 'bg-indigo-100 text-indigo-700' : 'bg-orange-100 text-orange-700'}">${c.type}</span><h3 class="font-bold text-lg text-gray-800 mb-1 pr-16 truncate group-hover:text-indigo-600">${c.orgName}</h3><p class="text-sm text-gray-500 mb-4">${c.contactName || 'Sin contacto'}</p><div class="text-sm text-gray-600 space-y-1"><p>📞 ${c.phone || 'N/D'}</p><p class="font-semibold text-green-600 mt-2">Límite: $${(c.creditLimit||0).toFixed(2)}</p></div>`;
+                    const isActive = c.active !== false;
+                    const archiveBadge = isActive ? '' : '<span class="absolute top-4 right-16 text-[10px] font-bold uppercase px-2 py-1 rounded-full bg-gray-200 text-gray-600">Archivado</span>';
+                    
+                    const card = document.createElement('div'); 
+                    card.className = `p-5 rounded-xl border relative group cursor-pointer transition ${isActive ? 'bg-white shadow-sm hover:border-indigo-400' : 'bg-gray-50 opacity-75'}`; 
+                    card.onclick = () => window.showClientDetails(c);
+                    card.innerHTML = `${archiveBadge}<span class="absolute top-4 right-4 text-[10px] font-bold uppercase px-2 py-1 rounded-full ${c.type === 'cliente' ? 'bg-indigo-100 text-indigo-700' : 'bg-orange-100 text-orange-700'}">${c.type}</span><h3 class="font-bold text-lg text-gray-800 mb-1 pr-24 truncate group-hover:text-indigo-600">${c.orgName}</h3><p class="text-sm text-gray-500 mb-4">${c.contactName || 'Sin contacto'}</p><div class="text-sm text-gray-600 space-y-1"><p>📞 ${c.phone || 'N/D'}</p><p class="font-semibold text-green-600 mt-2">Límite: $${(c.creditLimit||0).toFixed(2)}</p></div>`;
                     grid.appendChild(card);
                 });
                 if(currentViewClient && !document.getElementById('view-clientes-detalles').classList.contains('hidden-screen')) { const u = allClients.find(c => c.id === currentViewClient.id); if(u) window.showClientDetails(u); }
@@ -4315,7 +4367,20 @@ tr.innerHTML = `
             rE.innerText = `$${rC.toFixed(2)}`; rE.className = rC < 0 ? "text-red-600 text-lg font-bold" : "text-green-600 text-lg font-bold";
             
             document.getElementById('cd-email').innerText = client.email || 'N/A'; document.getElementById('cd-phone').innerText = client.phone || 'N/A'; document.getElementById('cd-address').innerText = client.address || 'N/A'; document.getElementById('cd-shipping').innerText = client.shippingAddress || 'N/A';
-            document.getElementById('view-clientes-detalles').classList.remove('hidden-screen'); lucide.createIcons();
+            document.getElementById('view-clientes-detalles').classList.remove('hidden-screen');
+            // Control visual del botón Archivar/Restaurar
+            const isActive = client.active !== false;
+            const btnToggle = document.getElementById('btn-toggle-client');
+            if (btnToggle) {
+                if (isActive) {
+                    btnToggle.innerHTML = '<i data-lucide="archive" class="w-4 h-4 mr-2"></i> Archivar';
+                    btnToggle.className = 'flex items-center text-orange-600 hover:text-orange-800 font-medium transition bg-orange-50 px-3 py-1.5 rounded-lg';
+                } else {
+                    btnToggle.innerHTML = '<i data-lucide="refresh-ccw" class="w-4 h-4 mr-2"></i> Restaurar';
+                    btnToggle.className = 'flex items-center text-green-600 hover:text-green-800 font-medium transition bg-green-50 px-3 py-1.5 rounded-lg';
+                }
+            }
+            lucide.createIcons();
         }
 
         // ==========================================
@@ -5045,73 +5110,49 @@ tr.innerHTML = `
             lucide.createIcons(); // Refrescar iconos
         };
 
-
         // ==========================================
-        // -- ENVÍO POR WHATSAPP --
+        // -- FUNCIONES DE ARCHIVADO (SOFT DELETE) --
         // ==========================================
-        window.sendViaWhatsApp = function(type) {
-            // Saber si estamos en una factura o cotización
-            const doc = type === 'factura' ? currentViewInvoice : currentViewQuote;
-            if (!doc) return;
-
-            let phone = doc.clientPhone || '';
-            // Limpiar el teléfono (quitar espacios, guiones o paréntesis)
-            phone = phone.replace(/[\s\-\(\)]/g, '');
+        window.toggleProductStatus = async function(id, isCurrentlyActive) {
+            const msg = isCurrentlyActive 
+                ? "¿Deseas archivar este producto? Ya no aparecerá en la lista al facturar, pero se conservará en tu historial." 
+                : "¿Deseas restaurar este producto? Volverá a estar disponible para facturar.";
             
-            // Validar que el cliente tenga teléfono
-            if (!phone) {
-                window.showToast("El cliente no tiene un número de teléfono registrado.", "warning");
-                return;
+            if(!confirm(msg)) return;
+            
+            try {
+                await updateDoc(doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'products', id), { 
+                    active: !isCurrentlyActive 
+                });
+                window.showToast(isCurrentlyActive ? "Producto archivado." : "Producto restaurado.", "success");
+            } catch(e) { 
+                console.error(e); window.showToast("Error al cambiar el estado del producto.", "error"); 
             }
-
-            // Si el número tiene 10 dígitos (estándar en RD: 809, 829, 849), le agregamos el +1
-            if (phone.length === 10) {
-                phone = '1' + phone;
-            }
-
-            // Cargar configuraciones de la empresa
-            const s = companyProfile.settings || {};
-            const currency = s.currency || 'RD$';
-            const companyName = companyProfile.companyName || 'Nuestra empresa';
-            
-            let docLabel = '';
-            let docNumber = '';
-            
-            // Armar el prefijo correcto
-            if (type === 'factura') {
-                const pref = s.prefFac || 'FAC-';
-                const numStr = doc.docNumber ? String(doc.docNumber).padStart(4, '0') : doc.id.substring(0,4).toUpperCase();
-                docLabel = 'la factura';
-                docNumber = `${pref}${numStr}`;
-            } else {
-                const pref = s.prefCot || 'COT-';
-                const numStr = doc.docNumber ? String(doc.docNumber).padStart(4, '0') : doc.id.substring(0,4).toUpperCase();
-                docLabel = 'la cotización';
-                docNumber = `${pref}${numStr}`;
-            }
-
-            // Armar el mensaje para WhatsApp
-            let message = `¡Hola *${doc.clientName}*! 👋\n\nTe saludamos desde *${companyName}*.\n\nTe compartimos los detalles de ${docLabel} *${docNumber}*.\n\n*Total:* ${currency}${doc.total.toFixed(2)}\n*Fecha:* ${doc.date}\n\n`;
-            
-            // Si es factura, mostrar el balance pendiente
-            if (type === 'factura') {
-                const balance = doc.total - (doc.paidAmount || 0);
-                if (balance > 0.01) {
-                    message += `*Balance pendiente:* ${currency}${balance.toFixed(2)}\n\n`;
-                } else {
-                    message += `*Estado:* PAGADA ✅\n\n`;
-                }
-            }
-            
-            message += `Quedamos a tu disposición para cualquier consulta. ¡Gracias por preferirnos!`;
-
-            // Convertir el texto a formato URL y abrir WhatsApp
-            const encodedMessage = encodeURIComponent(message);
-            const whatsappUrl = `https://wa.me/${phone}?text=${encodedMessage}`;
-            
-            window.open(whatsappUrl, '_blank');
         };
-        
+
+        window.toggleCurrentClientStatus = async function() {
+            if(!currentViewClient) return;
+            const isCurrentlyActive = currentViewClient.active !== false;
+            
+            const msg = isCurrentlyActive 
+                ? "¿Deseas archivar este contacto? Ya no podrás hacerle nuevas facturas o compras." 
+                : "¿Deseas restaurar este contacto?";
+            
+            if(!confirm(msg)) return;
+            
+            try {
+                await updateDoc(doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'clients', currentViewClient.id), { 
+                    active: !isCurrentlyActive 
+                });
+                // Actualizar la vista local para que el botón cambie inmediatamente
+                currentViewClient.active = !isCurrentlyActive; 
+                window.showClientDetails(currentViewClient); 
+                window.showToast(isCurrentlyActive ? "Contacto archivado." : "Contacto restaurado.", "success");
+            } catch(e) { 
+                console.error(e); window.showToast("Error al cambiar el estado del contacto.", "error"); 
+            }
+        };
+
     </script>
 </body>
 </html>
