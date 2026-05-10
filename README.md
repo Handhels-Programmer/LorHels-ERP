@@ -1,6 +1,5 @@
 # LorHels ERP
 
----
 
 ### 🏢 1. Arquitectura SaaS y Panel de Super-Administrador
 
@@ -77,5 +76,3 @@
 * **Diseño Premium:** Plantillas de PDF modernas con encabezados degradados, datos bancarios automáticos en el pie de página, logotipo de la empresa e **imágenes en miniatura de cada producto** facturado.
 * **Ajustes Maestros:** El dueño configura su Moneda (RD$, US$, €), su Impuesto Global (bloqueado para evitar errores de los cajeros), datos del banco, prefijos de facturación (FAC-001) y términos por defecto.
 * **Notificaciones Toasts:** Alertas visuales flotantes y modernas que reemplazan las ventanas bloqueantes del navegador.
-
----
