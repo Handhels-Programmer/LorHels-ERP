@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notas de Crédito - LorHels Systems</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        /* --- 1. ESTILOS BASE Y LAYOUT --- */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { display: flex; height: 100vh; background-color: #0b0f19; color: #e2e8f0; overflow: hidden; }
+        
+        .sidebar { width: 260px; background-color: #111827; color: white; display: flex; flex-direction: column; border-right: 1px solid #1f2937; transition: transform 0.3s ease; z-index: 1000; }
+        .logo-area { padding: 25px 20px; text-align: center; border-bottom: 1px solid #1f2937; }
+        .logo-area h2 { font-size: 1.2rem; margin-bottom: 5px; color: #ffffff; }
+        .badge { background-color: #374151; font-size: 0.7rem; padding: 3px 8px; border-radius: 12px; color: #d1d5db; }
+        
+        /* --- 2. ESTILOS DEL MENÚ COMPACTO --- */
+        .menu { list-style: none; padding: 15px 0; overflow-y: auto; flex-grow: 1; }
+        .menu::-webkit-scrollbar { width: 6px; }
+        .menu::-webkit-scrollbar-thumb { background-color: #374151; border-radius: 10px; }
+        .menu li { margin: 2px 15px; }
+        .menu li a { display: block; padding: 10px 20px; text-decoration: none; color: #94a3b8; font-size: 0.95rem; border-radius: 8px; transition: all 0.2s ease; }
+        .menu li a:hover { background-color: #1e293b; color: #f8fafc; }
+        .menu li.active a { background-color: #6366f1; color: #ffffff; font-weight: 500; }
+        
+        /* --- 3. CONTENIDO PRINCIPAL --- */
+        .main-content { flex-grow: 1; display: flex; flex-direction: column; width: calc(100% - 260px); }
+        .topbar { background-color: #111827; padding: 15px 30px; border-bottom: 1px solid #1f2937; display: flex; justify-content: space-between; align-items: center; }
+        .menu-toggle { display: none; background: none; border: none; color: #f8fafc; font-size: 1.5rem; cursor: pointer; margin-right: 15px; }
+        .topbar h2 { color: #f8fafc; font-weight: 600; display: flex; align-items: center; }
+        
+        .user-profile { display: flex; align-items: center; }
+        .logout-btn { background: none; border: none; color: #f87171; cursor: pointer; font-size: 0.85rem; margin-left: 10px; text-decoration: underline; }
+        .logout-btn:hover { color: #ef4444; }
+
+        .content-area { padding: 30px; overflow-y: auto; flex-grow: 1; display: flex; flex-direction: column; }
+
+        /* --- 4. TARJETAS, TABLAS Y BOTONES --- */
+        .card { background-color: #1f2937; border-radius: 8px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); border: 1px solid #374151; margin-bottom: 20px; }
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .page-header h3 { color: #e2e8f0; font-size: 1.3rem; }
+        
+        .btn { padding: 10px 18px; border-radius: 6px; cursor: pointer; border: none; font-weight: 500; font-size: 0.9rem; transition: background-color 0.2s; display: inline-flex; align-items: center; gap: 5px; }
+        .btn-primary { background-color: #5a5ce6; color: white; }
+        .btn-primary:hover { background-color: #4c4ed8; }
+        .btn-success { background-color: #34d399; color: #0b0f19; font-weight: bold; }
+        .btn-success:hover { background-color: #10b981; }
+
+        .btn-outline-purple { background-color: transparent; border: 1px solid #c084fc; color: #c084fc; }
+        .btn-outline-purple:hover { background-color: rgba(192, 132, 252, 0.1); }
+        .btn-outline-danger { background-color: transparent; border: 1px solid #f87171; color: #f87171; }
+        .btn-outline-danger:hover { background-color: rgba(248, 113, 113, 0.1); }
+        .btn-close-text { background: none; border: none; color: #9ca3af; font-size: 1rem; padding: 0; }
+        .btn-close-text:hover { color: #f8fafc; }
+
+        .filter-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 10px; }
+        .form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 20px; }
+        .form-group { display: flex; flex-direction: column; margin-bottom: 10px; }
+        .form-group.full { grid-column: 1 / -1; }
+        .form-group label { font-size: 0.85rem; color: #9ca3af; margin-bottom: 5px; }
+        .form-control { background-color: #111827; border: 1px solid #374151; color: #e2e8f0; padding: 10px 12px; border-radius: 6px; outline: none; width: 100%; }
+        .form-control:focus { border-color: #5a5ce6; }
+
+        .table-responsive { width: 100%; overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th { background-color: #111827; color: #9ca3af; padding: 12px 15px; font-size: 0.9rem; border-bottom: 2px solid #374151; white-space: nowrap; }
+        td { padding: 12px 15px; border-bottom: 1px solid #374151; font-size: 0.95rem; color: #e2e8f0; }
+        
+        #tabla-nc tr { cursor: pointer; transition: background-color 0.2s; }
+        #tabla-nc tr:hover { background-color: #374151; }
+        
+        /* Badges */
+        .status-badge { padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; text-align: center; display: inline-block; }
+        .status-applied { background-color: rgba(52, 211, 153, 0.2); color: #34d399; }
+        .status-void { background-color: rgba(248, 113, 113, 0.2); color: #f87171; }
+
+        /* --- 5. MODALES --- */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); display: none; justify-content: center; align-items: center; z-index: 2000; }
+        .modal-overlay.active { display: flex; }
+        .modal-content { background-color: #1f2937; padding: 25px; border-radius: 8px; border: 1px solid #374151; width: 100%; max-width: 600px; max-height: 95vh; overflow-y: auto; position: relative; }
+        .modal-close { position: absolute; top: 15px; right: 15px; background: none; border: none; color: #9ca3af; font-size: 1.5rem; cursor: pointer; }
+        .modal-close:hover { color: #fff; }
+
+        /* --- 6. MODAL VER NC (COMPROBANTE) --- */
+        .modal-view-content { max-width: 800px; padding: 20px; }
+        .view-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #374151; }
+        .view-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+        
+        .view-document { background-color: #ffffff; color: #000; padding: 40px; border-radius: 8px; border-top: 5px solid #818cf8; position: relative; }
+        .vd-header { display: flex; justify-content: space-between; margin-bottom: 30px; border-bottom: 2px solid #f1f5f9; padding-bottom: 20px;}
+        .vd-company h2 { color: #111827; font-size: 1.6rem; margin-bottom: 5px; }
+        .vd-meta { text-align: right; }
+        .vd-meta h2 { color: #818cf8; font-size: 1.4rem; margin-bottom: 10px; }
+        
+        .vd-body { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; }
+        .vd-box { background-color: #f8fafc; padding: 15px; border-radius: 6px; border: 1px solid #e2e8f0; }
+        .vd-box h5 { color: #64748b; font-size: 0.8rem; margin-bottom: 5px; }
+        .vd-box p { color: #111827; font-size: 1rem; font-weight: 500; }
+        
+        .vd-total-area { background-color: #111827; color: #fff; padding: 20px; border-radius: 8px; text-align: right; }
+        .vd-total-area h4 { font-size: 1rem; color: #9ca3af; font-weight: normal; margin-bottom: 5px; }
+        .vd-total-area h1 { font-size: 2.2rem; color: #34d399; margin-bottom: 5px;}
+        .vd-total-area.anulada h1 { color: #f87171; text-decoration: line-through; }
+
+        /* --- 7. MAGIA DE IMPRESIÓN (PDF) --- */
+        @media print {
+            body * { visibility: hidden; }
+            .modal-overlay { position: absolute; left: 0; top: 0; background: transparent; }
+            .view-document, .view-document * { visibility: visible; }
+            .view-document { position: absolute; left: 0; top: 0; width: 100%; border: none; padding: 0; }
+            .view-header, .sidebar, .topbar { display: none !important; }
+        }
+
+        .custom-footer { padding: 24px; text-align: center; color: #64748b; font-size: 0.875rem; border-top: 1px solid #1e293b; margin-top: auto; }
+        .custom-footer a { color: #a3a3a3; text-decoration: underline; }
+
+        @media (max-width: 768px) {
+            .menu-toggle { display: block; }
+            .sidebar { position: fixed; height: 100vh; left: 0; top: 0; transform: translateX(-100%); }
+            .sidebar.active-mobile { transform: translateX(0); box-shadow: 5px 0 15px rgba(0,0,0,0.5); }
+            .main-content { width: 100%; }
+            .form-grid { grid-template-columns: 1fr; }
+            .vd-body { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar" id="sidebar">
+        <div class="logo-area">
+            <h2>LorHels Systems</h2>
+            <span class="badge" id="plan-badge">CARGANDO...</span>
+        </div>
+        <ul class="menu">
+            <li><a href="dashboard.html">1. Dashboard</a></li>
+            <li><a href="facturas.html">2. Facturas</a></li>
+            <li><a href="cotizaciones.html">3. Cotizaciones</a></li>
+            <li><a href="compras.html">4. Compras</a></li>
+            <li><a href="orden-compra.html">5. Orden de Compra</a></li>
+            <li><a href="gastos.html">6. Gastos</a></li>
+            <li><a href="pagos.html">7. Pagos</a></li>
+            <li class="active"><a href="nota-credito.html">8. Nota de Crédito</a></li>
+            <li><a href="inventario.html">9. Inventario</a></li>
+            <li><a href="clientes-prov.html">10. Clientes/Prov.</a></li>
+            <li><a href="comisiones.html">11. Comisiones</a></li>
+            <li><a href="productos.html">12. Productos</a></li>
+            <li><a href="informes.html">13. Informes</a></li>
+            <li><a href="ajustes.html">14. Ajustes</a></li>
+            <li><a href="contabilidad-dgii.html">15. Contabilidad/DGII</a></li> 
+        </ul>
+    </aside>
+
+    <main class="main-content">
+        <header class="topbar">
+            <h2><button class="menu-toggle" id="menu-toggle">☰</button> Notas de Crédito</h2>
+            <div class="user-profile">
+                <span id="user-display-name">👤 Cargando...</span>
+                <button id="logout-btn" class="logout-btn">Salir</button>
+            </div>
+        </header>
+
+        <section class="content-area">
+            <div class="page-header">
+                <h3>Registro de Notas de Crédito</h3>
+                <button class="btn btn-primary" onclick="abrirModalCrear()">+ Nueva Nota de Crédito</button>
+            </div>
+
+            <div class="card">
+                <div class="filter-grid">
+                    <div class="form-group">
+                        <label>Buscar (Factura o Cliente)</label>
+                        <input type="text" id="buscador" class="form-control" placeholder="Ej. FAC-2026 o Juan...">
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>No. Nota</th>
+                                <th>Fecha Emisión</th>
+                                <th>Factura Afectada</th>
+                                <th>Cliente</th>
+                                <th>Monto Acreditado</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-nc">
+                            <tr><td colspan="6" style="text-align: center;">Cargando notas de crédito...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <footer class="custom-footer">
+            <p>&copy; 2026 
+                <a href="https://lorhels.web.app" target="_blank" rel="noopener noreferrer">
+                    LorHels Systems.
+                </a>Todos los derechos reservados.
+            </p>
+        </footer>
+    </main>
+
+    <div class="modal-overlay" id="modal-crear">
+        <div class="modal-content">
+            <button class="modal-close" onclick="cerrarModal('modal-crear')">&times;</button>
+            <h3 style="color: #fff; margin-bottom: 20px; border-bottom: 1px solid #374151; padding-bottom: 10px;">Aplicar Nueva Nota de Crédito</h3>
+            
+            <form id="form-nc">
+                <div class="form-grid">
+                    <div class="form-group full">
+                        <label>Seleccionar Factura Afectada *</label>
+                        <select id="n_factura" class="form-control" required>
+                            <option value="" disabled selected>Cargando facturas...</option>
+                        </select>
+                        <span id="lbl_factura_info" class="help-text" style="color: #60a5fa; font-size:0.8rem;"></span>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Fecha Emisión *</label>
+                        <input type="date" id="n_fecha" class="form-control" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Monto a Acreditar ($) *</label>
+                        <input type="number" id="n_monto" class="form-control" required min="0.01" step="0.01">
+                    </div>
+
+                    <div class="form-group full">
+                        <label>Motivo / Razón de la Nota de Crédito *</label>
+                        <textarea id="n_motivo" class="form-control" rows="2" placeholder="Ej: Devolución de mercancía, Descuento post-venta..." required></textarea>
+                    </div>
+                </div>
+
+                <div style="background-color: rgba(96, 165, 250, 0.1); padding: 10px; border-left: 3px solid #60a5fa; margin-bottom: 15px; font-size: 0.85rem; color: #9ca3af;">
+                    <strong>Nota:</strong> Al guardar, este monto se descontará automáticamente del balance de la factura seleccionada y de la deuda del cliente.
+                </div>
+
+                <button type="submit" class="btn btn-success" id="btn-save-nc" style="width:100%;">Generar y Aplicar Nota</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modal-ver">
+        <div class="modal-content modal-view-content">
+            
+            <div class="view-header">
+                <button class="btn btn-close-text" onclick="cerrarModal('modal-ver')">← Volver a Notas</button>
+                <div class="view-actions">
+                    <button class="btn btn-outline-purple" onclick="window.generarPDF()">📄 Descargar PDF</button>
+                    <button class="btn btn-outline-danger" id="btn-anular" onclick="anularNC()">🚫 Anular Nota</button>
+                </div>
+            </div>
+
+            <div class="view-document" id="printable-area">
+                <div class="vd-header">
+                    <div class="vd-company">
+                        <h2 id="v_empresa_nombre">...</h2>
+                        <p>RNC: <span id="v_empresa_rnc"></span></p>
+                    </div>
+                    <div class="vd-meta">
+                        <h2 id="v_nc_id">NOTA DE CRÉDITO</h2>
+                        <div id="v_estado_badge" style="margin-bottom: 10px;"></div>
+                    </div>
+                </div>
+
+                <div class="vd-body">
+                    <div class="vd-box">
+                        <h5>A FAVOR DE (CLIENTE):</h5>
+                        <p id="v_cliente">...</p>
+                    </div>
+                    <div class="vd-box">
+                        <h5>FECHA DE EMISIÓN:</h5>
+                        <p id="v_fecha">...</p>
+                    </div>
+                    <div class="vd-box">
+                        <h5>APLICADA A FACTURA N°:</h5>
+                        <p id="v_factura">...</p>
+                    </div>
+                    <div class="vd-box">
+                        <h5>RNC DEL CLIENTE:</h5>
+                        <p id="v_cliente_rnc">N/A</p>
+                    </div>
+                    <div class="vd-box" style="grid-column: 1 / -1;">
+                        <h5>MOTIVO DE LA EMISIÓN:</h5>
+                        <p id="v_motivo">...</p>
+                    </div>
+                </div>
+
+                <div class="vd-total-area" id="caja-total-nc">
+                    <h4>TOTAL ACREDITADO</h4>
+                    <h1 id="v_total">...</h1>
+                </div>
+                
+                <div style="text-align:center; color:#64748b; margin-top:40px; font-size:0.9rem; font-style: italic;">Documento generado electrónicamente. No requiere firma.</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const menuToggleBtn = document.getElementById('menu-toggle');
+        const sidebar = document.getElementById('sidebar');
+        menuToggleBtn.addEventListener('click', () => { sidebar.classList.toggle('active-mobile'); });
+        function cerrarModal(modalId) { document.getElementById(modalId).classList.remove('active'); }
+    </script>
+
+    <script type="module">
+        import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { doc, getDoc, collection, getDocs, addDoc, updateDoc, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { auth, db } from "./firebaseConfig.js";
+
+        const userDisplayName = document.getElementById('user-display-name');
+        const planBadge = document.getElementById('plan-badge');
+        const logoutBtn = document.getElementById('logout-btn');
+        
+        let currentUserId = null;
+        let empresaGlobalData = {};
+        let facturasGlobales = []; // Para el dropdown
+        let notasGlobales = [];
+        let currentViewNcId = null;
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) return window.location.href = "login.html";
+            if (user.email === "tu-correo-administrador@gmail.com") return window.location.href = "admin.html";
+
+            currentUserId = user.uid;
+
+            try {
+                const docSnap = await getDoc(doc(db, "empresas", currentUserId));
+                if (docSnap.exists()) {
+                    empresaGlobalData = docSnap.data();
+                    if (empresaGlobalData.estado === "pendiente") return window.location.href = "dashboard.html";
+                    userDisplayName.innerText = `👤 ${empresaGlobalData.nombre}`;
+                    planBadge.innerText = `PLAN ${empresaGlobalData.plan.toUpperCase()}`;
+                    
+                    await Promise.all([cargarFacturas(), cargarNotasCredito()]);
+                }
+            } catch (error) { console.error(error); }
+        });
+
+        logoutBtn.addEventListener('click', () => signOut(auth).then(() => window.location.href = "login.html"));
+
+        // ==========================================
+        // CARGA DE DATOS
+        // ==========================================
+        async function cargarFacturas() {
+            const selectFac = document.getElementById('n_factura');
+            try {
+                // Cargamos TODAS las facturas, no solo las pendientes, porque a veces se hace una nota a una factura ya pagada (devolución).
+                const q = query(collection(db, `empresas/${currentUserId}/facturas`), orderBy("fecha_creacion", "desc"));
+                const querySnapshot = await getDocs(q);
+                
+                facturasGlobales = [];
+                selectFac.innerHTML = '<option value="" disabled selected>Seleccione una factura...</option>';
+                
+                querySnapshot.forEach(doc => {
+                    const f = { id: doc.id, ...doc.data() };
+                    facturasGlobales.push(f);
+                    
+                    const option = document.createElement('option');
+                    option.value = f.id;
+                    const shortId = f.id.substring(0,6).toUpperCase();
+                    const fmtMonto = new Intl.NumberFormat('es-DO', { style: 'currency', currency: 'DOP' }).format(f.total);
+                    option.text = `FAC-${shortId} - ${f.cliente_nombre} (Total: ${fmtMonto})`;
+                    selectFac.appendChild(option);
+                });
+            } catch (error) { console.error(error); }
+        }
+
+        // Info extra al seleccionar la factura
+        document.getElementById('n_factura').addEventListener('change', function(e) {
+            const fac = facturasGlobales.find(f => f.id === e.target.value);
+            if(fac) {
+                // Limitamos la nota de crédito al total de la factura original
+                document.getElementById('n_monto').max = fac.total;
+                document.getElementById('lbl_factura_info').innerText = `Balance actual de la factura: $${fac.balance.toFixed(2)}. Máximo a acreditar: $${fac.total.toFixed(2)}`;
+            }
+        });
+
+        async function cargarNotasCredito() {
+            const tabla = document.getElementById('tabla-nc');
+            tabla.innerHTML = '<tr><td colspan="6" style="text-align:center;">Cargando notas de crédito...</td></tr>';
+            try {
+                const q = query(collection(db, `empresas/${currentUserId}/notas_credito`), orderBy("fecha_creacion", "desc"));
+                const querySnapshot = await getDocs(q);
+                
+                notasGlobales = [];
+                tabla.innerHTML = "";
+                if(querySnapshot.empty) {
+                    tabla.innerHTML = '<tr><td colspan="6" style="text-align:center;">No hay notas de crédito registradas.</td></tr>';
+                    return;
+                }
+
+                querySnapshot.forEach((docSnap) => {
+                    const nc = { id: docSnap.id, ...docSnap.data() };
+                    notasGlobales.push(nc);
+
+                    const fmtMonto = new Intl.NumberFormat('es-DO', { style: 'currency', currency: 'DOP' }).format(nc.monto);
+                    
+                    let badgeEst = nc.estado === "aplicada" 
+                        ? '<span class="status-badge status-applied">Aplicada</span>'
+                        : '<span class="status-badge status-void">Anulada</span>';
+
+                    const tr = document.createElement('tr');
+                    tr.onclick = () => abrirVistaNC(nc.id); 
+                    tr.innerHTML = `
+                        <td><strong style="color:#818cf8;">NC-${nc.id.substring(0,6).toUpperCase()}</strong></td>
+                        <td>${nc.fecha_emision}</td>
+                        <td>FAC-${nc.factura_id.substring(0,6).toUpperCase()}</td>
+                        <td><strong>${nc.cliente_nombre}</strong></td>
+                        <td style="font-weight:bold;">${fmtMonto}</td>
+                        <td>${badgeEst}</td>
+                    `;
+                    tabla.appendChild(tr);
+                });
+            } catch (error) { console.error(error); }
+        }
+
+        // ==========================================
+        // CREAR NOTA DE CRÉDITO
+        // ==========================================
+        window.abrirModalCrear = function() {
+            document.getElementById('form-nc').reset();
+            document.getElementById('n_fecha').valueAsDate = new Date();
+            document.getElementById('lbl_factura_info').innerText = "";
+            document.getElementById('modal-crear').classList.add('active');
+        }
+
+        document.getElementById('form-nc').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btn-save-nc');
+            btn.innerText = "Procesando..."; btn.disabled = true;
+
+            try {
+                const facId = document.getElementById('n_factura').value;
+                const factura = facturasGlobales.find(f => f.id === facId);
+                const montoCredito = parseFloat(document.getElementById('n_monto').value);
+
+                if (montoCredito > factura.total) {
+                    alert("La Nota de Crédito no puede ser mayor al total de la factura original.");
+                    btn.innerText = "Generar y Aplicar Nota"; btn.disabled = false;
+                    return;
+                }
+
+                // 1. Guardar la Nota de Crédito
+                const datosNC = {
+                    factura_id: facId,
+                    cliente_id: factura.cliente_id,
+                    cliente_nombre: factura.cliente_nombre,
+                    fecha_emision: document.getElementById('n_fecha').value,
+                    motivo: document.getElementById('n_motivo').value,
+                    monto: montoCredito,
+                    estado: "aplicada", // Por defecto se aplica inmediato
+                    fecha_creacion: serverTimestamp()
+                };
+                await addDoc(collection(db, `empresas/${currentUserId}/notas_credito`), datosNC);
+
+                // 2. Modificar la Factura Original (Restarle al balance)
+                const nuevoBalance = Math.max(0, factura.balance - montoCredito);
+                const nuevoEstadoFac = nuevoBalance <= 0 ? "pagada" : factura.estado;
+                
+                await updateDoc(doc(db, `empresas/${currentUserId}/facturas`, facId), {
+                    balance: nuevoBalance,
+                    estado: nuevoEstadoFac
+                });
+
+                // 3. Modificar Directorio del Cliente (Restarle a la deuda total)
+                const cliRef = doc(db, `empresas/${currentUserId}/directorio`, factura.cliente_id);
+                const cliSnap = await getDoc(cliRef);
+                if(cliSnap.exists()) {
+                    const deudaActual = parseFloat(cliSnap.data().monto_adeudado) || 0;
+                    await updateDoc(cliRef, { monto_adeudado: Math.max(0, deudaActual - montoCredito) });
+                }
+
+                cerrarModal('modal-crear');
+                await cargarFacturas(); // Actualizar las facturas en RAM
+                await cargarNotasCredito(); 
+                alert("Nota de Crédito generada y aplicada con éxito.");
+
+            } catch (error) {
+                console.error("Error:", error);
+                alert("Error al procesar la Nota de Crédito.");
+            } finally {
+                btn.innerText = "Generar y Aplicar Nota"; btn.disabled = false;
+            }
+        });
+
+        // ==========================================
+        // VISTA Y FUNCIONES DE LA NOTA
+        // ==========================================
+        window.abrirVistaNC = function(ncId) {
+            currentViewNcId = ncId;
+            const nc = notasGlobales.find(x => x.id === ncId);
+            if(!nc) return;
+
+            const fmt = (val) => new Intl.NumberFormat('es-DO', { style: 'currency', currency: 'DOP' }).format(val || 0);
+
+            document.getElementById('v_empresa_nombre').innerText = empresaGlobalData.nombre || "Mi Empresa";
+            document.getElementById('v_empresa_rnc').innerText = empresaGlobalData.rnc || "N/A";
+            
+            document.getElementById('v_nc_id').innerText = `NOTA DE CRÉDITO N° ${nc.id.substring(0,6).toUpperCase()}`;
+            document.getElementById('v_cliente').innerText = nc.cliente_nombre;
+            document.getElementById('v_fecha').innerText = nc.fecha_emision;
+            document.getElementById('v_factura').innerText = `FAC-${nc.factura_id.substring(0,6).toUpperCase()}`;
+            document.getElementById('v_motivo').innerText = nc.motivo;
+            document.getElementById('v_total').innerText = fmt(nc.monto);
+
+            const badge = document.getElementById('v_estado_badge');
+            const cajaTotal = document.getElementById('caja-total-nc');
+            const btnAnular = document.getElementById('btn-anular');
+
+            if(nc.estado === "aplicada") {
+                badge.innerHTML = '<span class="status-badge status-applied" style="padding:6px 15px;">APLICADA</span>';
+                cajaTotal.classList.remove('anulada');
+                btnAnular.style.display = "inline-flex";
+            } else {
+                badge.innerHTML = '<span class="status-badge status-void" style="padding:6px 15px;">ANULADA</span>';
+                cajaTotal.classList.add('anulada');
+                btnAnular.style.display = "none";
+            }
+
+            document.getElementById('modal-ver').classList.add('active');
+        }
+
+        window.generarPDF = function() {
+            const element = document.getElementById('printable-area');
+            const ncId = document.getElementById('v_nc_id').innerText.replace('NOTA DE CRÉDITO N° ', '');
+            const opt = {
+                margin: 0.5,
+                filename: `NC_${ncId}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
+                jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+            };
+            html2pdf().set(opt).from(element).save();
+        }
+
+        // Anular revierte matemáticamente la Nota
+        window.anularNC = async function() {
+            if(!confirm("¿Estás seguro de anular esta Nota de Crédito?\n\nEl monto se devolverá como deuda a la Factura y al Cliente.")) return;
+            
+            const nc = notasGlobales.find(x => x.id === currentViewNcId);
+            const factura = facturasGlobales.find(f => f.id === nc.factura_id);
+            
+            try {
+                // 1. Marcar NC como Anulada
+                await updateDoc(doc(db, `empresas/${currentUserId}/notas_credito`, currentViewNcId), { estado: "anulada" });
+
+                // 2. Revertir balance en la Factura
+                if(factura) {
+                    const balanceRevertido = factura.balance + nc.monto;
+                    // Si devolvemos balance, asume estado de crédito (pendiente de pago)
+                    await updateDoc(doc(db, `empresas/${currentUserId}/facturas`, nc.factura_id), {
+                        balance: balanceRevertido,
+                        estado: "credito"
+                    });
+                }
+
+                // 3. Revertir deuda en el Cliente
+                const cliRef = doc(db, `empresas/${currentUserId}/directorio`, nc.cliente_id);
+                const cliSnap = await getDoc(cliRef);
+                if(cliSnap.exists()) {
+                    const deudaActual = parseFloat(cliSnap.data().monto_adeudado) || 0;
+                    await updateDoc(cliRef, { monto_adeudado: deudaActual + nc.monto });
+                }
+
+                alert("Nota de Crédito anulada exitosamente.");
+                cerrarModal('modal-ver');
+                await cargarFacturas();
+                await cargarNotasCredito();
+            } catch(error) {
+                console.error(error);
+                alert("Error al anular la nota.");
+            }
+        }
+
+        // Buscador
+        document.getElementById('buscador').addEventListener('input', function(e) {
+            const txt = e.target.value.toLowerCase();
+            const filtrados = notasGlobales.filter(nc => 
+                nc.cliente_nombre.toLowerCase().includes(txt) || 
+                nc.factura_id.toLowerCase().includes(txt) ||
+                nc.id.toLowerCase().includes(txt)
+            );
+            renderizarTablaFiltrada(filtrados);
+        });
+
+        function renderizarTablaFiltrada(datos) {
+            const tabla = document.getElementById('tabla-nc');
+            tabla.innerHTML = "";
+            if (datos.length === 0) { tabla.innerHTML = '<tr><td colspan="6" style="text-align:center;">No hay resultados.</td></tr>'; return; }
+
+            datos.forEach((nc) => {
+                const fmtMonto = new Intl.NumberFormat('es-DO', { style: 'currency', currency: 'DOP' }).format(nc.monto);
+                let badgeEst = nc.estado === "aplicada" ? '<span class="status-badge status-applied">Aplicada</span>' : '<span class="status-badge status-void">Anulada</span>';
+
+                const tr = document.createElement('tr');
+                tr.onclick = () => abrirVistaNC(nc.id); 
+                tr.innerHTML = `<td><strong style="color:#818cf8;">NC-${nc.id.substring(0,6).toUpperCase()}</strong></td><td>${nc.fecha_emision}</td><td>FAC-${nc.factura_id.substring(0,6).toUpperCase()}</td><td><strong>${nc.cliente_nombre}</strong></td><td style="font-weight:bold;">${fmtMonto}</td><td>${badgeEst}</td>`;
+                tabla.appendChild(tr);
+            });
+        }
+    </script>
+</body>
+</html>

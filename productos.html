@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catálogo de Productos - LorHels Systems</title>
+    <style>
+        /* --- 1. ESTILOS BASE Y LAYOUT --- */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { display: flex; height: 100vh; background-color: #0b0f19; color: #e2e8f0; overflow: hidden; }
+        
+        .sidebar { width: 260px; background-color: #111827; color: white; display: flex; flex-direction: column; border-right: 1px solid #1f2937; transition: transform 0.3s ease; z-index: 1000; }
+        .logo-area { padding: 25px 20px; text-align: center; border-bottom: 1px solid #1f2937; }
+        .logo-area h2 { font-size: 1.2rem; margin-bottom: 5px; color: #ffffff; }
+        .badge { background-color: #374151; font-size: 0.7rem; padding: 3px 8px; border-radius: 12px; color: #d1d5db; }
+        
+        /* --- 2. ESTILOS DEL MENÚ --- */
+        .menu { list-style: none; padding: 15px 0; overflow-y: auto; flex-grow: 1; }
+        .menu::-webkit-scrollbar { width: 6px; }
+        .menu::-webkit-scrollbar-thumb { background-color: #374151; border-radius: 10px; }
+        .menu li { margin: 2px 15px; }
+        .menu li a { display: block; padding: 10px 20px; text-decoration: none; color: #94a3b8; font-size: 0.95rem; border-radius: 8px; transition: all 0.2s ease; }
+        .menu li a:hover { background-color: #1e293b; color: #f8fafc; }
+        .menu li.active a { background-color: #6366f1; color: #ffffff; font-weight: 500; }
+        
+        /* --- 3. CONTENIDO PRINCIPAL --- */
+        .main-content { flex-grow: 1; display: flex; flex-direction: column; width: calc(100% - 260px); }
+        .topbar { background-color: #111827; padding: 15px 30px; border-bottom: 1px solid #1f2937; display: flex; justify-content: space-between; align-items: center; }
+        .menu-toggle { display: none; background: none; border: none; color: #f8fafc; font-size: 1.5rem; cursor: pointer; margin-right: 15px; }
+        .topbar h2 { color: #f8fafc; font-weight: 600; display: flex; align-items: center; }
+        
+        .user-profile { display: flex; align-items: center; }
+        .logout-btn { background: none; border: none; color: #f87171; cursor: pointer; font-size: 0.85rem; margin-left: 10px; text-decoration: underline; }
+        .logout-btn:hover { color: #ef4444; }
+
+        .content-area { padding: 30px; overflow-y: auto; flex-grow: 1; display: flex; flex-direction: column; }
+
+        /* --- 4. TARJETAS, TABLAS Y BOTONES --- */
+        .card { background-color: #1f2937; border-radius: 8px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); border: 1px solid #374151; margin-bottom: 20px; }
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .page-header h3 { color: #e2e8f0; font-size: 1.3rem; }
+        
+        .btn { padding: 10px 18px; border-radius: 6px; cursor: pointer; border: none; font-weight: 500; font-size: 0.9rem; transition: background-color 0.2s; }
+        .btn-primary { background-color: #5a5ce6; color: white; }
+        .btn-primary:hover { background-color: #4c4ed8; }
+        .btn-save { background-color: #34d399; color: #0b0f19; width: 100%; margin-top: 15px; }
+
+        .action-btn { background: none; border: none; color: #9ca3af; cursor: pointer; font-size: 1.1rem; margin-right: 10px; }
+        .action-btn:hover { color: #818cf8; }
+
+        .filter-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 10px; }
+        
+        /* Formularios */
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .form-group { display: flex; flex-direction: column; margin-bottom: 10px; }
+        .form-group.full { grid-column: 1 / -1; }
+        .form-group label { font-size: 0.85rem; color: #9ca3af; margin-bottom: 5px; }
+        .form-control { background-color: #111827; border: 1px solid #374151; color: #e2e8f0; padding: 10px 12px; border-radius: 6px; outline: none; }
+        .form-control:focus { border-color: #5a5ce6; }
+
+        .table-responsive { width: 100%; overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th { background-color: #111827; color: #9ca3af; padding: 12px 15px; font-size: 0.9rem; border-bottom: 2px solid #374151; white-space: nowrap; }
+        td { padding: 12px 15px; border-bottom: 1px solid #374151; font-size: 0.95rem; color: #e2e8f0; }
+        tbody tr:hover { background-color: #374151; }
+        
+        /* Badges e Imágenes */
+        .status-badge { padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; cursor: pointer; border: none; }
+        .prod-active { background-color: rgba(52, 211, 153, 0.2); color: #34d399; }
+        .prod-inactive { background-color: rgba(248, 113, 113, 0.2); color: #f87171; }
+
+        .prod-thumb { width: 40px; height: 40px; background-color: #111827; border: 1px solid #374151; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; object-fit: cover; }
+        
+        .logo-preview-container { display: flex; align-items: center; gap: 15px; }
+        .logo-preview-img { width: 60px; height: 60px; object-fit: cover; border-radius: 8px; border: 1px solid #374151; display: none; background-color: #111827; }
+
+        /* --- 5. MODALES --- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0, 0, 0, 0.7); display: none; justify-content: center; align-items: center; z-index: 2000;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal-content {
+            background-color: #1f2937; padding: 25px; border-radius: 8px; border: 1px solid #374151; 
+            width: 100%; max-width: 700px; max-height: 90vh; overflow-y: auto; position: relative;
+        }
+        .modal-close { position: absolute; top: 15px; right: 15px; background: none; border: none; color: #9ca3af; font-size: 1.5rem; cursor: pointer; }
+        .modal-close:hover { color: #fff; }
+        .modal-title { color: #fff; margin-bottom: 20px; font-size: 1.2rem; border-bottom: 1px solid #374151; padding-bottom: 10px; }
+
+        /* Secciones del formulario */
+        .form-section-title { color: #818cf8; font-size: 1rem; margin-top: 15px; margin-bottom: 10px; border-bottom: 1px dashed #374151; padding-bottom: 5px; grid-column: 1 / -1; }
+
+        /* --- 6. ESTILOS DEL FOOTER --- */
+        .custom-footer { padding: 24px; text-align: center; color: #64748b; font-size: 0.875rem; border-top: 1px solid #1e293b; margin-top: auto; }
+        .custom-footer a { color: #a3a3a3; text-decoration: underline; transition: color 0.2s; font-weight: 500; }
+        .custom-footer a:hover { color: #ffffff; }
+
+        /* --- 7. RESPONSIVO --- */
+        @media (max-width: 768px) {
+            .menu-toggle { display: block; }
+            .sidebar { position: fixed; height: 100vh; left: 0; top: 0; transform: translateX(-100%); }
+            .sidebar.active-mobile { transform: translateX(0); box-shadow: 5px 0 15px rgba(0,0,0,0.5); }
+            .main-content { width: 100%; }
+            .page-header { flex-direction: column; align-items: flex-start; gap: 15px; }
+            .form-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar" id="sidebar">
+        <div class="logo-area">
+            <h2>LorHels Systems</h2>
+            <span class="badge" id="plan-badge">CARGANDO...</span>
+        </div>
+        <ul class="menu">
+            <li><a href="dashboard.html">1. Dashboard</a></li>
+            <li><a href="facturas.html">2. Facturas</a></li>
+            <li><a href="cotizaciones.html">3. Cotizaciones</a></li>
+            <li><a href="compras.html">4. Compras</a></li>
+            <li><a href="orden-compra.html">5. Orden de Compra</a></li>
+            <li><a href="gastos.html">6. Gastos</a></li>
+            <li><a href="pagos.html">7. Pagos</a></li>
+            <li><a href="nota-credito.html">8. Nota de Crédito</a></li>
+            <li><a href="inventario.html">9. Inventario</a></li>
+            <li><a href="clientes-prov.html">10. Clientes/Prov.</a></li>
+            <li><a href="comisiones.html">11. Comisiones</a></li>
+            <li class="active"><a href="productos.html">12. Productos</a></li>
+            <li><a href="informes.html">13. Informes</a></li>
+            <li><a href="ajustes.html">14. Ajustes</a></li>
+            <li><a href="contabilidad-dgii.html">15. Contabilidad/DGII</a></li> 
+        </ul>
+    </aside>
+
+    <main class="main-content">
+        <header class="topbar">
+            <h2>
+                <button class="menu-toggle" id="menu-toggle">☰</button>
+                Productos y Servicios
+            </h2>
+            <div class="user-profile">
+                <span id="user-display-name">👤 Cargando...</span>
+                <button id="logout-btn" class="logout-btn">Salir</button>
+            </div>
+        </header>
+
+        <section class="content-area">
+            
+            <div class="page-header">
+                <h3>Catálogo de Artículos</h3>
+                <button class="btn btn-primary" onclick="abrirModalForm()">+ Nuevo Registro</button>
+            </div>
+
+            <div class="card">
+                <div class="filter-grid">
+                    <div class="form-group">
+                        <label>Buscar por Nombre, Marca o Código</label>
+                        <input type="text" id="buscador" class="form-control" placeholder="Ej. Switch, PROD-001...">
+                    </div>
+                    <div class="form-group">
+                        <label>Tipo</label>
+                        <select id="filtro-tipo" class="form-control">
+                            <option value="todos">Todos</option>
+                            <option value="producto">Solo Productos</option>
+                            <option value="servicio">Solo Servicios</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Estado</label>
+                        <select id="filtro-estado" class="form-control">
+                            <option value="todos">Todos</option>
+                            <option value="true">Activos</option>
+                            <option value="false">Inactivos</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Img</th>
+                                <th>Código</th>
+                                <th>Descripción / Nombre</th>
+                                <th>Categoría</th>
+                                <th>Costo</th>
+                                <th>Precio Venta</th>
+                                <th>Stock</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-productos">
+                            <tr><td colspan="9" style="text-align: center;">Cargando catálogo...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <footer class="custom-footer">
+            <p>&copy; 2026 
+                <a href="https://lorhels.web.app" target="_blank" rel="noopener noreferrer">
+                    LorHels Systems.
+                </a>Todos los derechos reservados.
+            </p>
+        </footer>
+    </main>
+
+    <div class="modal-overlay" id="modal-form">
+        <div class="modal-content">
+            <button class="modal-close" onclick="cerrarModal('modal-form')">&times;</button>
+            <h3 class="modal-title" id="modal-form-title">Nuevo Registro</h3>
+            
+            <form id="form-producto">
+                <input type="hidden" id="doc_id">
+                <input type="hidden" id="current_image">
+                
+                <div class="form-grid">
+                    <div class="form-section-title">Información Básica</div>
+                    
+                    <div class="form-group full">
+                        <label>Imagen del Producto</label>
+                        <div class="logo-preview-container">
+                            <img id="logo-preview" class="logo-preview-img" src="" alt="Imagen">
+                            <input type="file" id="f_imagen" class="form-control" accept="image/*" style="width: 100%;">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Tipo *</label>
+                        <select id="f_tipo" class="form-control" required onchange="toggleStockSection()">
+                            <option value="producto">Producto (Físico)</option>
+                            <option value="servicio">Servicio (Intangible)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Código / SKU *</label>
+                        <input type="text" id="f_codigo" class="form-control" required placeholder="PROD-001">
+                    </div>
+
+                    <div class="form-group full">
+                        <label>Nombre del Producto / Servicio *</label>
+                        <input type="text" id="f_nombre" class="form-control" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Categoría</label>
+                        <input type="text" id="f_categoria" class="form-control" placeholder="Ej. Electrónica">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Unidad de Medida</label>
+                        <input type="text" id="f_unidad" class="form-control" placeholder="Ej. Und, Kg, Lb, Servicio" value="Und">
+                    </div>
+
+                    <div class="form-group full">
+                        <label>Descripción Breve</label>
+                        <textarea id="f_descripcion" class="form-control" rows="2"></textarea>
+                    </div>
+
+                    <div class="form-section-title">Precios e Impuestos</div>
+                    
+                    <div class="form-group">
+                        <label>Tasa de Compra (Costo) $</label>
+                        <input type="number" id="f_costo" class="form-control" value="0" min="0" step="0.01">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Tasa de Venta (Precio) $ *</label>
+                        <input type="number" id="f_precio" class="form-control" value="0" min="0" step="0.01" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Impuesto (%)</label>
+                        <input type="number" id="f_impuesto" class="form-control" value="18" min="0" step="0.1">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Proveedor (Opcional)</label>
+                        <input type="text" id="f_proveedor" class="form-control" placeholder="Nombre del proveedor">
+                    </div>
+
+                    <div id="seccion-stock" style="display: contents;">
+                        <div class="form-section-title">Control de Inventario</div>
+                        
+                        <div class="form-group full">
+                            <label style="display: flex; align-items: center; gap: 10px; color: #fff;">
+                                <input type="checkbox" id="f_control_stock" checked style="width: 18px; height: 18px;">
+                                Activar control de stock para este artículo
+                            </label>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Stock Inicial / Actual</label>
+                            <input type="number" id="f_stock_actual" class="form-control" value="0">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Stock Mínimo (Alerta)</label>
+                            <input type="number" id="f_stock_minimo" class="form-control" value="5">
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-save" id="btn-save-form">Guardar Producto</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const menuToggleBtn = document.getElementById('menu-toggle');
+        const sidebar = document.getElementById('sidebar');
+        menuToggleBtn.addEventListener('click', () => { sidebar.classList.toggle('active-mobile'); });
+
+        // Previsualizar imagen
+        document.getElementById('f_imagen').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const preview = document.getElementById('logo-preview');
+                    preview.src = event.target.result;
+                    preview.style.display = 'block';
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Ocultar inventario si es Servicio
+        function toggleStockSection() {
+            const tipo = document.getElementById('f_tipo').value;
+            const seccionStock = document.getElementById('seccion-stock');
+            if(tipo === 'servicio') {
+                seccionStock.style.display = 'none';
+            } else {
+                seccionStock.style.display = 'contents';
+            }
+        }
+
+        function abrirModalForm() {
+            document.getElementById('modal-form').classList.add('active');
+            const form = document.getElementById('form-producto');
+            form.reset();
+            
+            document.getElementById('doc_id').value = "";
+            document.getElementById('current_image').value = "";
+            document.getElementById('logo-preview').style.display = 'none';
+            document.getElementById('modal-form-title').innerText = 'Nuevo Producto';
+            
+            // Si tenemos un impuesto default en memoria, lo ponemos
+            if(window.impuestoGlobal !== undefined) {
+                document.getElementById('f_impuesto').value = window.impuestoGlobal;
+            }
+            
+            toggleStockSection();
+        }
+
+        function cerrarModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+    </script>
+
+    <script type="module">
+        import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { doc, getDoc, collection, addDoc, updateDoc, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { auth, db } from "./firebaseConfig.js";
+        import { uploadToCloudinary } from "./cloudinary.js"; // Para las imágenes
+
+        const userDisplayName = document.getElementById('user-display-name');
+        const planBadge = document.getElementById('plan-badge');
+        const logoutBtn = document.getElementById('logout-btn');
+        const tablaProductos = document.getElementById('tabla-productos');
+
+        let currentUserId = null;
+        let catalogoGlobal = []; 
+        window.impuestoGlobal = 18; // Default, se sobreescribe al leer la DB
+
+        // 1. AUTENTICACIÓN
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) return window.location.href = "login.html";
+            if (user.email === "tu-correo-administrador@gmail.com") return window.location.href = "admin.html";
+
+            currentUserId = user.uid;
+
+            try {
+                const docSnap = await getDoc(doc(db, "empresas", currentUserId));
+                if (docSnap.exists()) {
+                    const empresa = docSnap.data();
+                    if (empresa.estado === "pendiente") return window.location.href = "dashboard.html";
+                    
+                    userDisplayName.innerText = `👤 ${empresa.nombre}`;
+                    planBadge.innerText = `PLAN ${empresa.plan.toUpperCase()}`;
+                    
+                    // Guardamos el impuesto de esta empresa en la variable global
+                    if(empresa.impuesto_general !== undefined) {
+                        window.impuestoGlobal = empresa.impuesto_general;
+                    }
+
+                    cargarCatalogo();
+                }
+            } catch (error) { console.error(error); }
+        });
+
+        logoutBtn.addEventListener('click', () => signOut(auth).then(() => window.location.href = "login.html"));
+
+        // 2. CARGAR PRODUCTOS
+        async function cargarCatalogo() {
+            tablaProductos.innerHTML = '<tr><td colspan="9" style="text-align:center;">Cargando catálogo...</td></tr>';
+            try {
+                const refCat = collection(db, `empresas/${currentUserId}/productos`);
+                const q = query(refCat, orderBy("nombre", "asc"));
+                const querySnapshot = await getDocs(q);
+                
+                catalogoGlobal = [];
+                querySnapshot.forEach((doc) => {
+                    catalogoGlobal.push({ id: doc.id, ...doc.data() });
+                });
+                renderTabla(catalogoGlobal);
+            } catch (error) {
+                console.error("Error al cargar catálogo:", error);
+                tablaProductos.innerHTML = '<tr><td colspan="9" style="text-align:center; color:#f87171;">Error al cargar datos.</td></tr>';
+            }
+        }
+
+        function renderTabla(datos) {
+            tablaProductos.innerHTML = "";
+            if (datos.length === 0) {
+                tablaProductos.innerHTML = '<tr><td colspan="9" style="text-align:center;">No hay productos registrados.</td></tr>';
+                return;
+            }
+
+            datos.forEach(prod => {
+                // Formato de moneda
+                const fmtCosto = new Intl.NumberFormat('es-DO', { style: 'currency', currency: 'DOP' }).format(prod.tasa_compra || 0);
+                const fmtPrecio = new Intl.NumberFormat('es-DO', { style: 'currency', currency: 'DOP' }).format(prod.tasa_venta || 0);
+                
+                // Imagen o icono
+                const imgHTML = prod.imagen_url 
+                    ? `<img src="${prod.imagen_url}" class="prod-thumb">` 
+                    : `<div class="prod-thumb">${prod.tipo === 'servicio' ? '🛠️' : '📦'}</div>`;
+
+                // Stock visual
+                let stockHTML = "-";
+                if(prod.tipo === 'producto' && prod.control_stock) {
+                    const colorStock = prod.stock_actual <= prod.stock_minimo ? '#f87171' : '#e2e8f0';
+                    stockHTML = `<strong style="color: ${colorStock}">${prod.stock_actual}</strong> <small>${prod.unidad}</small>`;
+                }
+
+                // Estado
+                const badgeClass = prod.activo ? "prod-active" : "prod-inactive";
+                const badgeText = prod.activo ? "Activo" : "Inactivo";
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${imgHTML}</td>
+                    <td><small style="color: #9ca3af;">${prod.codigo}</small></td>
+                    <td><strong>${prod.nombre}</strong></td>
+                    <td>${prod.categoria || '-'}</td>
+                    <td>${fmtCosto}</td>
+                    <td style="color:#34d399; font-weight:bold;">${fmtPrecio}</td>
+                    <td>${stockHTML}</td>
+                    <td>
+                        <button class="status-badge ${badgeClass} btn-estado" data-id="${prod.id}" data-activo="${prod.activo}">${badgeText}</button>
+                    </td>
+                    <td>
+                        <button class="action-btn btn-editar" data-id="${prod.id}" title="Editar">✏️</button>
+                    </td>
+                `;
+                tablaProductos.appendChild(tr);
+            });
+
+            // Asignar eventos
+            document.querySelectorAll('.btn-editar').forEach(b => b.addEventListener('click', (e) => modoEdicion(e.target.dataset.id)));
+            document.querySelectorAll('.btn-estado').forEach(b => b.addEventListener('click', (e) => cambiarEstado(e.target.dataset.id, e.target.dataset.activo)));
+        }
+
+        // 3. BUSCADOR Y FILTROS
+        function aplicarFiltros() {
+            const txt = document.getElementById('buscador').value.toLowerCase();
+            const fTipo = document.getElementById('filtro-tipo').value;
+            const fEst = document.getElementById('filtro-estado').value;
+            
+            const filtrados = catalogoGlobal.filter(p => {
+                const matchTexto = p.nombre.toLowerCase().includes(txt) || p.codigo.toLowerCase().includes(txt);
+                const matchTipo = fTipo === "todos" || p.tipo === fTipo;
+                const matchEst = fEst === "todos" || (fEst === "true" ? p.activo === true : p.activo === false);
+                return matchTexto && matchTipo && matchEst;
+            });
+            renderTabla(filtrados);
+        }
+        document.getElementById('buscador').addEventListener('input', aplicarFiltros);
+        document.getElementById('filtro-tipo').addEventListener('change', aplicarFiltros);
+        document.getElementById('filtro-estado').addEventListener('change', aplicarFiltros);
+
+        // 4. GUARDAR / EDITAR
+        document.getElementById('form-producto').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btn-save-form');
+            btn.innerText = "Guardando..."; btn.disabled = true;
+
+            const docId = document.getElementById('doc_id').value;
+            let imgUrl = document.getElementById('current_image').value;
+            
+            try {
+                // Subir imagen si seleccionó una nueva
+                const fileInput = document.getElementById('f_imagen');
+                if(fileInput.files.length > 0) {
+                    btn.innerText = "Subiendo imagen...";
+                    imgUrl = await uploadToCloudinary(fileInput.files[0]);
+                }
+
+                const refCat = collection(db, `empresas/${currentUserId}/productos`);
+                const esServicio = document.getElementById('f_tipo').value === 'servicio';
+                
+                const datos = {
+                    tipo: document.getElementById('f_tipo').value,
+                    codigo: document.getElementById('f_codigo').value,
+                    nombre: document.getElementById('f_nombre').value,
+                    categoria: document.getElementById('f_categoria').value,
+                    unidad: document.getElementById('f_unidad').value,
+                    descripcion: document.getElementById('f_descripcion').value,
+                    proveedor: document.getElementById('f_proveedor').value,
+                    tasa_compra: parseFloat(document.getElementById('f_costo').value) || 0,
+                    tasa_venta: parseFloat(document.getElementById('f_precio').value) || 0,
+                    impuesto: parseFloat(document.getElementById('f_impuesto').value) || 0,
+                    imagen_url: imgUrl,
+                    activo: true // Por defecto al crear es true
+                };
+
+                // Si es producto, guardamos la data de stock
+                if(!esServicio) {
+                    datos.control_stock = document.getElementById('f_control_stock').checked;
+                    datos.stock_actual = parseFloat(document.getElementById('f_stock_actual').value) || 0;
+                    datos.stock_minimo = parseFloat(document.getElementById('f_stock_minimo').value) || 0;
+                } else {
+                    datos.control_stock = false;
+                    datos.stock_actual = 0;
+                }
+
+                if (docId) {
+                    // Editar (No cambiamos el estado activo/inactivo aquí para no pisarlo accidentalmente)
+                    delete datos.activo; 
+                    await updateDoc(doc(db, `empresas/${currentUserId}/productos`, docId), datos);
+                } else {
+                    await addDoc(refCat, datos);
+                }
+                
+                cerrarModal('modal-form');
+                cargarCatalogo(); 
+            } catch (error) {
+                console.error(error);
+                alert("Error al guardar producto.");
+            } finally {
+                btn.innerText = "Guardar Producto"; btn.disabled = false;
+            }
+        });
+
+        // 5. MODO EDICIÓN
+        function modoEdicion(id) {
+            const prod = catalogoGlobal.find(p => p.id === id);
+            if (!prod) return;
+
+            document.getElementById('modal-form-title').innerText = "Editar Registro";
+            document.getElementById('doc_id').value = prod.id;
+            document.getElementById('current_image').value = prod.imagen_url || "";
+            
+            if(prod.imagen_url) {
+                const preview = document.getElementById('logo-preview');
+                preview.src = prod.imagen_url;
+                preview.style.display = 'block';
+            } else {
+                document.getElementById('logo-preview').style.display = 'none';
+            }
+
+            document.getElementById('f_tipo').value = prod.tipo;
+            document.getElementById('f_codigo').value = prod.codigo;
+            document.getElementById('f_nombre').value = prod.nombre;
+            document.getElementById('f_categoria').value = prod.categoria || "";
+            document.getElementById('f_unidad').value = prod.unidad || "Und";
+            document.getElementById('f_descripcion').value = prod.descripcion || "";
+            document.getElementById('f_costo').value = prod.tasa_compra || 0;
+            document.getElementById('f_precio').value = prod.tasa_venta || 0;
+            document.getElementById('f_impuesto').value = prod.impuesto !== undefined ? prod.impuesto : window.impuestoGlobal;
+            document.getElementById('f_proveedor').value = prod.proveedor || "";
+            
+            document.getElementById('f_control_stock').checked = prod.control_stock || false;
+            document.getElementById('f_stock_actual').value = prod.stock_actual || 0;
+            document.getElementById('f_stock_minimo').value = prod.stock_minimo || 0;
+
+            toggleStockSection();
+            document.getElementById('modal-form').classList.add('active');
+        }
+
+        // 6. CAMBIAR ESTADO (ACTIVO/INACTIVO)
+        async function cambiarEstado(id, estadoActualStr) {
+            const estaActivo = estadoActualStr === 'true';
+            const nuevoEstado = !estaActivo;
+            
+            try {
+                await updateDoc(doc(db, `empresas/${currentUserId}/productos`, id), {
+                    activo: nuevoEstado
+                });
+                
+                // Actualizar array global para evitar recargar de BD
+                const index = catalogoGlobal.findIndex(p => p.id === id);
+                if(index > -1) catalogoGlobal[index].activo = nuevoEstado;
+                
+                aplicarFiltros(); // Re-renderiza la tabla manteniendo filtros
+            } catch (error) {
+                console.error("Error al cambiar estado:", error);
+                alert("Error al actualizar el estado del producto.");
+            }
+        }
+    </script>
+</body>
+</html>

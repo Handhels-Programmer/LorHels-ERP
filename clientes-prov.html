@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clientes y Proveedores - LorHels Systems</title>
+    <style>
+        /* --- 1. ESTILOS BASE Y LAYOUT --- */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { display: flex; height: 100vh; background-color: #0b0f19; color: #e2e8f0; overflow: hidden; }
+        
+        .sidebar { width: 260px; background-color: #111827; color: white; display: flex; flex-direction: column; border-right: 1px solid #1f2937; transition: transform 0.3s ease; z-index: 1000; }
+        .logo-area { padding: 25px 20px; text-align: center; border-bottom: 1px solid #1f2937; }
+        .logo-area h2 { font-size: 1.2rem; margin-bottom: 5px; color: #ffffff; }
+        .badge { background-color: #374151; font-size: 0.7rem; padding: 3px 8px; border-radius: 12px; color: #d1d5db; }
+        
+        /* --- 2. ESTILOS DEL MENÚ COMPACTO --- */
+        .menu { list-style: none; padding: 15px 0; overflow-y: auto; flex-grow: 1; }
+        .menu::-webkit-scrollbar { width: 6px; }
+        .menu::-webkit-scrollbar-thumb { background-color: #374151; border-radius: 10px; }
+        .menu li { margin: 2px 15px; }
+        .menu li a { display: block; padding: 10px 20px; text-decoration: none; color: #94a3b8; font-size: 0.95rem; border-radius: 8px; transition: all 0.2s ease; }
+        .menu li a:hover { background-color: #1e293b; color: #f8fafc; }
+        .menu li.active a { background-color: #6366f1; color: #ffffff; font-weight: 500; }
+        
+        /* --- 3. CONTENIDO PRINCIPAL --- */
+        .main-content { flex-grow: 1; display: flex; flex-direction: column; width: calc(100% - 260px); }
+        .topbar { background-color: #111827; padding: 15px 30px; border-bottom: 1px solid #1f2937; display: flex; justify-content: space-between; align-items: center; }
+        .menu-toggle { display: none; background: none; border: none; color: #f8fafc; font-size: 1.5rem; cursor: pointer; margin-right: 15px; }
+        .topbar h2 { color: #f8fafc; font-weight: 600; display: flex; align-items: center; }
+        
+        .user-profile { display: flex; align-items: center; }
+        .logout-btn { background: none; border: none; color: #f87171; cursor: pointer; font-size: 0.85rem; margin-left: 10px; text-decoration: underline; }
+        .logout-btn:hover { color: #ef4444; }
+
+        .content-area { padding: 30px; overflow-y: auto; flex-grow: 1; display: flex; flex-direction: column; }
+
+        /* --- 4. TARJETAS, TABLAS Y BOTONES --- */
+        .card { background-color: #1f2937; border-radius: 8px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); border: 1px solid #374151; margin-bottom: 20px; }
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .page-header h3 { color: #e2e8f0; font-size: 1.3rem; }
+        
+        .btn-group { display: flex; gap: 10px; }
+        .btn { padding: 10px 18px; border-radius: 6px; cursor: pointer; border: none; font-weight: 500; font-size: 0.9rem; transition: background-color 0.2s; }
+        .btn-primary { background-color: #5a5ce6; color: white; }
+        .btn-primary:hover { background-color: #4c4ed8; }
+        .btn-secondary { background-color: #4b5563; color: white; }
+        .btn-secondary:hover { background-color: #374151; }
+        .btn-save { background-color: #34d399; color: #0b0f19; width: 100%; margin-top: 15px; }
+
+        .action-btn { background: none; border: none; color: #9ca3af; cursor: pointer; font-size: 1.1rem; margin-right: 10px; }
+        .action-btn:hover { color: #818cf8; }
+
+        .filter-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 10px; }
+        
+        /* Formularios (Para filtros y modales) */
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .form-group { display: flex; flex-direction: column; margin-bottom: 10px; }
+        .form-group.full { grid-column: 1 / -1; }
+        .form-group label { font-size: 0.85rem; color: #9ca3af; margin-bottom: 5px; }
+        .form-control { background-color: #111827; border: 1px solid #374151; color: #e2e8f0; padding: 10px 12px; border-radius: 6px; outline: none; }
+        .form-control:focus { border-color: #5a5ce6; }
+
+        .table-responsive { width: 100%; overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th { background-color: #111827; color: #9ca3af; padding: 12px 15px; font-size: 0.9rem; border-bottom: 2px solid #374151; }
+        td { padding: 12px 15px; border-bottom: 1px solid #374151; font-size: 0.95rem; color: #e2e8f0; }
+        tbody tr:hover { background-color: #374151; }
+        
+        /* Badges */
+        .type-badge { padding: 4px 10px; border-radius: 6px; font-size: 0.8rem; font-weight: bold; display: inline-block; }
+        .type-client { background-color: rgba(99, 102, 241, 0.2); color: #818cf8; }  
+        .type-provider { background-color: rgba(245, 158, 11, 0.2); color: #fbbf24; } 
+        .amount-debt { color: #f87171; font-weight: bold; }
+        .amount-clean { color: #34d399; font-weight: bold; }
+
+        /* --- 5. MODALES --- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0, 0, 0, 0.7); display: none; justify-content: center; align-items: center; z-index: 2000;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal-content {
+            background-color: #1f2937; padding: 25px; border-radius: 8px; border: 1px solid #374151; 
+            width: 100%; max-width: 600px; max-height: 90vh; overflow-y: auto; position: relative;
+        }
+        .modal-close { position: absolute; top: 15px; right: 15px; background: none; border: none; color: #9ca3af; font-size: 1.5rem; cursor: pointer; }
+        .modal-close:hover { color: #fff; }
+        .modal-title { color: #fff; margin-bottom: 20px; font-size: 1.2rem; border-bottom: 1px solid #374151; padding-bottom: 10px; }
+
+        /* Panel Historial */
+        .history-kpi { background-color: #111827; padding: 15px; border-radius: 8px; text-align: center; margin-bottom: 15px; border: 1px solid #374151; }
+        .history-kpi h4 { color: #9ca3af; font-size: 0.85rem; text-transform: uppercase; margin-bottom: 5px; }
+        .history-kpi h2 { color: #f87171; font-size: 1.8rem; }
+
+        /* --- 6. ESTILOS DEL FOOTER --- */
+        .custom-footer { padding: 24px; text-align: center; color: #64748b; font-size: 0.875rem; border-top: 1px solid #1e293b; margin-top: auto; }
+        .custom-footer a { color: #a3a3a3; text-decoration: underline; transition: color 0.2s; font-weight: 500; }
+        .custom-footer a:hover { color: #ffffff; }
+
+        /* --- 7. RESPONSIVO --- */
+        @media (max-width: 768px) {
+            .menu-toggle { display: block; }
+            .sidebar { position: fixed; height: 100vh; left: 0; top: 0; transform: translateX(-100%); }
+            .sidebar.active-mobile { transform: translateX(0); box-shadow: 5px 0 15px rgba(0,0,0,0.5); }
+            .main-content { width: 100%; }
+            .page-header { flex-direction: column; align-items: flex-start; gap: 15px; }
+            .btn-group { width: 100%; flex-direction: column; }
+            .form-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar" id="sidebar">
+        <div class="logo-area">
+            <h2>LorHels Systems</h2>
+            <span class="badge" id="plan-badge">CARGANDO...</span>
+        </div>
+        <ul class="menu">
+            <li><a href="dashboard.html">1. Dashboard</a></li>
+            <li><a href="facturas.html">2. Facturas</a></li>
+            <li><a href="cotizaciones.html">3. Cotizaciones</a></li>
+            <li><a href="compras.html">4. Compras</a></li>
+            <li><a href="orden-compra.html">5. Orden de Compra</a></li>
+            <li><a href="gastos.html">6. Gastos</a></li>
+            <li><a href="pagos.html">7. Pagos</a></li>
+            <li><a href="nota-credito.html">8. Nota de Crédito</a></li>
+            <li><a href="inventario.html">9. Inventario</a></li>
+            <li class="active"><a href="clientes-prov.html">10. Clientes/Prov.</a></li>
+            <li><a href="comisiones.html">11. Comisiones</a></li>
+            <li><a href="productos.html">12. Productos</a></li>
+            <li><a href="informes.html">13. Informes</a></li>
+            <li><a href="ajustes.html">14. Ajustes</a></li>
+            <li><a href="contabilidad-dgii.html">15. Contabilidad/DGII</a></li> 
+        </ul>
+    </aside>
+
+    <main class="main-content">
+        <header class="topbar">
+            <h2>
+                <button class="menu-toggle" id="menu-toggle">☰</button>
+                Clientes / Prov.
+            </h2>
+            <div class="user-profile">
+                <span id="user-display-name">👤 Cargando...</span>
+                <button id="logout-btn" class="logout-btn">Salir</button>
+            </div>
+        </header>
+
+        <section class="content-area">
+            
+            <div class="page-header">
+                <h3>Directorio Comercial</h3>
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="abrirModalForm('cliente')">+ Nuevo Cliente</button>
+                    <button class="btn btn-secondary" onclick="abrirModalForm('proveedor')">+ Nuevo Proveedor</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="filter-grid">
+                    <div class="form-group">
+                        <label>Buscar (Nombre, RNC o Teléfono)</label>
+                        <input type="text" id="buscador" class="form-control" placeholder="Escriba para filtrar...">
+                    </div>
+                    <div class="form-group">
+                        <label>Tipo de Registro</label>
+                        <select id="filtro-tipo" class="form-control">
+                            <option value="todos">Todos (Clientes y Proveedores)</option>
+                            <option value="cliente">Solo Clientes</option>
+                            <option value="proveedor">Solo Proveedores</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Organización</th>
+                                <th>Tipo</th>
+                                <th>Teléfono</th>
+                                <th>Contacto</th>
+                                <th>Monto Adeudado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-directorio">
+                            <tr><td colspan="6" style="text-align: center;">Cargando directorio...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <footer class="custom-footer">
+            <p>&copy; 2026 
+                <a href="https://lorhels.web.app" target="_blank" rel="noopener noreferrer">
+                    LorHels Systems.
+                </a>Todos los derechos reservados.
+            </p>
+        </footer>
+    </main>
+
+    <div class="modal-overlay" id="modal-form">
+        <div class="modal-content">
+            <button class="modal-close" onclick="cerrarModal('modal-form')">&times;</button>
+            <h3 class="modal-title" id="modal-form-title">Registrar Contacto</h3>
+            
+            <form id="form-directorio">
+                <input type="hidden" id="doc_id"> <div class="form-grid">
+                    <div class="form-group">
+                        <label>Tipo *</label>
+                        <select id="f_tipo" class="form-control" required>
+                            <option value="cliente">Cliente</option>
+                            <option value="proveedor">Proveedor</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Organización / Nombre *</label>
+                        <input type="text" id="f_org" class="form-control" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Contacto Personal</label>
+                        <input type="text" id="f_contacto" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="f_email" class="form-control">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Teléfono Principal</label>
+                        <input type="tel" id="f_tel" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Límite de Crédito ($)</label>
+                        <input type="number" id="f_limite" class="form-control" value="0" min="0" step="0.01">
+                    </div>
+
+                    <div class="form-group full">
+                        <label>Dirección Principal</label>
+                        <input type="text" id="f_dir_princ" class="form-control">
+                    </div>
+                    <div class="form-group full">
+                        <label>Dirección de Envío</label>
+                        <input type="text" id="f_dir_envio" class="form-control">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-save" id="btn-save-form">Guardar Registro</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modal-historial">
+        <div class="modal-content">
+            <button class="modal-close" onclick="cerrarModal('modal-historial')">&times;</button>
+            <h3 class="modal-title" id="history-title">Historial Comercial</h3>
+            
+            <div class="history-kpi">
+                <h4>Monto Total Adeudado</h4>
+                <h2 id="history-debt">$0.00</h2>
+            </div>
+
+            <p style="color: #9ca3af; font-size: 0.9rem; margin-bottom: 10px;">Últimas Facturas / Cotizaciones (Próximamente conectadas al módulo de facturación):</p>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Documento</th>
+                            <th>Monto</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td colspan="4" style="text-align: center; color: #64748b;">No hay movimientos recientes registrados.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        const menuToggleBtn = document.getElementById('menu-toggle');
+        const sidebar = document.getElementById('sidebar');
+        menuToggleBtn.addEventListener('click', () => { sidebar.classList.toggle('active-mobile'); });
+
+        // Funciones de control de ventanas modales
+        function abrirModalForm(tipo = 'cliente', idToEdit = null) {
+            document.getElementById('modal-form').classList.add('active');
+            const form = document.getElementById('form-directorio');
+            
+            if(!idToEdit) {
+                // Modo CREAR
+                form.reset();
+                document.getElementById('doc_id').value = "";
+                document.getElementById('f_tipo').value = tipo;
+                document.getElementById('modal-form-title').innerText = tipo === 'cliente' ? 'Nuevo Cliente' : 'Nuevo Proveedor';
+                document.getElementById('btn-save-form').innerText = "Guardar Registro";
+            }
+        }
+
+        function cerrarModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+    </script>
+
+    <script type="module">
+        import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { doc, getDoc, collection, addDoc, updateDoc, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { auth, db } from "./firebaseConfig.js";
+
+        const userDisplayName = document.getElementById('user-display-name');
+        const planBadge = document.getElementById('plan-badge');
+        const logoutBtn = document.getElementById('logout-btn');
+        const tablaDirectorio = document.getElementById('tabla-directorio');
+        const searchInput = document.getElementById('buscador');
+        const filterTipo = document.getElementById('filtro-tipo');
+
+        let currentUserId = null;
+        let registrosGlobales = []; // Guarda los datos localmente para poder buscar y filtrar rápido
+
+        // 1. AUTENTICACIÓN Y CARGA DE DATOS
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) return window.location.href = "login.html";
+            if (user.email === "tu-correo-administrador@gmail.com") return window.location.href = "admin.html";
+
+            currentUserId = user.uid;
+
+            try {
+                const docSnap = await getDoc(doc(db, "empresas", currentUserId));
+                if (docSnap.exists()) {
+                    const empresa = docSnap.data();
+                    if (empresa.estado === "pendiente") return window.location.href = "dashboard.html";
+                    userDisplayName.innerText = `👤 ${empresa.nombre}`;
+                    planBadge.innerText = `PLAN ${empresa.plan.toUpperCase()}`;
+                    
+                    // Cargar el directorio al confirmar la empresa
+                    cargarDirectorio();
+                }
+            } catch (error) { console.error(error); }
+        });
+
+        // Cerrar sesión
+        logoutBtn.addEventListener('click', () => signOut(auth).then(() => window.location.href = "login.html"));
+
+        // 2. CARGAR LA TABLA
+        async function cargarDirectorio() {
+            tablaDirectorio.innerHTML = '<tr><td colspan="6" style="text-align:center;">Cargando...</td></tr>';
+            try {
+                // Colección 'directorio' dentro del documento de la empresa
+                const refDir = collection(db, `empresas/${currentUserId}/directorio`);
+                const q = query(refDir, orderBy("organizacion", "asc"));
+                const querySnapshot = await getDocs(q);
+                
+                registrosGlobales = [];
+                querySnapshot.forEach((doc) => {
+                    registrosGlobales.push({ id: doc.id, ...doc.data() });
+                });
+                renderTabla(registrosGlobales);
+            } catch (error) {
+                console.error("Error al cargar directorio:", error);
+                tablaDirectorio.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#f87171;">Error al cargar datos.</td></tr>';
+            }
+        }
+
+        function renderTabla(datos) {
+            tablaDirectorio.innerHTML = "";
+            if (datos.length === 0) {
+                tablaDirectorio.innerHTML = '<tr><td colspan="6" style="text-align:center;">No hay registros para mostrar.</td></tr>';
+                return;
+            }
+
+            datos.forEach(reg => {
+                const isCliente = reg.tipo === "cliente";
+                const badgeClass = isCliente ? "type-client" : "type-provider";
+                const badgeText = isCliente ? "Cliente" : "Proveedor";
+                
+                // Formatear moneda (monto adeudado)
+                const monto = parseFloat(reg.monto_adeudado || 0);
+                const montoFormat = new Intl.NumberFormat('es-DO', { style: 'currency', currency: 'DOP' }).format(monto);
+                const montoClass = monto > 0 ? "amount-debt" : "amount-clean";
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong>${reg.organizacion}</strong></td>
+                    <td><span class="type-badge ${badgeClass}">${badgeText}</span></td>
+                    <td>${reg.telefono || '-'}</td>
+                    <td>${reg.contacto || '-'}</td>
+                    <td class="${montoClass}">${montoFormat}</td>
+                    <td>
+                        <button class="action-btn btn-editar" data-id="${reg.id}" title="Editar Registro">✏️</button>
+                        <button class="action-btn btn-historial" data-id="${reg.id}" title="Ver Historial">📁</button>
+                    </td>
+                `;
+                tablaDirectorio.appendChild(tr);
+            });
+
+            // Asignar eventos a los botones generados
+            document.querySelectorAll('.btn-editar').forEach(btn => {
+                btn.addEventListener('click', (e) => modoEdicion(e.target.dataset.id));
+            });
+            document.querySelectorAll('.btn-historial').forEach(btn => {
+                btn.addEventListener('click', (e) => abrirHistorial(e.target.dataset.id));
+            });
+        }
+
+        // 3. BUSCADOR Y FILTROS
+        function aplicarFiltros() {
+            const txt = searchInput.value.toLowerCase();
+            const tipoFiltro = filterTipo.value;
+            
+            const filtrados = registrosGlobales.filter(reg => {
+                const matchTexto = reg.organizacion.toLowerCase().includes(txt) || (reg.telefono && reg.telefono.includes(txt));
+                const matchTipo = tipoFiltro === "todos" || reg.tipo === tipoFiltro;
+                return matchTexto && matchTipo;
+            });
+            renderTabla(filtrados);
+        }
+        searchInput.addEventListener('input', aplicarFiltros);
+        filterTipo.addEventListener('change', aplicarFiltros);
+
+        // 4. GUARDAR / EDITAR (SUBMIT DEL FORMULARIO)
+        document.getElementById('form-directorio').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btn-save-form');
+            btn.innerText = "Guardando..."; btn.disabled = true;
+
+            const docId = document.getElementById('doc_id').value;
+            const refDir = collection(db, `empresas/${currentUserId}/directorio`);
+            
+            const datos = {
+                tipo: document.getElementById('f_tipo').value,
+                organizacion: document.getElementById('f_org').value,
+                contacto: document.getElementById('f_contacto').value,
+                email: document.getElementById('f_email').value,
+                telefono: document.getElementById('f_tel').value,
+                limite_credito: parseFloat(document.getElementById('f_limite').value) || 0,
+                direccion_principal: document.getElementById('f_dir_princ').value,
+                direccion_envio: document.getElementById('f_dir_envio').value,
+            };
+
+            try {
+                if (docId) {
+                    // Editar existente
+                    await updateDoc(doc(db, `empresas/${currentUserId}/directorio`, docId), datos);
+                } else {
+                    // Crear nuevo (El monto adeudado siempre inicia en 0)
+                    datos.monto_adeudado = 0;
+                    await addDoc(refDir, datos);
+                }
+                
+                cerrarModal('modal-form');
+                cargarDirectorio(); // Recargar tabla
+            } catch (error) {
+                console.error(error);
+                alert("Error al guardar.");
+            } finally {
+                btn.innerText = "Guardar Registro"; btn.disabled = false;
+            }
+        });
+
+        // 5. PREPARAR EDICIÓN
+        function modoEdicion(id) {
+            const registro = registrosGlobales.find(r => r.id === id);
+            if (!registro) return;
+
+            document.getElementById('modal-form-title').innerText = "Editar Registro";
+            document.getElementById('doc_id').value = registro.id;
+            document.getElementById('f_tipo').value = registro.tipo;
+            document.getElementById('f_org').value = registro.organizacion;
+            document.getElementById('f_contacto').value = registro.contacto || "";
+            document.getElementById('f_email').value = registro.email || "";
+            document.getElementById('f_tel').value = registro.telefono || "";
+            document.getElementById('f_limite').value = registro.limite_credito || 0;
+            document.getElementById('f_dir_princ').value = registro.direccion_principal || "";
+            document.getElementById('f_dir_envio').value = registro.direccion_envio || "";
+            
+            document.getElementById('modal-form').classList.add('active');
+        }
+
+        // 6. ABRIR HISTORIAL Y DEUDA
+        function abrirHistorial(id) {
+            const registro = registrosGlobales.find(r => r.id === id);
+            if (!registro) return;
+
+            document.getElementById('history-title').innerText = `Historial: ${registro.organizacion}`;
+            
+            const monto = parseFloat(registro.monto_adeudado || 0);
+            const lblDebt = document.getElementById('history-debt');
+            lblDebt.innerText = new Intl.NumberFormat('es-DO', { style: 'currency', currency: 'DOP' }).format(monto);
+            lblDebt.style.color = monto > 0 ? "#f87171" : "#34d399"; // Rojo si debe, Verde si no debe
+
+            document.getElementById('modal-historial').classList.add('active');
+        }
+
+        // Exponer funciones al entorno global para el HTML on-click
+        window.abrirModalForm = abrirModalForm;
+        window.cerrarModal = cerrarModal;
+    </script>
+</body>
+</html>

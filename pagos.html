@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pagos y Cobros - LorHels Systems</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        /* --- 1. ESTILOS BASE Y LAYOUT --- */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { display: flex; height: 100vh; background-color: #0b0f19; color: #e2e8f0; overflow: hidden; }
+        
+        .sidebar { width: 260px; background-color: #111827; color: white; display: flex; flex-direction: column; border-right: 1px solid #1f2937; transition: transform 0.3s ease; z-index: 1000; }
+        .logo-area { padding: 25px 20px; text-align: center; border-bottom: 1px solid #1f2937; }
+        .logo-area h2 { font-size: 1.2rem; margin-bottom: 5px; color: #ffffff; }
+        .badge { background-color: #374151; font-size: 0.7rem; padding: 3px 8px; border-radius: 12px; color: #d1d5db; }
+        
+        /* --- 2. ESTILOS DEL MENÚ COMPACTO --- */
+        .menu { list-style: none; padding: 15px 0; overflow-y: auto; flex-grow: 1; }
+        .menu::-webkit-scrollbar { width: 6px; }
+        .menu::-webkit-scrollbar-thumb { background-color: #374151; border-radius: 10px; }
+        .menu li { margin: 2px 15px; }
+        .menu li a { display: block; padding: 10px 20px; text-decoration: none; color: #94a3b8; font-size: 0.95rem; border-radius: 8px; transition: all 0.2s ease; }
+        .menu li a:hover { background-color: #1e293b; color: #f8fafc; }
+        .menu li.active a { background-color: #6366f1; color: #ffffff; font-weight: 500; }
+        
+        /* --- 3. CONTENIDO PRINCIPAL --- */
+        .main-content { flex-grow: 1; display: flex; flex-direction: column; width: calc(100% - 260px); }
+        .topbar { background-color: #111827; padding: 15px 30px; border-bottom: 1px solid #1f2937; display: flex; justify-content: space-between; align-items: center; }
+        .menu-toggle { display: none; background: none; border: none; color: #f8fafc; font-size: 1.5rem; cursor: pointer; margin-right: 15px; }
+        .topbar h2 { color: #f8fafc; font-weight: 600; display: flex; align-items: center; }
+        
+        .user-profile { display: flex; align-items: center; }
+        .logout-btn { background: none; border: none; color: #f87171; cursor: pointer; font-size: 0.85rem; margin-left: 10px; text-decoration: underline; }
+        .logout-btn:hover { color: #ef4444; }
+
+        .content-area { padding: 30px; overflow-y: auto; flex-grow: 1; display: flex; flex-direction: column; }
+
+        /* --- 4. TARJETAS, TABLAS Y BOTONES --- */
+        .card { background-color: #1f2937; border-radius: 8px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); border: 1px solid #374151; margin-bottom: 20px; }
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .page-header h3 { color: #e2e8f0; font-size: 1.3rem; }
+        
+        .btn { padding: 10px 18px; border-radius: 6px; cursor: pointer; border: none; font-weight: 500; font-size: 0.9rem; transition: background-color 0.2s; display: inline-flex; align-items: center; gap: 5px; }
+        .btn-primary { background-color: #5a5ce6; color: white; }
+        .btn-primary:hover { background-color: #4c4ed8; }
+        .btn-success { background-color: #34d399; color: #0b0f19; font-weight: bold; }
+        .btn-success:hover { background-color: #10b981; }
+        
+        .btn-outline-primary { background-color: transparent; border: 1px solid #818cf8; color: #818cf8; }
+        .btn-outline-primary:hover { background-color: rgba(129, 140, 248, 0.1); }
+        .btn-outline-purple { background-color: transparent; border: 1px solid #c084fc; color: #c084fc; }
+        .btn-outline-purple:hover { background-color: rgba(192, 132, 252, 0.1); }
+        .btn-close-text { background: none; border: none; color: #9ca3af; font-size: 1rem; padding: 0; }
+        .btn-close-text:hover { color: #f8fafc; }
+
+        .filter-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 10px; }
+        .form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 20px; }
+        .form-group { display: flex; flex-direction: column; margin-bottom: 10px; }
+        .form-group.full { grid-column: 1 / -1; }
+        .form-group label { font-size: 0.85rem; color: #9ca3af; margin-bottom: 5px; }
+        .form-control { background-color: #111827; border: 1px solid #374151; color: #e2e8f0; padding: 10px 12px; border-radius: 6px; outline: none; width: 100%; }
+        .form-control:focus { border-color: #5a5ce6; }
+
+        .table-responsive { width: 100%; overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th { background-color: #111827; color: #9ca3af; padding: 12px 15px; font-size: 0.9rem; border-bottom: 2px solid #374151; white-space: nowrap; }
+        td { padding: 12px 15px; border-bottom: 1px solid #374151; font-size: 0.95rem; color: #e2e8f0; }
+        
+        #tabla-pagos tr { cursor: pointer; transition: background-color 0.2s; }
+        #tabla-pagos tr:hover { background-color: #374151; }
+        
+        /* Badges de métodos de pago */
+        .method-badge { padding: 4px 10px; border-radius: 6px; font-size: 0.8rem; font-weight: bold; }
+        .method-transfer { background-color: rgba(96, 165, 250, 0.2); color: #60a5fa; }
+        .method-cash { background-color: rgba(52, 211, 153, 0.2); color: #34d399; }
+        .method-card { background-color: rgba(248, 113, 113, 0.2); color: #f87171; }
+        .method-check { background-color: rgba(192, 132, 252, 0.2); color: #c084fc; }
+
+        /* --- 5. MODALES --- */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); display: none; justify-content: center; align-items: center; z-index: 2000; }
+        .modal-overlay.active { display: flex; }
+        .modal-content { background-color: #1f2937; padding: 25px; border-radius: 8px; border: 1px solid #374151; width: 100%; max-width: 600px; max-height: 95vh; overflow-y: auto; position: relative; }
+        .modal-close { position: absolute; top: 15px; right: 15px; background: none; border: none; color: #9ca3af; font-size: 1.5rem; cursor: pointer; }
+        .modal-close:hover { color: #fff; }
+
+        /* --- 6. MODAL VER RECIBO (COMPROBANTE) --- */
+        .modal-view-content { max-width: 800px; padding: 20px; }
+        .view-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #374151; }
+        .view-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+        
+        .view-document { background-color: #ffffff; color: #000; padding: 40px; border-radius: 8px; border-top: 5px solid #34d399; position: relative; }
+        .vd-header { display: flex; justify-content: space-between; margin-bottom: 30px; border-bottom: 2px solid #f1f5f9; padding-bottom: 20px;}
+        .vd-company h2 { color: #111827; font-size: 1.6rem; margin-bottom: 5px; }
+        .vd-meta { text-align: right; }
+        .vd-meta h2 { color: #34d399; font-size: 1.4rem; margin-bottom: 10px; }
+        
+        .vd-body { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; }
+        .vd-box { background-color: #f8fafc; padding: 15px; border-radius: 6px; border: 1px solid #e2e8f0; }
+        .vd-box h5 { color: #64748b; font-size: 0.8rem; margin-bottom: 5px; }
+        .vd-box p { color: #111827; font-size: 1rem; font-weight: 500; }
+        
+        .vd-total-area { background-color: #111827; color: #fff; padding: 20px; border-radius: 8px; text-align: right; }
+        .vd-total-area h4 { font-size: 1rem; color: #9ca3af; font-weight: normal; margin-bottom: 5px; }
+        .vd-total-area h1 { font-size: 2.2rem; color: #34d399; margin-bottom: 5px;}
+        .vd-total-area p { color: #9ca3af; font-size: 0.9rem; }
+
+        /* --- 7. MAGIA DE IMPRESIÓN (PDF) --- */
+        @media print {
+            body * { visibility: hidden; }
+            .modal-overlay { position: absolute; left: 0; top: 0; background: transparent; }
+            .view-document, .view-document * { visibility: visible; }
+            .view-document { position: absolute; left: 0; top: 0; width: 100%; border: none; padding: 0; }
+            .view-header, .sidebar, .topbar { display: none !important; }
+        }
+
+        .custom-footer { padding: 24px; text-align: center; color: #64748b; font-size: 0.875rem; border-top: 1px solid #1e293b; margin-top: auto; }
+        .custom-footer a { color: #a3a3a3; text-decoration: underline; transition: color 0.2s; font-weight: 500; }
+        .custom-footer a:hover { color: #ffffff; }
+
+        @media (max-width: 768px) {
+            .menu-toggle { display: block; }
+            .sidebar { position: fixed; height: 100vh; left: 0; top: 0; transform: translateX(-100%); }
+            .sidebar.active-mobile { transform: translateX(0); box-shadow: 5px 0 15px rgba(0,0,0,0.5); }
+            .main-content { width: 100%; }
+            .form-grid { grid-template-columns: 1fr; }
+            .vd-body { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar" id="sidebar">
+        <div class="logo-area">
+            <h2>LorHels Systems</h2>
+            <span class="badge" id="plan-badge">CARGANDO...</span>
+        </div>
+        <ul class="menu">
+            <li><a href="dashboard.html">1. Dashboard</a></li>
+            <li><a href="facturas.html">2. Facturas</a></li>
+            <li><a href="cotizaciones.html">3. Cotizaciones</a></li>
+            <li><a href="compras.html">4. Compras</a></li>
+            <li><a href="orden-compra.html">5. Orden de Compra</a></li>
+            <li><a href="gastos.html">6. Gastos</a></li>
+            <li class="active"><a href="pagos.html">7. Pagos</a></li>
+            <li><a href="nota-credito.html">8. Nota de Crédito</a></li>
+            <li><a href="inventario.html">9. Inventario</a></li>
+            <li><a href="clientes-prov.html">10. Clientes/Prov.</a></li>
+            <li><a href="comisiones.html">11. Comisiones</a></li>
+            <li><a href="productos.html">12. Productos</a></li>
+            <li><a href="informes.html">13. Informes</a></li>
+            <li><a href="ajustes.html">14. Ajustes</a></li>
+            <li><a href="contabilidad-dgii.html">15. Contabilidad/DGII</a></li> 
+        </ul>
+    </aside>
+
+    <main class="main-content">
+        <header class="topbar">
+            <h2><button class="menu-toggle" id="menu-toggle">☰</button> Pagos y Recibos</h2>
+            <div class="user-profile">
+                <span id="user-display-name">👤 Cargando...</span>
+                <button id="logout-btn" class="logout-btn">Salir</button>
+            </div>
+        </header>
+
+        <section class="content-area">
+            <div class="page-header">
+                <h3>Recibos de Ingresos Generados</h3>
+                <button class="btn btn-primary" onclick="abrirModalCrear()">+ Registrar Pago</button>
+            </div>
+
+            <div class="card">
+                <div class="filter-grid">
+                    <div class="form-group">
+                        <label>Buscar Cliente o Ref.</label>
+                        <input type="text" id="buscador" class="form-control" placeholder="Ej. Juan Pérez...">
+                    </div>
+                    <div class="form-group">
+                        <label>Método de Pago</label>
+                        <select id="filtro-metodo" class="form-control">
+                            <option value="todos">Todos los métodos</option>
+                            <option value="Efectivo">Efectivo</option>
+                            <option value="Transferencia">Transferencia</option>
+                            <option value="Tarjeta">Tarjeta</option>
+                            <option value="Cheque">Cheque</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>No. Recibo</th>
+                                <th>Fecha de Pago</th>
+                                <th>Factura Afectada</th>
+                                <th>Cliente</th>
+                                <th>Método de Pago</th>
+                                <th>Monto Recibido</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-pagos">
+                            <tr><td colspan="6" style="text-align: center;">Cargando pagos...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <footer class="custom-footer">
+            <p>&copy; 2026 
+                <a href="https://lorhels.web.app" target="_blank" rel="noopener noreferrer">
+                    LorHels Systems.
+                </a>Todos los derechos reservados.
+            </p>
+        </footer>
+    </main>
+
+    <div class="modal-overlay" id="modal-crear">
+        <div class="modal-content">
+            <button class="modal-close" onclick="cerrarModal('modal-crear')">&times;</button>
+            <h3 id="modal-form-title" style="color: #fff; margin-bottom: 20px; border-bottom: 1px solid #374151; padding-bottom: 10px;">Añadir Pago a Factura</h3>
+            
+            <form id="form-pago">
+                <div class="form-grid">
+                    <div class="form-group full">
+                        <label>Seleccionar Factura Pendiente *</label>
+                        <select id="p_factura" class="form-control" required>
+                            <option value="" disabled selected>Buscando facturas pendientes...</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Fecha del Pago *</label>
+                        <input type="date" id="p_fecha" class="form-control" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Monto a Pagar ($) *</label>
+                        <input type="number" id="p_monto" class="form-control" required min="0.01" step="0.01">
+                        <span id="lbl_balance_info" class="help-text" style="color: #fbbf24; font-size:0.8rem;"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Método de Pago *</label>
+                        <select id="p_metodo" class="form-control" required>
+                            <option value="Transferencia">Transferencia</option>
+                            <option value="Efectivo">Efectivo</option>
+                            <option value="Tarjeta">Tarjeta</option>
+                            <option value="Cheque">Cheque</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Referencia (Voucher, Cheque)</label>
+                        <input type="text" id="p_referencia" class="form-control" placeholder="Opcional">
+                    </div>
+
+                    <div class="form-group full">
+                        <label>Nota / Comentario Interno</label>
+                        <textarea id="p_notas" class="form-control" rows="2"></textarea>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-success" id="btn-save-pago" style="width:100%;">Registrar y Generar Recibo</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modal-ver">
+        <div class="modal-content modal-view-content">
+            
+            <div class="view-header">
+                <button class="btn btn-close-text" onclick="cerrarModal('modal-ver')">← Volver a Pagos</button>
+                <div class="view-actions">
+                    <button class="btn btn-outline-purple" onclick="window.generarPDF()">📄 Descargar PDF</button>
+                </div>
+            </div>
+
+            <div class="view-document" id="printable-area">
+                <div class="vd-header">
+                    <div class="vd-company">
+                        <h2 id="v_empresa_nombre">...</h2>
+                        <p>RNC: <span id="v_empresa_rnc"></span></p>
+                    </div>
+                    <div class="vd-meta">
+                        <h2 id="v_recibo_id">RECIBO DE INGRESO</h2>
+                    </div>
+                </div>
+
+                <div class="vd-body">
+                    <div class="vd-box">
+                        <h5>HEMOS RECIBIDO DE:</h5>
+                        <p id="v_cliente">...</p>
+                    </div>
+                    <div class="vd-box">
+                        <h5>FECHA DEL PAGO:</h5>
+                        <p id="v_fecha">...</p>
+                    </div>
+                    <div class="vd-box">
+                        <h5>APLICADO A FACTURA N°:</h5>
+                        <p id="v_factura">...</p>
+                    </div>
+                    <div class="vd-box">
+                        <h5>MÉTODO DE PAGO / REF:</h5>
+                        <p id="v_metodo">...</p>
+                    </div>
+                    <div class="vd-box" style="grid-column: 1 / -1;">
+                        <h5>LA CANTIDAD DE (NOTAS):</h5>
+                        <p id="v_notas">...</p>
+                    </div>
+                </div>
+
+                <div class="vd-total-area">
+                    <h4>TOTAL ABONADO</h4>
+                    <h1 id="v_total">...</h1>
+                    <p id="v_restante" style="margin-top: 5px;">Balance restante: $0.00</p>
+                </div>
+                
+                <div style="text-align:center; color:#64748b; margin-top:40px; font-size:0.9rem; font-style: italic;">Documento generado electrónicamente. No requiere firma.</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const menuToggleBtn = document.getElementById('menu-toggle');
+        const sidebar = document.getElementById('sidebar');
+        menuToggleBtn.addEventListener('click', () => { sidebar.classList.toggle('active-mobile'); });
+        function cerrarModal(modalId) { document.getElementById(modalId).classList.remove('active'); }
+    </script>
+
+    <script type="module">
+        import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { doc, getDoc, collection, getDocs, addDoc, updateDoc, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { auth, db } from "./firebaseConfig.js";
+
+        const userDisplayName = document.getElementById('user-display-name');
+        const planBadge = document.getElementById('plan-badge');
+        const logoutBtn = document.getElementById('logout-btn');
+        
+        let currentUserId = null;
+        let empresaGlobalData = {};
+        let facturasPendientes = [];
+        let pagosGlobales = [];
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) return window.location.href = "login.html";
+            if (user.email === "tu-correo-administrador@gmail.com") return window.location.href = "admin.html";
+
+            currentUserId = user.uid;
+
+            try {
+                const docSnap = await getDoc(doc(db, "empresas", currentUserId));
+                if (docSnap.exists()) {
+                    empresaGlobalData = docSnap.data();
+                    if (empresaGlobalData.estado === "pendiente") return window.location.href = "dashboard.html";
+                    userDisplayName.innerText = `👤 ${empresaGlobalData.nombre}`;
+                    planBadge.innerText = `PLAN ${empresaGlobalData.plan.toUpperCase()}`;
+                    
+                    await Promise.all([cargarFacturasParaPago(), cargarPagos()]);
+                }
+            } catch (error) { console.error(error); }
+        });
+
+        logoutBtn.addEventListener('click', () => signOut(auth).then(() => window.location.href = "login.html"));
+
+        // ==========================================
+        // CARGA DE DATOS
+        // ==========================================
+        async function cargarFacturasParaPago() {
+            const selectFac = document.getElementById('p_factura');
+            try {
+                // Buscamos todas las facturas de la empresa
+                const q = query(collection(db, `empresas/${currentUserId}/facturas`));
+                const querySnapshot = await getDocs(q);
+                
+                facturasPendientes = [];
+                selectFac.innerHTML = '<option value="" disabled selected>Seleccione una factura...</option>';
+                
+                querySnapshot.forEach(doc => {
+                    const f = { id: doc.id, ...doc.data() };
+                    // Filtramos en Javascript las que tengan balance mayor a 0
+                    if (f.balance > 0) {
+                        facturasPendientes.push(f);
+                        const option = document.createElement('option');
+                        option.value = f.id;
+                        // Mostramos el ID corto, el cliente y el balance
+                        const shortId = f.id.substring(0,6).toUpperCase();
+                        const fmtBalance = new Intl.NumberFormat('es-DO', { style: 'currency', currency: 'DOP' }).format(f.balance);
+                        option.text = `FAC-${shortId} - ${f.cliente_nombre} (Debe: ${fmtBalance})`;
+                        selectFac.appendChild(option);
+                    }
+                });
+
+                if(facturasPendientes.length === 0) {
+                    selectFac.innerHTML = '<option value="" disabled selected>No hay facturas con deudas pendientes.</option>';
+                }
+            } catch (error) { console.error(error); }
+        }
+
+        // Evento: Al seleccionar una factura, llenar el monto con el balance automáticamente
+        document.getElementById('p_factura').addEventListener('change', function(e) {
+            const fac = facturasPendientes.find(f => f.id === e.target.value);
+            if(fac) {
+                document.getElementById('p_monto').value = fac.balance.toFixed(2);
+                document.getElementById('p_monto').max = fac.balance;
+                document.getElementById('lbl_balance_info').innerText = `Deuda máxima a cobrar: $${fac.balance.toFixed(2)}`;
+            }
+        });
+
+        async function cargarPagos() {
+            const tabla = document.getElementById('tabla-pagos');
+            tabla.innerHTML = '<tr><td colspan="6" style="text-align:center;">Cargando recibos...</td></tr>';
+            try {
+                const q = query(collection(db, `empresas/${currentUserId}/pagos`), orderBy("fecha_creacion", "desc"));
+                const querySnapshot = await getDocs(q);
+                
+                pagosGlobales = [];
+                tabla.innerHTML = "";
+                if(querySnapshot.empty) {
+                    tabla.innerHTML = '<tr><td colspan="6" style="text-align:center;">No hay pagos registrados.</td></tr>';
+                    return;
+                }
+
+                querySnapshot.forEach((docSnap) => {
+                    const p = { id: docSnap.id, ...docSnap.data() };
+                    pagosGlobales.push(p);
+
+                    const fmtMonto = new Intl.NumberFormat('es-DO', { style: 'currency', currency: 'DOP' }).format(p.monto);
+                    
+                    let badgeMethod = "";
+                    if(p.metodo_pago === "Efectivo") badgeMethod = '<span class="method-badge method-cash">Efectivo</span>';
+                    else if(p.metodo_pago === "Transferencia") badgeMethod = '<span class="method-badge method-transfer">Transferencia</span>';
+                    else if(p.metodo_pago === "Tarjeta") badgeMethod = '<span class="method-badge method-card">Tarjeta</span>';
+                    else badgeMethod = '<span class="method-badge method-check">Cheque/Otro</span>';
+
+                    const tr = document.createElement('tr');
+                    tr.onclick = () => abrirVistaPago(p.id); 
+                    tr.innerHTML = `
+                        <td><strong style="color:#818cf8;">REC-${p.id.substring(0,6).toUpperCase()}</strong></td>
+                        <td>${p.fecha_pago}</td>
+                        <td>FAC-${p.factura_id.substring(0,6).toUpperCase()}</td>
+                        <td><strong>${p.cliente_nombre}</strong></td>
+                        <td>${badgeMethod}</td>
+                        <td style="font-weight:bold; color:#34d399;">+ ${fmtMonto}</td>
+                    `;
+                    tabla.appendChild(tr);
+                });
+            } catch (error) { console.error(error); }
+        }
+
+        // ==========================================
+        // CREAR / GUARDAR PAGO
+        // ==========================================
+        window.abrirModalCrear = function() {
+            document.getElementById('form-pago').reset();
+            document.getElementById('p_fecha').valueAsDate = new Date();
+            document.getElementById('lbl_balance_info').innerText = "";
+            document.getElementById('modal-crear').classList.add('active');
+        }
+
+        document.getElementById('form-pago').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btn-save-pago');
+            btn.innerText = "Procesando..."; btn.disabled = true;
+
+            try {
+                const facId = document.getElementById('p_factura').value;
+                const factura = facturasPendientes.find(f => f.id === facId);
+                const montoAbonado = parseFloat(document.getElementById('p_monto').value);
+
+                // 1. Validar que no pague de más
+                if (montoAbonado > factura.balance) {
+                    alert("El monto no puede ser mayor a la deuda de la factura.");
+                    btn.innerText = "Registrar y Generar Recibo"; btn.disabled = false;
+                    return;
+                }
+
+                // 2. Crear objeto de Recibo (Pago)
+                const datosPago = {
+                    factura_id: facId,
+                    cliente_id: factura.cliente_id,
+                    cliente_nombre: factura.cliente_nombre,
+                    fecha_pago: document.getElementById('p_fecha').value,
+                    metodo_pago: document.getElementById('p_metodo').value,
+                    referencia: document.getElementById('p_referencia').value || "N/A",
+                    notas: document.getElementById('p_notas').value,
+                    monto: montoAbonado,
+                    balance_restante_factura: factura.balance - montoAbonado,
+                    fecha_creacion: serverTimestamp()
+                };
+
+                // A. Guardar en colección "pagos"
+                await addDoc(collection(db, `empresas/${currentUserId}/pagos`), datosPago);
+
+                // B. Actualizar "facturas" (restar balance, cambiar estado, agregar al historial interno de la fac)
+                const nuevoBalanceFac = factura.balance - montoAbonado;
+                const nuevoEstadoFac = nuevoBalanceFac <= 0 ? "pagada" : factura.estado;
+                
+                const historialItem = {
+                    monto: montoAbonado,
+                    metodo: datosPago.metodo_pago,
+                    referencia: datosPago.referencia,
+                    fecha: new Date().toISOString()
+                };
+                const arrayPagos = factura.pagos ? [...factura.pagos, historialItem] : [historialItem];
+
+                await updateDoc(doc(db, `empresas/${currentUserId}/facturas`, facId), {
+                    balance: nuevoBalanceFac,
+                    estado: nuevoEstadoFac,
+                    pagos: arrayPagos
+                });
+
+                // C. Actualizar "directorio" (restar la deuda global del cliente)
+                const cliRef = doc(db, `empresas/${currentUserId}/directorio`, factura.cliente_id);
+                const cliSnap = await getDoc(cliRef);
+                if(cliSnap.exists()) {
+                    const deudaActual = parseFloat(cliSnap.data().monto_adeudado) || 0;
+                    await updateDoc(cliRef, { monto_adeudado: Math.max(0, deudaActual - montoAbonado) });
+                }
+
+                // Recargar todo
+                cerrarModal('modal-crear');
+                await cargarFacturasParaPago();
+                await cargarPagos(); 
+
+            } catch (error) {
+                console.error("Error:", error);
+                alert("Error al registrar el pago.");
+            } finally {
+                btn.innerText = "Registrar y Generar Recibo"; btn.disabled = false;
+            }
+        });
+
+        // ==========================================
+        // VISTA DE COMPROBANTE Y BÚSQUEDA
+        // ==========================================
+        window.abrirVistaPago = function(pId) {
+            const p = pagosGlobales.find(x => x.id === pId);
+            if(!p) return;
+
+            const fmt = (val) => new Intl.NumberFormat('es-DO', { style: 'currency', currency: 'DOP' }).format(val || 0);
+
+            document.getElementById('v_empresa_nombre').innerText = empresaGlobalData.nombre || "Mi Empresa";
+            document.getElementById('v_empresa_rnc').innerText = empresaGlobalData.rnc || "N/A";
+            
+            document.getElementById('v_recibo_id').innerText = `RECIBO N° ${p.id.substring(0,6).toUpperCase()}`;
+            document.getElementById('v_cliente').innerText = p.cliente_nombre;
+            document.getElementById('v_fecha').innerText = p.fecha_pago;
+            document.getElementById('v_factura').innerText = `FAC-${p.factura_id.substring(0,6).toUpperCase()}`;
+            document.getElementById('v_metodo').innerText = `${p.metodo_pago} | Ref: ${p.referencia}`;
+            document.getElementById('v_notas').innerText = p.notas || "Abono a cuenta.";
+            
+            document.getElementById('v_total').innerText = fmt(p.monto);
+            document.getElementById('v_restante').innerText = `Balance restante de factura: ${fmt(p.balance_restante_factura)}`;
+
+            document.getElementById('modal-ver').classList.add('active');
+        }
+
+        window.generarPDF = function() {
+            const element = document.getElementById('printable-area');
+            const recId = document.getElementById('v_recibo_id').innerText.replace('RECIBO N° ', '');
+            const opt = {
+                margin: 0.5,
+                filename: `Recibo_${recId}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
+                jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+            };
+            html2pdf().set(opt).from(element).save();
+        }
+
+        // Buscador
+        document.getElementById('buscador').addEventListener('input', function(e) { aplicarFiltros(); });
+        document.getElementById('filtro-metodo').addEventListener('change', function(e) { aplicarFiltros(); });
+
+        function aplicarFiltros() {
+            const txt = document.getElementById('buscador').value.toLowerCase();
+            const metodo = document.getElementById('filtro-metodo').value;
+
+            const filtrados = pagosGlobales.filter(p => {
+                const matchTexto = p.cliente_nombre.toLowerCase().includes(txt) || p.factura_id.toLowerCase().includes(txt);
+                const matchMetodo = metodo === "todos" || p.metodo_pago === metodo;
+                return matchTexto && matchMetodo;
+            });
+            renderizarTablaFiltrada(filtrados);
+        }
+
+        function renderizarTablaFiltrada(datos) {
+            const tabla = document.getElementById('tabla-pagos');
+            tabla.innerHTML = "";
+            if (datos.length === 0) { tabla.innerHTML = '<tr><td colspan="6" style="text-align:center;">No hay resultados.</td></tr>'; return; }
+
+            datos.forEach((p) => {
+                const fmtMonto = new Intl.NumberFormat('es-DO', { style: 'currency', currency: 'DOP' }).format(p.monto);
+                let badgeMethod = "";
+                if(p.metodo_pago === "Efectivo") badgeMethod = '<span class="method-badge method-cash">Efectivo</span>';
+                else if(p.metodo_pago === "Transferencia") badgeMethod = '<span class="method-badge method-transfer">Transferencia</span>';
+                else if(p.metodo_pago === "Tarjeta") badgeMethod = '<span class="method-badge method-card">Tarjeta</span>';
+                else badgeMethod = '<span class="method-badge method-check">Cheque/Otro</span>';
+
+                const tr = document.createElement('tr');
+                tr.onclick = () => abrirVistaPago(p.id); 
+                tr.innerHTML = `<td><strong style="color:#818cf8;">REC-${p.id.substring(0,6).toUpperCase()}</strong></td><td>${p.fecha_pago}</td><td>FAC-${p.factura_id.substring(0,6).toUpperCase()}</td><td><strong>${p.cliente_nombre}</strong></td><td>${badgeMethod}</td><td style="font-weight:bold; color:#34d399;">+ ${fmtMonto}</td>`;
+                tabla.appendChild(tr);
+            });
+        }
+    </script>
+</body>
+</html>

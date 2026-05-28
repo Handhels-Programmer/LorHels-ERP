@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - LorHels Systems</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* --- 1. ESTILOS BASE Y LAYOUT --- */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { display: flex; height: 100vh; background-color: #0b0f19; color: #e2e8f0; overflow: hidden; }
+        
+        .sidebar { width: 260px; background-color: #111827; color: white; display: flex; flex-direction: column; border-right: 1px solid #1f2937; transition: transform 0.3s ease; z-index: 1000; }
+        .logo-area { padding: 25px 20px; text-align: center; border-bottom: 1px solid #1f2937; }
+        .logo-area h2 { font-size: 1.2rem; margin-bottom: 5px; color: #ffffff; }
+        .badge { background-color: #374151; font-size: 0.7rem; padding: 3px 8px; border-radius: 12px; color: #d1d5db; }
+        
+        /* --- 2. ESTILOS DEL MENÚ COMPACTO --- */
+        .menu { list-style: none; padding: 15px 0; overflow-y: auto; flex-grow: 1; }
+        .menu::-webkit-scrollbar { width: 6px; }
+        .menu::-webkit-scrollbar-thumb { background-color: #374151; border-radius: 10px; }
+        .menu li { margin: 2px 15px; }
+        .menu li a { display: block; padding: 10px 20px; text-decoration: none; color: #94a3b8; font-size: 0.95rem; border-radius: 8px; transition: all 0.2s ease; }
+        .menu li a:hover { background-color: #1e293b; color: #f8fafc; }
+        .menu li.active a { background-color: #6366f1; color: #ffffff; font-weight: 500; }
+        
+        /* --- 3. CONTENIDO PRINCIPAL --- */
+        .main-content { flex-grow: 1; display: flex; flex-direction: column; width: calc(100% - 260px); }
+        .topbar { background-color: #111827; padding: 15px 30px; border-bottom: 1px solid #1f2937; display: flex; justify-content: space-between; align-items: center; }
+        .menu-toggle { display: none; background: none; border: none; color: #f8fafc; font-size: 1.5rem; cursor: pointer; margin-right: 15px; }
+        .topbar h2 { color: #f8fafc; font-weight: 600; display: flex; align-items: center; }
+        
+        .content-area { padding: 30px; overflow-y: auto; flex-grow: 1; display: flex; flex-direction: column;}
+
+        /* --- 4. KPIs Y SECCIONES --- */
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .kpi-card { background-color: #1f2937; border-radius: 8px; padding: 20px; border: 1px solid #374151; display: flex; flex-direction: column; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+        .kpi-card .kpi-title { color: #9ca3af; font-size: 0.9rem; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .kpi-card .kpi-value { font-size: 1.8rem; font-weight: bold; color: #ffffff; margin-bottom: 5px; }
+
+        .text-success { color: #34d399 !important; }
+        .text-warning { color: #fbbf24 !important; }
+        .text-danger { color: #f87171 !important; }
+        .text-primary { color: #818cf8 !important; }
+
+        .dashboard-section { background-color: #1f2937; border-radius: 8px; padding: 20px; border: 1px solid #374151; margin-bottom: 30px; }
+        .dashboard-section h3 { color: #e2e8f0; margin-bottom: 20px; font-size: 1.1rem; }
+
+        .chart-container { width: 100%; height: 300px; position: relative; }
+
+        .table-responsive { width: 100%; overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th { background-color: #111827; color: #9ca3af; padding: 12px 15px; font-size: 0.9rem; border-bottom: 2px solid #374151; }
+        td { padding: 12px 15px; border-bottom: 1px solid #374151; font-size: 0.95rem; color: #e2e8f0; }
+        tbody tr:hover { background-color: #374151; cursor: pointer;}
+
+        .status-badge { padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; text-align: center; display: inline-block;}
+        .status-paid { background-color: rgba(52, 211, 153, 0.2); color: #34d399; }
+        .status-credit { background-color: rgba(96, 165, 250, 0.2); color: #60a5fa; }
+        .status-pending { background-color: rgba(251, 191, 36, 0.2); color: #fbbf24; }
+
+        /* --- 5. ESTILOS DEL FOOTER --- */
+        .custom-footer { padding: 24px; text-align: center; color: #64748b; font-size: 0.875rem; border-top: 1px solid #1e293b; margin-top: auto; }
+        .custom-footer a { color: #a3a3a3; text-decoration: underline; transition: color 0.2s; font-weight: 500; }
+        .custom-footer a:hover { color: #ffffff; }
+
+        .logout-btn { background: none; border: none; color: #f87171; cursor: pointer; font-size: 0.85rem; margin-left: 10px; text-decoration: underline; }
+        .logout-btn:hover { color: #ef4444; }
+
+        /* --- 6. RESPONSIVO --- */
+        @media (max-width: 768px) {
+            .menu-toggle { display: block; }
+            .sidebar { position: fixed; height: 100vh; left: 0; top: 0; transform: translateX(-100%); }
+            .sidebar.active-mobile { transform: translateX(0); box-shadow: 5px 0 15px rgba(0,0,0,0.5); }
+            .main-content { width: 100%; }
+            .content-area, .topbar { padding: 15px; }
+        }
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar" id="sidebar">
+        <div class="logo-area">
+            <h2>LorHels Systems</h2>
+            <span class="badge" id="plan-badge">CARGANDO...</span>
+        </div>
+        <ul class="menu">
+            <li class="active"><a href="dashboard.html">1. Dashboard</a></li>
+            <li><a href="facturas.html">2. Facturas</a></li>
+            <li><a href="cotizaciones.html">3. Cotizaciones</a></li>
+            <li><a href="compras.html">4. Compras</a></li>
+            <li><a href="orden-compra.html">5. Orden de Compra</a></li>
+            <li><a href="gastos.html">6. Gastos</a></li>
+            <li><a href="pagos.html">7. Pagos</a></li>
+            <li><a href="nota-credito.html">8. Nota de Crédito</a></li>
+            <li><a href="inventario.html">9. Inventario</a></li>
+            <li><a href="clientes-prov.html">10. Clientes/Prov.</a></li>
+            <li><a href="comisiones.html">11. Comisiones</a></li>
+            <li><a href="productos.html">12. Productos</a></li>
+            <li><a href="informes.html">13. Informes</a></li>
+            <li><a href="ajustes.html">14. Ajustes</a></li>
+            <li><a href="contabilidad-dgii.html">15. Contabilidad/DGII</a></li> 
+        </ul>
+    </aside>
+
+    <main class="main-content">
+        <header class="topbar">
+            <h2>
+                <button class="menu-toggle" id="menu-toggle">☰</button>
+                Dashboard
+            </h2>
+            <div class="user-profile">
+                <span id="user-display-name">👤 Cargando...</span>
+                <button id="logout-btn" class="logout-btn">Salir</button>
+            </div>
+        </header>
+
+        <section class="content-area">
+            
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <span class="kpi-title">Ventas del Mes</span>
+                    <span class="kpi-value text-success" id="kpi-ventas">$0.00</span>
+                    <span style="color: #9ca3af; font-size: 0.8rem;">Facturado este mes</span>
+                </div>
+                <div class="kpi-card">
+                    <span class="kpi-title">Cuentas por Cobrar</span>
+                    <span class="kpi-value text-warning" id="kpi-cxc">$0.00</span>
+                    <span style="color: #9ca3af; font-size: 0.8rem;" id="kpi-cxc-sub">0 facturas pendientes</span>
+                </div>
+                <div class="kpi-card">
+                    <span class="kpi-title">Gastos del Mes</span>
+                    <span class="kpi-value text-danger" id="kpi-gastos">$0.00</span>
+                    <span style="color: #9ca3af; font-size: 0.8rem;">Operatividad mensual</span>
+                </div>
+                <div class="kpi-card">
+                    <span class="kpi-title">Total Clientes</span>
+                    <span class="kpi-value text-primary" id="kpi-clientes">0</span>
+                    <span style="color: #9ca3af; font-size: 0.8rem;">En directorio activo</span>
+                </div>
+            </div>
+
+            <div class="dashboard-section">
+                <h3>Resumen de Ingresos vs Gastos (Últimos Meses)</h3>
+                <div class="chart-container">
+                    <canvas id="myChart"></canvas>
+                </div>
+            </div>
+
+            <div class="dashboard-section">
+                <h3>Últimas 5 Facturas Emitidas</h3>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>No. Factura</th>
+                                <th>Cliente</th>
+                                <th>Fecha</th>
+                                <th>Monto</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-ultimas-facturas">
+                            <tr><td colspan="5" style="text-align: center;">Cargando movimientos...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <footer class="custom-footer">
+            <p>&copy; 2026 
+                <a href="https://lorhels.web.app" target="_blank" rel="noopener noreferrer">
+                    LorHels Systems
+                </a>. Todos los derechos reservados.
+            </p>
+        </footer>
+    </main>
+
+    <script>
+        const menuToggleBtn = document.getElementById('menu-toggle');
+        const sidebar = document.getElementById('sidebar');
+        menuToggleBtn.addEventListener('click', () => { sidebar.classList.toggle('active-mobile'); });
+    </script>
+
+    <script type="module">
+        import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { doc, getDoc, collection, getDocs, query, orderBy, limit, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { auth, db } from "./firebaseConfig.js";
+
+        const userDisplayName = document.getElementById('user-display-name');
+        const planBadge = document.getElementById('plan-badge');
+        const logoutBtn = document.getElementById('logout-btn');
+        
+        let currentUserId = null;
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) return window.location.href = "login.html";
+            if (user.email === "tu-correo-administrador@gmail.com") return window.location.href = "admin.html";
+
+            currentUserId = user.uid;
+
+            try {
+                const docSnap = await getDoc(doc(db, "empresas", currentUserId));
+                if (docSnap.exists()) {
+                    const empresa = docSnap.data();
+                    if (empresa.estado === "pendiente") return window.location.href = "dashboard.html"; // Redirige al script protector
+                    
+                    userDisplayName.innerText = `👤 ${empresa.nombre}`;
+                    planBadge.innerText = `PLAN ${empresa.plan.toUpperCase()}`;
+                    
+                    // Cargar todo simultáneamente
+                    await Promise.all([cargarKPIsyGrafico(), cargarUltimasFacturas()]);
+                }
+            } catch (error) { console.error(error); }
+        });
+
+        logoutBtn.addEventListener('click', () => signOut(auth).then(() => window.location.href = "login.html"));
+
+        const fmtDinero = (val) => new Intl.NumberFormat('es-DO', { style: 'currency', currency: 'DOP' }).format(val || 0);
+        const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM
+
+        // ==========================================
+        // CARGAR KPIS Y GRÁFICO (Lee Facturas, Gastos y Clientes)
+        // ==========================================
+        async function cargarKPIsyGrafico() {
+            try {
+                let totalVentasMes = 0;
+                let cuentasPorCobrar = 0;
+                let facturasPendientesCount = 0;
+                let totalGastosMes = 0;
+                let totalClientes = 0;
+
+                // Objeto para agrupar datos por mes para el gráfico: { "2026-05": {ingresos: 100, gastos: 50} }
+                const dataGrafico = {};
+
+                // 1. Procesar Facturas (Ingresos y Cuentas por Cobrar)
+                const qFac = query(collection(db, `empresas/${currentUserId}/facturas`));
+                const snapFac = await getDocs(qFac);
+                
+                snapFac.forEach(doc => {
+                    const f = doc.data();
+                    const mesFac = f.fecha_emision ? f.fecha_emision.slice(0, 7) : null;
+                    
+                    // KPI: Ventas del mes actual
+                    if(mesFac === currentMonth) {
+                        totalVentasMes += f.total;
+                    }
+
+                    // KPI: Cuentas por Cobrar (Deuda global)
+                    if(f.balance > 0) {
+                        cuentasPorCobrar += f.balance;
+                        facturasPendientesCount++;
+                    }
+
+                    // Gráfico: Agrupar ingresos por mes
+                    if(mesFac) {
+                        if(!dataGrafico[mesFac]) dataGrafico[mesFac] = { ingresos: 0, gastos: 0 };
+                        dataGrafico[mesFac].ingresos += f.total;
+                    }
+                });
+
+                // 2. Procesar Gastos
+                const qGas = query(collection(db, `empresas/${currentUserId}/gastos`));
+                const snapGas = await getDocs(qGas);
+                
+                snapGas.forEach(doc => {
+                    const g = doc.data();
+                    const mesGas = g.fecha_gasto ? g.fecha_gasto.slice(0, 7) : null;
+
+                    // KPI: Gastos del mes actual
+                    if(mesGas === currentMonth) {
+                        totalGastosMes += g.monto;
+                    }
+
+                    // Gráfico: Agrupar gastos por mes
+                    if(mesGas) {
+                        if(!dataGrafico[mesGas]) dataGrafico[mesGas] = { ingresos: 0, gastos: 0 };
+                        dataGrafico[mesGas].gastos += g.monto;
+                    }
+                });
+
+                // 3. Procesar Clientes
+                const qCli = query(collection(db, `empresas/${currentUserId}/directorio`), where("tipo", "==", "cliente"));
+                const snapCli = await getDocs(qCli);
+                totalClientes = snapCli.size; // Cantidad de documentos
+
+                // --- ACTUALIZAR DOM (KPIs) ---
+                document.getElementById('kpi-ventas').innerText = fmtDinero(totalVentasMes);
+                document.getElementById('kpi-cxc').innerText = fmtDinero(cuentasPorCobrar);
+                document.getElementById('kpi-cxc-sub').innerText = `${facturasPendientesCount} facturas pendientes`;
+                document.getElementById('kpi-gastos').innerText = fmtDinero(totalGastosMes);
+                document.getElementById('kpi-clientes').innerText = totalClientes;
+
+                // --- RENDERIZAR GRÁFICO ---
+                dibujarGrafico(dataGrafico);
+
+            } catch(e) { console.error("Error al cargar KPIs:", e); }
+        }
+
+        // ==========================================
+        // DIBUJAR GRÁFICO (Chart.js)
+        // ==========================================
+        function dibujarGrafico(dataObj) {
+            // Ordenar meses cronológicamente y tomar los últimos 6
+            const mesesOrdenados = Object.keys(dataObj).sort().slice(-6);
+            
+            const labels = [];
+            const dataIngresos = [];
+            const dataGastos = [];
+
+            mesesOrdenados.forEach(mesStr => {
+                // Convertir "YYYY-MM" a formato más legible, ej: "Mayo 2026"
+                const [yyyy, mm] = mesStr.split('-');
+                const dateObj = new Date(yyyy, mm - 1, 1);
+                const mesNombre = dateObj.toLocaleDateString('es-DO', { month: 'short', year: 'numeric' });
+                
+                labels.push(mesNombre.toUpperCase());
+                dataIngresos.push(dataObj[mesStr].ingresos);
+                dataGastos.push(dataObj[mesStr].gastos);
+            });
+
+            const ctx = document.getElementById('myChart').getContext('2d');
+            
+            // Configuración del gráfico oscuro
+            Chart.defaults.color = '#9ca3af';
+            Chart.defaults.font.family = "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif";
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels.length > 0 ? labels : ['Sin Datos'],
+                    datasets: [
+                        {
+                            label: 'Ingresos (Facturación)',
+                            data: dataIngresos.length > 0 ? dataIngresos : [0],
+                            backgroundColor: '#34d399',
+                            borderRadius: 4
+                        },
+                        {
+                            label: 'Gastos Operativos',
+                            data: dataGastos.length > 0 ? dataGastos : [0],
+                            backgroundColor: '#f87171',
+                            borderRadius: 4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'top', labels: { usePointStyle: true, boxWidth: 8 } },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) label += ': ';
+                                    if (context.parsed.y !== null) label += fmtDinero(context.parsed.y);
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: { 
+                            beginAtZero: true, 
+                            grid: { color: '#374151' },
+                            ticks: { callback: function(value) { return '$' + value; } }
+                        },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        }
+
+        // ==========================================
+        // CARGAR ÚLTIMAS 5 FACTURAS
+        // ==========================================
+        async function cargarUltimasFacturas() {
+            const tabla = document.getElementById('tabla-ultimas-facturas');
+            try {
+                const q = query(collection(db, `empresas/${currentUserId}/facturas`), orderBy("fecha_creacion", "desc"), limit(5));
+                const snapshot = await getDocs(q);
+                
+                tabla.innerHTML = "";
+                if(snapshot.empty) {
+                    tabla.innerHTML = '<tr><td colspan="5" style="text-align:center;">No hay facturas recientes.</td></tr>';
+                    return;
+                }
+
+                snapshot.forEach(docSnap => {
+                    const fac = docSnap.data();
+                    
+                    let badge = "";
+                    if(fac.estado === "pagada") badge = '<span class="status-badge status-paid">Pagada</span>';
+                    else if(fac.estado === "credito") badge = '<span class="status-badge status-credit">A Crédito</span>';
+                    else badge = '<span class="status-badge status-pending">Pendiente</span>';
+
+                    const tr = document.createElement('tr');
+                    // Redirigir a facturas si hace clic en la fila
+                    tr.onclick = () => window.location.href = "facturas.html";
+                    
+                    tr.innerHTML = `
+                        <td style="color:#818cf8;">FAC-${docSnap.id.substring(0,6).toUpperCase()}</td>
+                        <td><strong>${fac.cliente_nombre}</strong></td>
+                        <td>${fac.fecha_emision}</td>
+                        <td style="font-weight:bold;">${fmtDinero(fac.total)}</td>
+                        <td>${badge}</td>
+                    `;
+                    tabla.appendChild(tr);
+                });
+
+            } catch (error) { 
+                console.error(error); 
+                tabla.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#f87171;">Error al cargar datos.</td></tr>';
+            }
+        }
+    </script>
+</body>
+</html>

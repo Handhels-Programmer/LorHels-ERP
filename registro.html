@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Empresa - LorHels Systems</title>
+    <style>
+        /* Estilos base consistentes con tu Dashboard */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #0b0f19; color: #e2e8f0; display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; }
+        
+        .register-card { background-color: #1f2937; padding: 30px; border-radius: 8px; border: 1px solid #374151; width: 100%; max-width: 800px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+        .logo-area { text-align: center; margin-bottom: 20px; }
+        .logo-area h2 { color: #ffffff; margin-bottom: 5px; }
+        
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .form-group { display: flex; flex-direction: column; }
+        .form-group.full-width { grid-column: 1 / -1; }
+        
+        label { margin-bottom: 5px; color: #9ca3af; font-size: 0.9rem; }
+        input, select { background-color: #111827; border: 1px solid #374151; color: #f8fafc; padding: 10px; border-radius: 6px; outline: none; }
+        input:focus, select:focus { border-color: #6366f1; }
+        
+        .btn-submit { background-color: #6366f1; color: white; border: none; padding: 12px; font-weight: bold; border-radius: 6px; cursor: pointer; margin-top: 20px; width: 100%; }
+        .btn-submit:hover { background-color: #4f46e5; }
+        .btn-submit:disabled { background-color: #374151; color: #9ca3af; cursor: not-allowed; }
+
+        .payment-info { background-color: rgba(99, 102, 241, 0.1); border-left: 4px solid #6366f1; padding: 15px; margin-top: 15px; font-size: 0.9rem; border-radius: 4px; }
+        .text-center { text-align: center; margin-top: 15px; font-size: 0.9rem; }
+        .text-center a { color: #818cf8; text-decoration: none; }
+        
+        @media (max-width: 600px) { .form-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+
+    <div class="register-card">
+        <div class="logo-area">
+            <h2>LorHels Systems</h2>
+            <p style="color: #9ca3af;">Registro de Nueva Empresa</p>
+        </div>
+
+        <form id="registro-form">
+            <div class="form-grid">
+                <div class="form-group full-width">
+                    <label for="logo">Logo de la Empresa (Imagen)</label>
+                    <input type="file" id="logo" accept="image/*">
+                </div>
+                
+                <div class="form-group">
+                    <label for="nombre">Nombre de Empresa *</label>
+                    <input type="text" id="nombre" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="rnc">RNC *</label>
+                    <input type="text" id="rnc" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="representante">Representante *</label>
+                    <input type="text" id="representante" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="telefono">Teléfono Empresa</label>
+                    <input type="tel" id="telefono">
+                </div>
+
+                <div class="form-group full-width">
+                    <label for="direccion">Dirección Física</label>
+                    <input type="text" id="direccion">
+                </div>
+
+                <div class="form-group">
+                    <label for="instagram">Instagram (Opcional)</label>
+                    <input type="text" id="instagram" placeholder="@usuario">
+                </div>
+
+                <div class="form-group">
+                    <label for="facebook">Facebook (Opcional)</label>
+                    <input type="text" id="facebook" placeholder="Nombre en Facebook">
+                </div>
+
+                <hr style="grid-column: 1 / -1; border: 0; border-top: 1px solid #374151; margin: 10px 0;">
+
+                <div class="form-group">
+                    <label for="email">Email (Usuario de Acceso) *</label>
+                    <input type="email" id="email" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="pin">Crea un PIN de Acceso (Min 6 dígitos) *</label>
+                    <input type="password" id="pin" minlength="6" placeholder="Ej: 123456" required>
+                </div>
+
+                <div class="form-group full-width">
+                    <label for="plan">Plan de Suscripción *</label>
+                    <select id="plan" required>
+                        <option value="" disabled selected>Seleccione un plan...</option>
+                        <option value="basico">Plan Básico (30 días) - RD$ 1,500</option>
+                        <option value="normal">Plan Normal (3 Meses) - RD$ 4,000</option>
+                        <option value="premium">Plan Premium (1 Año) - RD$ 25,000</option>
+                        <option value="negocios">Plan Negocios (De por vida) - RD$ 75,000</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="payment-info">
+                <strong>Importante:</strong> Para activar su cuenta, envíe el comprobante de pago vía WhatsApp al <strong>1 (829) 913-5723</strong>.
+            </div>
+
+            <button type="submit" class="btn-submit" id="btn-registrar">Registrar Empresa</button>
+            
+            <div class="text-center">
+                ¿Ya tienes cuenta? <a href="login.html">Inicia Sesión aquí</a>
+            </div>
+        </form>
+    </div>
+
+    <script type="module">
+        // Importaciones
+        import { createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { auth, db } from "./firebaseConfig.js";
+        import { uploadToCloudinary } from "./cloudinary.js"; // Tu nuevo archivo de Cloudinary
+
+        const form = document.getElementById('registro-form');
+        const btnSubmit = document.getElementById('btn-registrar');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            btnSubmit.innerText = "Subiendo datos... Por favor espera";
+            btnSubmit.disabled = true;
+
+            try {
+                // 1. Subir Logo a Cloudinary (Si seleccionó uno)
+                const fileInput = document.getElementById('logo');
+                let logoUrl = "";
+                if (fileInput.files.length > 0) {
+                    logoUrl = await uploadToCloudinary(fileInput.files[0]);
+                }
+
+                // 2. Crear el Usuario en Firebase Auth
+                const email = document.getElementById('email').value;
+                const pin = document.getElementById('pin').value;
+                const userCredential = await createUserWithEmailAndPassword(auth, email, pin);
+                const user = userCredential.user;
+
+                // 3. Guardar los datos de la empresa en Firestore (estado: PENDIENTE)
+                await setDoc(doc(db, "empresas", user.uid), {
+                    nombre: document.getElementById('nombre').value,
+                    rnc: document.getElementById('rnc').value,
+                    representante: document.getElementById('representante').value,
+                    telefono: document.getElementById('telefono').value,
+                    direccion: document.getElementById('direccion').value,
+                    instagram: document.getElementById('instagram').value,
+                    facebook: document.getElementById('facebook').value,
+                    email: email,
+                    plan: document.getElementById('plan').value,
+                    logo_url: logoUrl,
+                    estado: "pendiente", // Clave para el Panel de Admin
+                    fecha_registro: serverTimestamp(),
+                    fecha_caducidad: null // Se llena al aprobar
+                });
+
+                // Éxito
+                alert("¡Registro exitoso! Su cuenta está PENDIENTE. Por favor envíe el comprobante al WhatsApp 1 (829) 913-5723 para activarla.");
+                
+                // Desloguearlo automáticamente para que no entre al sistema hasta ser aprobado
+                auth.signOut().then(() => {
+                    window.location.href = "login.html";
+                });
+
+            } catch (error) {
+                console.error(error);
+                alert("Ocurrió un error: " + error.message);
+                btnSubmit.innerText = "Registrar Empresa";
+                btnSubmit.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>

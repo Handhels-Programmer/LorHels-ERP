@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ordenes de Compra - LorHels Systems</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        /* --- 1. ESTILOS BASE Y LAYOUT --- */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { display: flex; height: 100vh; background-color: #0b0f19; color: #e2e8f0; overflow: hidden; }
+        
+        .sidebar { width: 260px; background-color: #111827; color: white; display: flex; flex-direction: column; border-right: 1px solid #1f2937; transition: transform 0.3s ease; z-index: 1000; }
+        .logo-area { padding: 25px 20px; text-align: center; border-bottom: 1px solid #1f2937; }
+        .logo-area h2 { font-size: 1.2rem; margin-bottom: 5px; color: #ffffff; }
+        .badge { background-color: #374151; font-size: 0.7rem; padding: 3px 8px; border-radius: 12px; color: #d1d5db; }
+        
+        /* --- 2. ESTILOS DEL MENÚ COMPACTO --- */
+        .menu { list-style: none; padding: 15px 0; overflow-y: auto; flex-grow: 1; }
+        .menu::-webkit-scrollbar { width: 6px; }
+        .menu::-webkit-scrollbar-thumb { background-color: #374151; border-radius: 10px; }
+        .menu li { margin: 2px 15px; }
+        .menu li a { display: block; padding: 10px 20px; text-decoration: none; color: #94a3b8; font-size: 0.95rem; border-radius: 8px; transition: all 0.2s ease; }
+        .menu li a:hover { background-color: #1e293b; color: #f8fafc; }
+        .menu li.active a { background-color: #6366f1; color: #ffffff; font-weight: 500; }
+        
+        /* --- 3. CONTENIDO PRINCIPAL --- */
+        .main-content { flex-grow: 1; display: flex; flex-direction: column; width: calc(100% - 260px); }
+        .topbar { background-color: #111827; padding: 15px 30px; border-bottom: 1px solid #1f2937; display: flex; justify-content: space-between; align-items: center; }
+        .menu-toggle { display: none; background: none; border: none; color: #f8fafc; font-size: 1.5rem; cursor: pointer; margin-right: 15px; }
+        .topbar h2 { color: #f8fafc; font-weight: 600; display: flex; align-items: center; }
+        
+        .user-profile { display: flex; align-items: center; }
+        .logout-btn { background: none; border: none; color: #f87171; cursor: pointer; font-size: 0.85rem; margin-left: 10px; text-decoration: underline; }
+        .logout-btn:hover { color: #ef4444; }
+
+        .content-area { padding: 30px; overflow-y: auto; flex-grow: 1; display: flex; flex-direction: column; }
+
+        /* --- 4. TARJETAS, TABLAS Y BOTONES --- */
+        .card { background-color: #1f2937; border-radius: 8px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); border: 1px solid #374151; margin-bottom: 20px; }
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .page-header h3 { color: #e2e8f0; font-size: 1.3rem; }
+        
+        .btn { padding: 10px 18px; border-radius: 6px; cursor: pointer; border: none; font-weight: 500; font-size: 0.9rem; transition: background-color 0.2s; display: inline-flex; align-items: center; gap: 5px; }
+        .btn-primary { background-color: #5a5ce6; color: white; }
+        .btn-primary:hover { background-color: #4c4ed8; }
+        .btn-success { background-color: #34d399; color: #0b0f19; font-weight: bold; }
+        .btn-success:hover { background-color: #10b981; }
+        .btn-danger { background-color: #f87171; color: white; padding: 6px 10px; font-size: 0.8rem; }
+        
+        .btn-outline-primary { background-color: transparent; border: 1px solid #818cf8; color: #818cf8; }
+        .btn-outline-primary:hover { background-color: rgba(129, 140, 248, 0.1); }
+        .btn-outline-green { background-color: transparent; border: 1px solid #34d399; color: #34d399; }
+        .btn-outline-green:hover { background-color: rgba(52, 211, 153, 0.1); }
+        .btn-outline-purple { background-color: transparent; border: 1px solid #c084fc; color: #c084fc; }
+        .btn-outline-purple:hover { background-color: rgba(192, 132, 252, 0.1); }
+        .btn-close-text { background: none; border: none; color: #9ca3af; font-size: 1rem; padding: 0; }
+        .btn-close-text:hover { color: #f8fafc; }
+
+        .action-btn { background: none; border: none; color: #9ca3af; cursor: pointer; font-size: 1.1rem; margin-right: 10px; }
+        .action-btn:hover { color: #f87171; }
+
+        .filter-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 10px; }
+        .form-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 20px; }
+        .form-group { display: flex; flex-direction: column; margin-bottom: 10px; }
+        .form-group.half { grid-column: span 2; }
+        .form-group label { font-size: 0.85rem; color: #9ca3af; margin-bottom: 5px; }
+        .form-control { background-color: #111827; border: 1px solid #374151; color: #e2e8f0; padding: 10px 12px; border-radius: 6px; outline: none; width: 100%; }
+        .form-control:focus { border-color: #5a5ce6; }
+
+        .table-responsive { width: 100%; overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th { background-color: #111827; color: #9ca3af; padding: 12px 15px; font-size: 0.9rem; border-bottom: 2px solid #374151; white-space: nowrap; }
+        td { padding: 12px 15px; border-bottom: 1px solid #374151; font-size: 0.95rem; color: #e2e8f0; }
+        
+        #tabla-ordenes tr { cursor: pointer; transition: background-color 0.2s; }
+        #tabla-ordenes tr:hover { background-color: #374151; }
+        
+        /* Badges de estado */
+        .status-badge { padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; display: inline-block; text-align: center; }
+        .status-draft { background-color: rgba(156, 163, 175, 0.2); color: #9ca3af; }     
+        .status-approved { background-color: rgba(129, 140, 248, 0.2); color: #818cf8; }  
+        .status-sent { background-color: rgba(96, 165, 250, 0.2); color: #60a5fa; }       
+        .status-received { background-color: rgba(52, 211, 153, 0.2); color: #34d399; }   
+
+        /* --- 5. MODALES --- */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); display: none; justify-content: center; align-items: center; z-index: 2000; }
+        .modal-overlay.active { display: flex; }
+        .modal-content { background-color: #1f2937; padding: 25px; border-radius: 8px; border: 1px solid #374151; width: 100%; max-width: 1000px; max-height: 95vh; overflow-y: auto; position: relative; }
+        .modal-close { position: absolute; top: 15px; right: 15px; background: none; border: none; color: #9ca3af; font-size: 1.5rem; cursor: pointer; }
+        .modal-close:hover { color: #fff; }
+        
+        .invoice-lines { margin-bottom: 20px; border: 1px solid #374151; border-radius: 6px; overflow: hidden; }
+        .invoice-lines table { margin: 0; }
+        .invoice-lines th, .invoice-lines td { padding: 8px 10px; }
+        .invoice-lines input, .invoice-lines select { padding: 6px; font-size: 0.9rem; }
+        .invoice-footer { display: flex; justify-content: space-between; gap: 20px; margin-top: 20px; }
+        .invoice-notes { flex: 1; }
+        .invoice-totals { width: 300px; background-color: #111827; padding: 15px; border-radius: 8px; border: 1px solid #374151; }
+        .total-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 0.95rem; color: #9ca3af; }
+        .total-row.grand-total { font-size: 1.3rem; font-weight: bold; color: #34d399; border-top: 1px solid #374151; padding-top: 10px; margin-top: 10px; }
+
+        /* --- 6. MODAL VER ORDEN DE COMPRA --- */
+        .modal-view-content { max-width: 1200px; padding: 20px; }
+        .view-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #374151; }
+        .view-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+        
+        .view-layout { display: flex; gap: 20px; align-items: flex-start; }
+        
+        .view-document { flex: 2; background-color: #ffffff; color: #000; padding: 40px; border-radius: 8px; border-top: 5px solid #818cf8; }
+        .vd-header { display: flex; justify-content: space-between; margin-bottom: 30px; }
+        .vd-company h2 { color: #111827; font-size: 1.6rem; margin-bottom: 5px; }
+        .vd-company p { color: #4b5563; font-size: 0.9rem; line-height: 1.4; }
+        .vd-meta { text-align: right; }
+        .vd-meta h2 { color: #818cf8; font-size: 1.4rem; margin-bottom: 10px; }
+        .vd-meta p { color: #4b5563; font-size: 0.9rem; margin-top: 5px; }
+        
+        .vd-client { margin-bottom: 30px; }
+        .vd-client h5 { color: #64748b; font-size: 0.8rem; margin-bottom: 5px; letter-spacing: 1px; }
+        .vd-client h3 { color: #111827; font-size: 1.1rem; margin-bottom: 5px; }
+        .vd-client p { color: #4b5563; font-size: 0.9rem; line-height: 1.4; }
+
+        .vd-table th { background-color: transparent; border-bottom: 2px solid #e2e8f0; color: #64748b; font-size: 0.8rem; padding: 10px 5px; }
+        .vd-table td { background-color: transparent; border-bottom: 1px solid #f1f5f9; padding: 15px 5px; font-size: 0.9rem; color: #111827; }
+
+        .vd-footer { display: flex; justify-content: space-between; gap: 30px; margin-top: 30px; }
+        .vd-notes-box { background-color: #f8fafc; border: 1px solid #e2e8f0; padding: 15px; border-radius: 6px; color: #4b5563; font-size: 0.85rem; min-height: 80px; }
+        .vd-totals { width: 250px; }
+        .vd-totals .tot-row { color: #4b5563; display: flex; justify-content: space-between; margin-bottom: 8px;}
+        .vd-totals .grand { color: #111827; font-size: 1.2rem; font-weight: bold; border-top: 2px solid #e2e8f0; padding-top: 10px; margin-top: 10px;}
+
+        .view-sidebar { flex: 1; display: flex; flex-direction: column; gap: 20px; }
+        .side-card { background-color: #111827; border-radius: 8px; border: 1px solid #374151; padding: 20px; }
+        .side-card h3 { font-size: 1.1rem; color: #e2e8f0; margin-bottom: 15px; }
+
+        /* --- 7. MAGIA DE IMPRESIÓN (PDF) --- */
+        @media print {
+            body * { visibility: hidden; }
+            .modal-overlay { position: absolute; left: 0; top: 0; background: transparent; }
+            .view-document, .view-document * { visibility: visible; }
+            .view-document { position: absolute; left: 0; top: 0; width: 100%; border: none; padding: 0; }
+            .view-sidebar, .view-header, .sidebar, .topbar { display: none !important; }
+        }
+
+        .custom-footer { padding: 24px; text-align: center; color: #64748b; font-size: 0.875rem; border-top: 1px solid #1e293b; margin-top: auto; }
+        .custom-footer a { color: #a3a3a3; text-decoration: underline; }
+
+        @media (max-width: 900px) { .view-layout { flex-direction: column; } .vd-footer { flex-direction: column; } .vd-totals { width: 100%; } }
+        @media (max-width: 768px) {
+            .menu-toggle { display: block; }
+            .sidebar { position: fixed; height: 100vh; left: 0; top: 0; transform: translateX(-100%); }
+            .sidebar.active-mobile { transform: translateX(0); box-shadow: 5px 0 15px rgba(0,0,0,0.5); }
+            .main-content { width: 100%; }
+            .form-grid { grid-template-columns: 1fr; }
+            .form-group.half { grid-column: 1 / -1; }
+            .invoice-footer { flex-direction: column; }
+            .invoice-totals { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar" id="sidebar">
+        <div class="logo-area">
+            <h2>LorHels Systems</h2>
+            <span class="badge" id="plan-badge">CARGANDO...</span>
+        </div>
+        <ul class="menu">
+            <li><a href="dashboard.html">1. Dashboard</a></li>
+            <li><a href="facturas.html">2. Facturas</a></li>
+            <li><a href="cotizaciones.html">3. Cotizaciones</a></li>
+            <li><a href="compras.html">4. Compras</a></li>
+            <li class="active"><a href="orden-compra.html">5. Orden de Compra</a></li>
+            <li><a href="gastos.html">6. Gastos</a></li>
+            <li><a href="pagos.html">7. Pagos</a></li>
+            <li><a href="nota-credito.html">8. Nota de Crédito</a></li>
+            <li><a href="inventario.html">9. Inventario</a></li>
+            <li><a href="clientes-prov.html">10. Clientes/Prov.</a></li>
+            <li><a href="comisiones.html">11. Comisiones</a></li>
+            <li><a href="productos.html">12. Productos</a></li>
+            <li><a href="informes.html">13. Informes</a></li>
+            <li><a href="ajustes.html">14. Ajustes</a></li>
+            <li><a href="contabilidad-dgii.html">15. Contabilidad/DGII</a></li> 
+        </ul>
+    </aside>
+
+    <main class="main-content">
+        <header class="topbar">
+            <h2><button class="menu-toggle" id="menu-toggle">☰</button> Orden de Compra</h2>
+            <div class="user-profile">
+                <span id="user-display-name">👤 Cargando...</span>
+                <button id="logout-btn" class="logout-btn">Salir</button>
+            </div>
+        </header>
+
+        <section class="content-area">
+            <div class="page-header">
+                <h3>Órdenes de Compra Emitidas</h3>
+                <button class="btn btn-primary" onclick="abrirModalCrear()">+ Generar Orden</button>
+            </div>
+
+            <div class="card">
+                <div class="filter-grid">
+                    <div class="form-group">
+                        <label>Buscar Proveedor</label>
+                        <input type="text" id="buscador" class="form-control" placeholder="Ej. Suplidores SRL...">
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Fecha Emisión</th>
+                                <th>Requerida Para</th>
+                                <th>Proveedor</th>
+                                <th>Estado</th>
+                                <th>Monto Total</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-ordenes">
+                            <tr><td colspan="5" style="text-align: center;">Cargando órdenes de compra...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <footer class="custom-footer">
+            <p>&copy; 2026 
+                <a href="https://lorhels.web.app" target="_blank" rel="noopener noreferrer">
+                    LorHels Systems.
+                </a>Todos los derechos reservados.
+            </p>
+        </footer>
+    </main>
+
+    <div class="modal-overlay" id="modal-crear">
+        <div class="modal-content">
+            <button class="modal-close" onclick="cerrarModal('modal-crear')">&times;</button>
+            <h3 id="modal-form-title" style="color: #fff; margin-bottom: 20px; border-bottom: 1px solid #374151; padding-bottom: 10px;">Generar Orden de Compra</h3>
+            
+            <form id="form-orden">
+                <input type="hidden" id="o_doc_id">
+                <div class="form-grid">
+                    <div class="form-group half">
+                        <label>Proveedor *</label>
+                        <select id="o_proveedor" class="form-control" required></select>
+                    </div>
+                    <div class="form-group">
+                        <label>Fecha Emisión *</label>
+                        <input type="date" id="o_fecha" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Fecha Requerida *</label>
+                        <input type="date" id="o_requerida" class="form-control" required>
+                    </div>
+                </div>
+
+                <div class="page-header" style="margin-bottom: 10px;">
+                    <h4 style="color: #818cf8; font-size: 1.1rem;">Detalle de Productos (A comprar)</h4>
+                    <button type="button" class="btn btn-primary" style="padding: 6px 12px; font-size: 0.8rem;" onclick="agregarLinea()">+ Agregar Línea</button>
+                </div>
+
+                <div class="invoice-lines table-responsive">
+                    <table id="tabla-lineas">
+                        <thead>
+                            <tr>
+                                <th style="width: 35%;">Producto / Suministro</th>
+                                <th style="width: 10%;">Cant.</th>
+                                <th style="width: 15%;">Costo Und.</th>
+                                <th style="width: 10%;">Desc. ($)</th>
+                                <th style="width: 10%;">Imp. (%)</th>
+                                <th style="width: 15%;">Total</th>
+                                <th style="width: 5%;"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="lineas-container"></tbody>
+                    </table>
+                </div>
+
+                <div class="invoice-footer">
+                    <div class="invoice-notes form-group">
+                        <label>Instrucciones / Notas al Proveedor</label>
+                        <textarea id="o_notas" class="form-control" style="height: 100%; min-height: 120px;" placeholder="Ej: Entregar en el almacén B por la puerta trasera."></textarea>
+                    </div>
+                    <div class="invoice-totals">
+                        <div class="total-row"><span>Subtotal:</span><span id="lbl_subtotal">$0.00</span></div>
+                        <div class="total-row"><span>Descuento:</span><span id="lbl_descuento">$0.00</span></div>
+                        <div class="total-row"><span>Impuestos:</span><span id="lbl_impuestos">$0.00</span></div>
+                        <div class="total-row grand-total"><span>Total Estimado:</span><span id="lbl_total">$0.00</span></div>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary" id="btn-save-orden" style="width:100%; margin-top:15px;">Guardar Orden de Compra</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modal-ver">
+        <div class="modal-content modal-view-content">
+            
+            <div class="view-header">
+                <button class="btn btn-close-text" onclick="cerrarModal('modal-ver')">← Volver a Órdenes</button>
+                <div class="view-actions" id="botones-estado">
+                    <button class="btn btn-outline-primary" onclick="editarOrden()">✏️ Editar</button>
+                    <button class="btn btn-outline-purple" onclick="cambiarEstado('aprobada')">✔️ Aprobar Internamente</button>
+                    <button class="btn btn-outline-green" onclick="enviarWhatsApp('enviada')">💬 Enviar al Proveedor (WhatsApp)</button>
+                    <button class="btn btn-success" id="btn-recibir" onclick="cambiarEstado('recibida')">📦 Marcar como Recibida</button>
+                    <button class="btn btn-outline-purple" onclick="window.generarPDF()">📄 Generar PDF</button>
+                </div>
+            </div>
+
+            <div class="view-layout">
+                <div class="view-document" id="printable-area">
+                    <div class="vd-header">
+                        <div class="vd-company">
+                            <h2 id="v_empresa_nombre">...</h2>
+                            <p>RNC: <span id="v_empresa_rnc"></span></p>
+                            <p id="v_empresa_dir"></p>
+                            <p>Tel: <span id="v_empresa_tel"></span></p>
+                        </div>
+                        <div class="vd-meta">
+                            <h2 id="v_orden_id">ORDEN DE COMPRA N° ...</h2>
+                            <div id="v_estado_badge" style="margin-bottom: 10px;"></div>
+                            <p>Fecha Emisión: <span id="v_fecha"></span></p>
+                            <p>Req. Para: <span id="v_requerida" style="color: #f87171; font-weight: bold;"></span></p>
+                        </div>
+                    </div>
+
+                    <div class="vd-client">
+                        <h5>PROVEEDOR:</h5>
+                        <h3 id="v_proveedor_nombre">...</h3>
+                        <p id="v_proveedor_tel"></p>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="vd-table">
+                            <thead>
+                                <tr>
+                                    <th>PRODUCTO / REFERENCIA</th>
+                                    <th style="text-align:center;">CANT.</th>
+                                    <th style="text-align:right;">COSTO UND.</th>
+                                    <th style="text-align:right;">IMP.</th>
+                                    <th style="text-align:right;">TOTAL</th>
+                                </tr>
+                            </thead>
+                            <tbody id="v_lineas"></tbody>
+                        </table>
+                    </div>
+
+                    <div class="vd-footer">
+                        <div style="flex:1; padding-right: 20px;">
+                            <h5 style="color: #64748b; margin-bottom:5px; font-size:0.8rem;">NOTAS E INSTRUCCIONES</h5>
+                            <div class="vd-notes-box" id="v_notas"></div>
+                        </div>
+                        <div class="vd-totals">
+                            <div class="tot-row"><span>Subtotal:</span><span id="v_subtotal"></span></div>
+                            <div class="tot-row"><span>Impuestos:</span><span id="v_impuestos"></span></div>
+                            <div class="tot-row"><span>Descuento:</span><span id="v_descuento"></span></div>
+                            <div class="tot-row grand"><span>Total Estimado:</span><span id="v_total"></span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="view-sidebar">
+                    <div class="side-card">
+                        <h3>Flujo de la Orden</h3>
+                        <div id="v_side_badge" style="text-align:center; margin-bottom:20px;"></div>
+                        <p style="color: #9ca3af; font-size: 0.9rem; text-align: center;" id="v_side_msg"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const menuToggleBtn = document.getElementById('menu-toggle');
+        const sidebar = document.getElementById('sidebar');
+        menuToggleBtn.addEventListener('click', () => { sidebar.classList.toggle('active-mobile'); });
+        function cerrarModal(modalId) { document.getElementById(modalId).classList.remove('active'); }
+    </script>
+
+    <script type="module">
+        import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { doc, getDoc, collection, getDocs, addDoc, updateDoc, query, where, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { auth, db } from "./firebaseConfig.js";
+
+        const userDisplayName = document.getElementById('user-display-name');
+        const planBadge = document.getElementById('plan-badge');
+        const logoutBtn = document.getElementById('logout-btn');
+        
+        let currentUserId = null;
+        let empresaGlobalData = {};
+        let catalogoProductos = [];
+        let ordenesGlobales = [];
+        let currentViewOrdenId = null;
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) return window.location.href = "login.html";
+            if (user.email === "tu-correo-administrador@gmail.com") return window.location.href = "admin.html";
+
+            currentUserId = user.uid;
+
+            try {
+                const docSnap = await getDoc(doc(db, "empresas", currentUserId));
+                if (docSnap.exists()) {
+                    empresaGlobalData = docSnap.data();
+                    if (empresaGlobalData.estado === "pendiente") return window.location.href = "dashboard.html";
+                    userDisplayName.innerText = `👤 ${empresaGlobalData.nombre}`;
+                    planBadge.innerText = `PLAN ${empresaGlobalData.plan.toUpperCase()}`;
+                    await Promise.all([cargarProveedores(), cargarProductos(), cargarOrdenes()]);
+                }
+            } catch (error) { console.error(error); }
+        });
+
+        logoutBtn.addEventListener('click', () => signOut(auth).then(() => window.location.href = "login.html"));
+
+        // ==========================================
+        // CARGA DE DATOS BASE
+        // ==========================================
+        async function cargarProveedores() {
+            const selectProv = document.getElementById('o_proveedor');
+            try {
+                // AQUÍ LA CLAVE: Solo cargamos los que son tipo "proveedor"
+                const q = query(collection(db, `empresas/${currentUserId}/directorio`), where("tipo", "==", "proveedor"));
+                const querySnapshot = await getDocs(q);
+                querySnapshot.forEach(doc => {
+                    const option = document.createElement('option');
+                    option.value = doc.id;
+                    option.text = doc.data().organizacion;
+                    option.dataset.tel = doc.data().telefono || "N/A";
+                    selectProv.appendChild(option);
+                });
+            } catch (error) { console.error(error); }
+        }
+
+        async function cargarProductos() {
+            try {
+                const q = query(collection(db, `empresas/${currentUserId}/productos`), where("activo", "==", true));
+                const querySnapshot = await getDocs(q);
+                catalogoProductos = [];
+                querySnapshot.forEach(doc => catalogoProductos.push({ id: doc.id, ...doc.data() }));
+            } catch (error) { console.error(error); }
+        }
+
+        // ==========================================
+        // CARGAR TABLA PRINCIPAL
+        // ==========================================
+        async function cargarOrdenes() {
+            const tabla = document.getElementById('tabla-ordenes');
+            tabla.innerHTML = '<tr><td colspan="5" style="text-align:center;">Cargando órdenes de compra...</td></tr>';
+            try {
+                const q = query(collection(db, `empresas/${currentUserId}/ordenes_compra`), orderBy("fecha_creacion", "desc"));
+                const querySnapshot = await getDocs(q);
+                
+                ordenesGlobales = [];
+                tabla.innerHTML = "";
+                if(querySnapshot.empty) {
+                    tabla.innerHTML = '<tr><td colspan="5" style="text-align:center;">No hay órdenes emitidas.</td></tr>';
+                    return;
+                }
+
+                querySnapshot.forEach((docSnap) => {
+                    const ord = { id: docSnap.id, ...docSnap.data() };
+                    ordenesGlobales.push(ord);
+
+                    const fmtTotal = new Intl.NumberFormat('es-DO', { style: 'currency', currency: 'DOP' }).format(ord.total);
+                    
+                    let badge = "";
+                    if(ord.estado === "aprobada") badge = '<span class="status-badge status-approved">Aprobada</span>';
+                    else if(ord.estado === "enviada") badge = '<span class="status-badge status-sent">Enviada</span>';
+                    else if(ord.estado === "recibida") badge = '<span class="status-badge status-received">Recibida</span>';
+                    else badge = '<span class="status-badge status-draft">Borrador</span>';
+
+                    const tr = document.createElement('tr');
+                    tr.onclick = () => abrirVistaOrden(ord.id); 
+                    tr.innerHTML = `
+                        <td>${ord.fecha_emision}</td>
+                        <td style="color:#f87171;">${ord.fecha_requerida}</td>
+                        <td><strong>${ord.proveedor_nombre}</strong></td>
+                        <td>${badge}</td>
+                        <td style="font-weight:bold; color:#34d399;">${fmtTotal}</td>
+                    `;
+                    tabla.appendChild(tr);
+                });
+            } catch (error) { console.error(error); }
+        }
+
+        // ==========================================
+        // VISTA DE ORDEN (MODAL DE 2 COLUMNAS)
+        // ==========================================
+        window.abrirVistaOrden = function(ordId) {
+            currentViewOrdenId = ordId;
+            const ord = ordenesGlobales.find(o => o.id === ordId);
+            if(!ord) return;
+
+            const fmt = (val) => new Intl.NumberFormat('es-DO', { style: 'currency', currency: 'DOP' }).format(val || 0);
+
+            document.getElementById('v_empresa_nombre').innerText = empresaGlobalData.nombre || "Mi Empresa";
+            document.getElementById('v_empresa_rnc').innerText = empresaGlobalData.rnc || "N/A";
+            document.getElementById('v_empresa_dir').innerText = empresaGlobalData.direccion || "";
+            document.getElementById('v_empresa_tel').innerText = empresaGlobalData.telefono || "N/A";
+
+            document.getElementById('v_orden_id').innerText = `ORDEN N° ${ord.id.substring(0,6).toUpperCase()}`;
+            document.getElementById('v_fecha').innerText = ord.fecha_emision;
+            document.getElementById('v_requerida').innerText = ord.fecha_requerida;
+
+            let badgeHtml = "";
+            let msg = "";
+            
+            if(ord.estado === "aprobada") {
+                badgeHtml = '<span class="status-badge status-approved" style="padding:6px 15px;">APROBADA</span>';
+                msg = "Aprobada internamente. Lista para enviarse al proveedor.";
+            } else if(ord.estado === "enviada") {
+                badgeHtml = '<span class="status-badge status-sent" style="padding:6px 15px;">ENVIADA AL PROV.</span>';
+                msg = "Enviada. A la espera de que el proveedor entregue la mercancía.";
+            } else if(ord.estado === "recibida") {
+                badgeHtml = '<span class="status-badge status-received" style="padding:6px 15px;">RECIBIDA (CERRADA)</span>';
+                msg = "La mercancía fue recibida. Orden concluida.";
+            } else {
+                badgeHtml = '<span class="status-badge status-draft" style="padding:6px 15px;">BORRADOR</span>';
+                msg = "Aún en creación. Requiere aprobación para enviarse.";
+            }
+            
+            document.getElementById('v_estado_badge').innerHTML = badgeHtml;
+            document.getElementById('v_side_badge').innerHTML = badgeHtml;
+            document.getElementById('v_side_msg').innerText = msg;
+
+            document.getElementById('v_proveedor_nombre').innerText = ord.proveedor_nombre;
+            document.getElementById('v_proveedor_tel').innerText = ord.proveedor_tel || "";
+
+            const tbody = document.getElementById('v_lineas');
+            tbody.innerHTML = "";
+            let subtotal = 0; let impuestos = 0; let descuento = 0;
+
+            if(ord.detalle) {
+                ord.detalle.forEach(item => {
+                    const lineaBase = item.cantidad * item.precio;
+                    const lineaDesc = item.descuento || 0;
+                    const subLinea = lineaBase - lineaDesc;
+                    const lineaImp = subLinea * (item.impuesto_porcentaje / 100);
+                    const totalLinea = subLinea + lineaImp;
+
+                    subtotal += lineaBase; descuento += lineaDesc; impuestos += lineaImp;
+
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td><strong>${item.producto_nombre}</strong></td>
+                        <td style="text-align:center;">${item.cantidad}</td>
+                        <td style="text-align:right;">${fmt(item.precio)}</td>
+                        <td style="text-align:right;">${item.impuesto_porcentaje}%</td>
+                        <td style="text-align:right; font-weight:bold;">${fmt(totalLinea)}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }
+
+            document.getElementById('v_notas').innerText = ord.notas || "Sin instrucciones adicionales.";
+            document.getElementById('v_subtotal').innerText = fmt(subtotal);
+            document.getElementById('v_descuento').innerText = fmt(descuento);
+            document.getElementById('v_impuestos').innerText = fmt(impuestos);
+            document.getElementById('v_total').innerText = fmt(ord.total);
+
+            // Ocultar botón "Marcar como Recibida" si ya está cerrada
+            const btnRecibir = document.getElementById('btn-recibir');
+            btnRecibir.style.display = (ord.estado === "recibida") ? "none" : "inline-flex";
+
+            document.getElementById('modal-ver').classList.add('active');
+        }
+
+        // ==========================================
+        // ACCIONES DE ORDEN DE COMPRA
+        // ==========================================
+        
+        window.generarPDF = function() {
+            const element = document.getElementById('printable-area');
+            const ordId = document.getElementById('v_orden_id').innerText.replace('ORDEN N° ', '');
+            const opt = {
+                margin: 0.5,
+                filename: `OrdenCompra_${ordId}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
+                jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+            };
+            html2pdf().set(opt).from(element).save();
+        }
+        
+        window.enviarWhatsApp = async function(nuevoEstado = null) {
+            const ord = ordenesGlobales.find(o => o.id === currentViewOrdenId);
+            if(!ord || !ord.proveedor_tel) return alert("El proveedor no tiene un teléfono registrado.");
+            
+            // Si pasamos un estado ('enviada'), actualizamos la BD primero
+            if(nuevoEstado && ord.estado !== 'recibida') {
+                await updateDoc(doc(db, `empresas/${currentUserId}/ordenes_compra`, currentViewOrdenId), { estado: nuevoEstado });
+                ord.estado = nuevoEstado;
+            }
+
+            const numOrd = ord.id.substring(0,6).toUpperCase();
+            const text = `Hola ${ord.proveedor_nombre}, le enviamos nuestra Orden de Compra *N° ${numOrd}*.\n\nPor favor confirmar recepción de esta orden. Requerimos la mercancía para el *${ord.fecha_requerida}*.\n\nGracias.`;
+            const phone = ord.proveedor_tel.replace(/\D/g,'');
+            window.open(`https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(text)}`, '_blank');
+            
+            cargarOrdenes();
+            abrirVistaOrden(currentViewOrdenId);
+        }
+
+        window.cambiarEstado = async function(nuevoEstado) {
+            if(nuevoEstado === 'recibida' && !confirm("¿Confirmas que la mercancía ha sido recibida en almacén?\n\nLa orden se marcará como concluida.")) return;
+
+            try {
+                await updateDoc(doc(db, `empresas/${currentUserId}/ordenes_compra`, currentViewOrdenId), { estado: nuevoEstado });
+                await cargarOrdenes();
+                abrirVistaOrden(currentViewOrdenId);
+            } catch (error) {
+                console.error(error);
+                alert("Error al cambiar estado.");
+            }
+        }
+
+        window.editarOrden = function() {
+            const ord = ordenesGlobales.find(o => o.id === currentViewOrdenId);
+            if(!ord) return;
+
+            document.getElementById('modal-form-title').innerText = "Editar Orden de Compra";
+            document.getElementById('o_doc_id').value = ord.id;
+            document.getElementById('o_proveedor').value = ord.proveedor_id;
+            document.getElementById('o_fecha').value = ord.fecha_emision;
+            document.getElementById('o_requerida').value = ord.fecha_requerida;
+            document.getElementById('o_notas').value = ord.notas || "";
+
+            const container = document.getElementById('lineas-container');
+            container.innerHTML = "";
+            ord.detalle.forEach(item => {
+                window.agregarLinea(); 
+                const tr = container.lastElementChild;
+                tr.querySelector('.sel-prod').value = item.producto_id;
+                tr.querySelector('.inp-cant').value = item.cantidad;
+                tr.querySelector('.inp-precio').value = item.precio;
+                tr.querySelector('.inp-desc').value = item.descuento || 0;
+                tr.querySelector('.inp-imp').value = item.impuesto_porcentaje || 0;
+            });
+            window.calcularTotales();
+
+            cerrarModal('modal-ver');
+            document.getElementById('modal-crear').classList.add('active');
+        }
+
+        // ==========================================
+        // CREACIÓN / EDICIÓN DE ORDEN (SAVE)
+        // ==========================================
+        window.abrirModalCrear = function() {
+            document.getElementById('form-orden').reset();
+            document.getElementById('o_doc_id').value = "";
+            document.getElementById('modal-form-title').innerText = "Generar Orden de Compra";
+            document.getElementById('lineas-container').innerHTML = ""; 
+            
+            const hoy = new Date();
+            document.getElementById('o_fecha').valueAsDate = hoy;
+            const req = new Date();
+            req.setDate(req.getDate() + 7);
+            document.getElementById('o_requerida').valueAsDate = req;
+
+            agregarLinea(); 
+            calcularTotales();
+            document.getElementById('modal-crear').classList.add('active');
+        }
+
+        window.agregarLinea = function() {
+            const container = document.getElementById('lineas-container');
+            const tr = document.createElement('tr');
+            
+            let optionsHTML = '<option value="" disabled selected>Seleccione producto...</option>';
+            catalogoProductos.forEach(p => {
+                // NOTA: Para compras traemos la tasa_compra (Costo), no tasa_venta.
+                optionsHTML += `<option value="${p.id}" data-precio="${p.tasa_compra || 0}" data-imp="${p.impuesto !== undefined ? p.impuesto : 18}">${p.codigo} - ${p.nombre}</option>`;
+            });
+
+            tr.innerHTML = `
+                <td><select class="form-control sel-prod" required>${optionsHTML}</select></td>
+                <td><input type="number" class="form-control inp-cant" value="1" min="1" required></td>
+                <td><input type="number" class="form-control inp-precio" value="0" min="0" step="0.01" required></td>
+                <td><input type="number" class="form-control inp-desc" value="0" min="0" step="0.01"></td>
+                <td><input type="number" class="form-control inp-imp" value="18" min="0" step="0.1"></td>
+                <td class="lbl-line-total" style="font-weight:bold;">$0.00</td>
+                <td><button type="button" class="btn-danger action-btn" onclick="this.closest('tr').remove(); window.calcularTotales();">X</button></td>
+            `;
+            container.appendChild(tr);
+
+            const selectProd = tr.querySelector('.sel-prod');
+            selectProd.addEventListener('change', function(e) {
+                const selectedOpt = e.target.options[e.target.selectedIndex];
+                tr.querySelector('.inp-precio').value = selectedOpt.dataset.precio || 0;
+                tr.querySelector('.inp-imp').value = selectedOpt.dataset.imp || 18;
+                window.calcularTotales();
+            });
+
+            tr.querySelectorAll('input').forEach(inp => inp.addEventListener('input', window.calcularTotales));
+        }
+
+        window.calcularTotales = function() {
+            let sumSubtotal = 0; let sumDescuento = 0; let sumImpuestos = 0;
+            const lineas = document.querySelectorAll('#lineas-container tr');
+            
+            lineas.forEach(tr => {
+                const cant = parseFloat(tr.querySelector('.inp-cant').value) || 0;
+                const precio = parseFloat(tr.querySelector('.inp-precio').value) || 0;
+                const descMonto = parseFloat(tr.querySelector('.inp-desc').value) || 0;
+                const impPorc = parseFloat(tr.querySelector('.inp-imp').value) || 0;
+
+                const baseLinea = cant * precio;
+                const subtotalConDesc = baseLinea - descMonto;
+                const impuestoLinea = subtotalConDesc * (impPorc / 100);
+                const totalLinea = subtotalConDesc + impuestoLinea;
+
+                tr.querySelector('.lbl-line-total').innerText = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(totalLinea);
+
+                sumSubtotal += baseLinea; sumDescuento += descMonto; sumImpuestos += impuestoLinea;
+            });
+
+            const granTotal = (sumSubtotal - sumDescuento) + sumImpuestos;
+            const fmt = (val) => new Intl.NumberFormat('es-DO', { style: 'currency', currency: 'DOP' }).format(val);
+            
+            document.getElementById('lbl_subtotal').innerText = fmt(sumSubtotal);
+            document.getElementById('lbl_descuento').innerText = fmt(sumDescuento);
+            document.getElementById('lbl_impuestos').innerText = fmt(sumImpuestos);
+            document.getElementById('lbl_total').innerText = fmt(granTotal);
+            
+            window.ordenGranTotal = granTotal;
+        }
+
+        document.getElementById('form-orden').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const lineas = document.querySelectorAll('#lineas-container tr');
+            if(lineas.length === 0) return alert("Agrega al menos un producto.");
+
+            const btn = document.getElementById('btn-save-orden');
+            btn.innerText = "Guardando..."; btn.disabled = true;
+
+            try {
+                const docId = document.getElementById('o_doc_id').value;
+                const sel = document.getElementById('o_proveedor');
+                const opt = sel.options[sel.selectedIndex];
+                const totalCalculado = window.ordenGranTotal || 0;
+
+                const detalleItems = [];
+                lineas.forEach(tr => {
+                    const selProd = tr.querySelector('.sel-prod');
+                    detalleItems.push({
+                        producto_id: selProd.value,
+                        producto_nombre: selProd.options[selProd.selectedIndex].text,
+                        cantidad: parseFloat(tr.querySelector('.inp-cant').value),
+                        precio: parseFloat(tr.querySelector('.inp-precio').value),
+                        descuento: parseFloat(tr.querySelector('.inp-desc').value),
+                        impuesto_porcentaje: parseFloat(tr.querySelector('.inp-imp').value)
+                    });
+                });
+
+                const datosOrden = {
+                    proveedor_id: sel.value,
+                    proveedor_nombre: opt.text,
+                    proveedor_tel: opt.dataset.tel || "",
+                    fecha_emision: document.getElementById('o_fecha').value,
+                    fecha_requerida: document.getElementById('o_requerida').value,
+                    notas: document.getElementById('o_notas').value,
+                    total: totalCalculado,
+                    detalle: detalleItems
+                };
+
+                if(docId) {
+                    await updateDoc(doc(db, `empresas/${currentUserId}/ordenes_compra`, docId), datosOrden);
+                } else {
+                    datosOrden.estado = "borrador";
+                    datosOrden.fecha_creacion = serverTimestamp();
+                    await addDoc(collection(db, `empresas/${currentUserId}/ordenes_compra`), datosOrden);
+                }
+
+                cerrarModal('modal-crear');
+                cargarOrdenes(); 
+            } catch (error) {
+                console.error("Error:", error);
+                alert("Error al guardar la orden de compra.");
+            } finally {
+                btn.innerText = "Guardar Orden de Compra"; btn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>

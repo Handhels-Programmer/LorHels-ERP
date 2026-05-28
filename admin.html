@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Super Admin - LorHels Systems</title>
+    <style>
+        /* --- ESTILOS BASE --- */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body { background-color: #0b0f19; color: #e2e8f0; padding: 40px; }
+        
+        .container { max-width: 1100px; margin: 0 auto; }
+        
+        /* --- ENCABEZADO Y BOTÓN DE SALIDA --- */
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            border-bottom: 1px solid #1f2937;
+            padding-bottom: 20px;
+        }
+        .admin-header-titles h1 { color: #fff; font-size: 1.8rem; margin-bottom: 5px; }
+        .admin-header-titles p { color: #9ca3af; font-size: 0.95rem; }
+        
+        .btn-logout {
+            background-color: transparent;
+            color: #f87171;
+            border: 1px solid #f87171;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+        .btn-logout:hover {
+            background-color: #f87171;
+            color: #fff;
+        }
+
+        /* --- SECCIONES / TABLAS --- */
+        .admin-section {
+            background-color: #1f2937;
+            border-radius: 8px;
+            padding: 25px;
+            border: 1px solid #374151;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+        
+        .admin-section h2 {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #374151;
+        }
+        
+        .badge-pendiente { color: #fbbf24; }
+        .badge-activa { color: #34d399; }
+
+        .table-responsive { width: 100%; overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th, td { padding: 12px 15px; border-bottom: 1px solid #374151; font-size: 0.95rem; }
+        th { background-color: #111827; color: #9ca3af; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; }
+        tbody tr:hover { background-color: #2d3748; }
+        
+        /* --- BOTONES --- */
+        .btn-aprobar { background-color: #34d399; color: #0b0f19; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; transition: background 0.2s; }
+        .btn-aprobar:hover { background-color: #10b981; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        
+        <header class="admin-header">
+            <div class="admin-header-titles">
+                <h1>Panel de Control del Sistema (SaaS)</h1>
+                <p>Mesa de control central de LorHels Systems</p>
+            </div>
+            <button class="btn-logout" id="btn-logout">Cerrar Sesión</button>
+        </header>
+
+        <div class="admin-section">
+            <h2 class="badge-pendiente">⏳ Solicitudes Pendientes de Aprobación</h2>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Empresa</th>
+                            <th>RNC</th>
+                            <th>Representante / Tel.</th>
+                            <th>Plan Solicitado</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="lista-pendientes">
+                        <tr><td colspan="5" style="color: #9ca3af;">Cargando solicitudes...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="admin-section">
+            <h2 class="badge-activa">✅ Empresas Activas y Suscripciones</h2>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Empresa</th>
+                            <th>RNC</th>
+                            <th>Plan Actual</th>
+                            <th>Fecha de Registro</th>
+                            <th>Fecha de Caducidad 🗓️</th>
+                        </tr>
+                    </thead>
+                    <tbody id="lista-activas">
+                        <tr><td colspan="5" style="color: #9ca3af;">Cargando historial de clientes...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // Importamos 'signOut' para poder cerrar la sesión
+        import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { collection, query, where, getDocs, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        
+        // Conexión a tu archivo de configuración central
+        import { auth, db } from "./firebaseConfig.js";
+
+        const listaPendientes = document.getElementById('lista-pendientes');
+        const listaActivas = document.getElementById('lista-activas');
+        const btnLogout = document.getElementById('btn-logout');
+        
+        // ⚠️ RECUERDA ASIGNAR TU CORREO ADMINISTRADOR AQUÍ
+        const CORREO_SUPER_ADMIN = "info@handhelsinc.net";
+
+        // Protector de pantalla
+        onAuthStateChanged(auth, (user) => {
+            if (!user || user.email !== CORREO_SUPER_ADMIN) {
+                alert("⛔ Acceso denegado. Zona exclusiva de administración.");
+                window.location.href = "login.html";
+            } else {
+                cargarPendientes();
+                cargarActivas();
+            }
+        });
+
+        // --- LÓGICA PARA CERRAR SESIÓN ---
+        btnLogout.addEventListener('click', () => {
+            signOut(auth).then(() => {
+                // Al salir correctamente, devolvemos al usuario al login
+                window.location.href = "login.html";
+            }).catch((error) => {
+                console.error("Error al cerrar sesión:", error);
+                alert("Hubo un problema al intentar salir.");
+            });
+        });
+
+        // --- FUNCIÓN 1: CARGAR PENDIENTES ---
+        async function cargarPendientes() {
+            const q = query(collection(db, "empresas"), where("estado", "==", "pendiente"));
+            const querySnapshot = await getDocs(q);
+            
+            listaPendientes.innerHTML = ""; 
+            
+            if (querySnapshot.empty) {
+                listaPendientes.innerHTML = "<tr><td colspan='5' style='color:#9ca3af;'>No hay solicitudes de pago pendientes.</td></tr>";
+                return;
+            }
+
+            querySnapshot.forEach((docSnap) => {
+                const empresa = docSnap.data();
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            ${empresa.logo_url ? `<img src="${empresa.logo_url}" width="35" style="border-radius:4px; object-fit: cover; height:35px;">` : '🖼️'}
+                            <strong>${empresa.nombre}</strong>
+                        </div>
+                    </td>
+                    <td>${empresa.rnc}</td>
+                    <td>${empresa.representante}<br><small style="color:#9ca3af;">${empresa.telefono || 'Sin Teléfono'}</small></td>
+                    <td><span style="color:#818cf8; font-weight:600; text-transform:uppercase;">${empresa.plan}</span></td>
+                    <td><button class="btn-aprobar" data-id="${docSnap.id}" data-plan="${empresa.plan}">Aprobar Accesso</button></td>
+                `;
+                listaPendientes.appendChild(tr);
+            });
+
+            document.querySelectorAll('.btn-aprobar').forEach(btn => {
+                btn.addEventListener('click', (e) => aprobarEmpresa(e.target.dataset.id, e.target.dataset.plan));
+            });
+        }
+
+        // --- FUNCIÓN 2: CARGAR EMPRESAS ACTIVAS ---
+        async function cargarActivas() {
+            const q = query(collection(db, "empresas"), where("estado", "==", "activa"));
+            const querySnapshot = await getDocs(q);
+            
+            listaActivas.innerHTML = ""; 
+            
+            if (querySnapshot.empty) {
+                listaActivas.innerHTML = "<tr><td colspan='5' style='color:#9ca3af;'>Aún no tienes empresas activas registradas.</td></tr>";
+                return;
+            }
+
+            querySnapshot.forEach((docSnap) => {
+                const empresa = docSnap.data();
+                
+                const fRegistro = empresa.fecha_registro ? empresa.fecha_registro.toDate().toLocaleDateString('es-DO') : "No registrada";
+                const fCaducidad = empresa.fecha_caducidad ? empresa.fecha_caducidad.toDate().toLocaleDateString('es-DO') : "Indefinida";
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            ${empresa.logo_url ? `<img src="${empresa.logo_url}" width="35" style="border-radius:4px; object-fit: cover; height:35px;">` : '🖼️'}
+                            <strong>${empresa.nombre}</strong>
+                        </div>
+                    </td>
+                    <td>${empresa.rnc}</td>
+                    <td><span style="color:#34d399; font-weight:600; text-transform:uppercase;">${empresa.plan}</span></td>
+                    <td>${fRegistro}</td>
+                    <td><strong style="color: #f87171;">${fCaducidad}</strong></td>
+                `;
+                listaActivas.appendChild(tr);
+            });
+        }
+
+        // --- ACCIÓN: APROBAR Y GUARDAR ---
+        async function aprobarEmpresa(empresaId, plan) {
+            if (!confirm("¿Confirmar recepción de pago y activar esta empresa?")) return;
+
+            const hoy = new Date();
+            let fechaCaducidad = new Date();
+
+            switch (plan) {
+                case 'basico': fechaCaducidad.setDate(hoy.getDate() + 30); break; 
+                case 'normal': fechaCaducidad.setMonth(hoy.getMonth() + 3); break; 
+                case 'premium': fechaCaducidad.setFullYear(hoy.getFullYear() + 1); break; 
+                case 'negocios': fechaCaducidad.setFullYear(hoy.getFullYear() + 100); break; 
+            }
+
+            try {
+                await updateDoc(doc(db, "empresas", empresaId), {
+                    estado: "activa",
+                    fecha_caducidad: fechaCaducidad
+                });
+                alert("¡Empresa aprobada exitosamente!");
+                
+                cargarPendientes();
+                cargarActivas(); 
+            } catch (error) {
+                console.error("Error al aprobar:", error);
+                alert("Error al aprobar empresa: " + error.message);
+            }
+        }
+    </script>
+</body>
+</html>

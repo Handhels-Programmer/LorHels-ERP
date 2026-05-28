@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventario - LorHels Systems</title>
+    <style>
+        /* --- 1. ESTILOS BASE Y LAYOUT --- */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { display: flex; height: 100vh; background-color: #0b0f19; color: #e2e8f0; overflow: hidden; }
+        
+        .sidebar { width: 260px; background-color: #111827; color: white; display: flex; flex-direction: column; border-right: 1px solid #1f2937; transition: transform 0.3s ease; z-index: 1000; }
+        .logo-area { padding: 25px 20px; text-align: center; border-bottom: 1px solid #1f2937; }
+        .logo-area h2 { font-size: 1.2rem; margin-bottom: 5px; color: #ffffff; }
+        .badge { background-color: #374151; font-size: 0.7rem; padding: 3px 8px; border-radius: 12px; color: #d1d5db; }
+        
+        /* --- 2. ESTILOS DEL MENÚ COMPACTO --- */
+        .menu { list-style: none; padding: 15px 0; overflow-y: auto; flex-grow: 1; }
+        .menu::-webkit-scrollbar { width: 6px; }
+        .menu::-webkit-scrollbar-thumb { background-color: #374151; border-radius: 10px; }
+        .menu li { margin: 2px 15px; }
+        .menu li a { display: block; padding: 10px 20px; text-decoration: none; color: #94a3b8; font-size: 0.95rem; border-radius: 8px; transition: all 0.2s ease; }
+        .menu li a:hover { background-color: #1e293b; color: #f8fafc; }
+        .menu li.active a { background-color: #6366f1; color: #ffffff; font-weight: 500; }
+        
+        /* --- 3. CONTENIDO PRINCIPAL --- */
+        .main-content { flex-grow: 1; display: flex; flex-direction: column; width: calc(100% - 260px); }
+        .topbar { background-color: #111827; padding: 15px 30px; border-bottom: 1px solid #1f2937; display: flex; justify-content: space-between; align-items: center; }
+        .menu-toggle { display: none; background: none; border: none; color: #f8fafc; font-size: 1.5rem; cursor: pointer; margin-right: 15px; }
+        .topbar h2 { color: #f8fafc; font-weight: 600; display: flex; align-items: center; }
+        
+        .user-profile { display: flex; align-items: center; }
+        .logout-btn { background: none; border: none; color: #f87171; cursor: pointer; font-size: 0.85rem; margin-left: 10px; text-decoration: underline; }
+        .logout-btn:hover { color: #ef4444; }
+
+        .content-area { padding: 30px; overflow-y: auto; flex-grow: 1; display: flex; flex-direction: column; }
+
+        /* --- 4. KPIs DE INVENTARIO --- */
+        .inv-kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        .inv-kpi-card {
+            background-color: #1f2937;
+            border-radius: 8px;
+            padding: 15px 20px;
+            border: 1px solid #374151;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .inv-kpi-info h4 { color: #9ca3af; font-size: 0.85rem; text-transform: uppercase; margin-bottom: 5px; }
+        .inv-kpi-info span { font-size: 1.4rem; font-weight: bold; color: #ffffff; }
+
+        /* --- 5. TARJETAS, TABLAS Y BOTONES --- */
+        .card { background-color: #1f2937; border-radius: 8px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); border: 1px solid #374151; margin-bottom: 20px; }
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .page-header h3 { color: #e2e8f0; font-size: 1.3rem; }
+        
+        .btn { padding: 10px 18px; border-radius: 6px; cursor: pointer; border: none; font-weight: 500; font-size: 0.9rem; transition: background-color 0.2s; display: inline-flex; align-items: center; gap: 5px; }
+        .btn-primary { background-color: #5a5ce6; color: white; }
+        .btn-primary:hover { background-color: #4c4ed8; }
+        .btn-success { background-color: #34d399; color: #0b0f19; font-weight: bold; }
+        .btn-success:hover { background-color: #10b981; }
+
+        .action-btn { background: none; border: none; color: #9ca3af; cursor: pointer; font-size: 1.1rem; margin-right: 10px; }
+        .action-btn:hover { color: #818cf8; }
+
+        .filter-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 10px; }
+        .form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 20px; }
+        .form-group { display: flex; flex-direction: column; margin-bottom: 10px; }
+        .form-group.full { grid-column: 1 / -1; }
+        .form-group label { font-size: 0.85rem; color: #9ca3af; margin-bottom: 5px; }
+        .form-control { background-color: #111827; border: 1px solid #374151; color: #e2e8f0; padding: 10px 12px; border-radius: 6px; outline: none; width: 100%; }
+        .form-control:focus { border-color: #5a5ce6; }
+
+        .table-responsive { width: 100%; overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th { background-color: #111827; color: #9ca3af; padding: 12px 15px; font-size: 0.9rem; border-bottom: 2px solid #374151; white-space: nowrap; }
+        td { padding: 12px 15px; border-bottom: 1px solid #374151; font-size: 0.95rem; color: #e2e8f0; }
+        tbody tr:hover { background-color: #374151; }
+        
+        /* Badges de nivel de Stock */
+        .status-badge { padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; }
+        .stock-ok { background-color: rgba(52, 211, 153, 0.2); color: #34d399; }      
+        .stock-low { background-color: rgba(251, 191, 36, 0.2); color: #fbbf24; }      
+        .stock-none { background-color: rgba(248, 113, 113, 0.2); color: #f87171; }    
+
+        /* --- 6. MODAL --- */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); display: none; justify-content: center; align-items: center; z-index: 2000; }
+        .modal-overlay.active { display: flex; }
+        .modal-content { background-color: #1f2937; padding: 25px; border-radius: 8px; border: 1px solid #374151; width: 100%; max-width: 600px; max-height: 95vh; overflow-y: auto; position: relative; }
+        .modal-close { position: absolute; top: 15px; right: 15px; background: none; border: none; color: #9ca3af; font-size: 1.5rem; cursor: pointer; }
+        .modal-close:hover { color: #fff; }
+
+        .custom-footer { padding: 24px; text-align: center; color: #64748b; font-size: 0.875rem; border-top: 1px solid #1e293b; margin-top: auto; }
+        .custom-footer a { color: #a3a3a3; text-decoration: underline; transition: color 0.2s; font-weight: 500; }
+        .custom-footer a:hover { color: #ffffff; }
+
+        @media (max-width: 768px) {
+            .menu-toggle { display: block; }
+            .sidebar { position: fixed; height: 100vh; left: 0; top: 0; transform: translateX(-100%); }
+            .sidebar.active-mobile { transform: translateX(0); box-shadow: 5px 0 15px rgba(0,0,0,0.5); }
+            .main-content { width: 100%; }
+            .content-area, .topbar { padding: 15px; }
+            .page-header { flex-direction: column; align-items: flex-start; gap: 15px; }
+            .btn { width: 100%; }
+            .form-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar" id="sidebar">
+        <div class="logo-area">
+            <h2>LorHels Systems</h2>
+            <span class="badge" id="plan-badge">CARGANDO...</span>
+        </div>
+        <ul class="menu">
+            <li><a href="dashboard.html">1. Dashboard</a></li>
+            <li><a href="facturas.html">2. Facturas</a></li>
+            <li><a href="cotizaciones.html">3. Cotizaciones</a></li>
+            <li><a href="compras.html">4. Compras</a></li>
+            <li><a href="orden-compra.html">5. Orden de Compra</a></li>
+            <li><a href="gastos.html">6. Gastos</a></li>
+            <li><a href="pagos.html">7. Pagos</a></li>
+            <li><a href="nota-credito.html">8. Nota de Crédito</a></li>
+            <li class="active"><a href="inventario.html">9. Inventario</a></li>
+            <li><a href="clientes-prov.html">10. Clientes/Prov.</a></li>
+            <li><a href="comisiones.html">11. Comisiones</a></li>
+            <li><a href="productos.html">12. Productos</a></li>
+            <li><a href="informes.html">13. Informes</a></li>
+            <li><a href="ajustes.html">14. Ajustes</a></li>
+            <li><a href="contabilidad-dgii.html">15. Contabilidad/DGII</a></li> 
+        </ul>
+    </aside>
+
+    <main class="main-content">
+        <header class="topbar">
+            <h2><button class="menu-toggle" id="menu-toggle">☰</button> Inventario</h2>
+            <div class="user-profile">
+                <span id="user-display-name">👤 Cargando...</span>
+                <button id="logout-btn" class="logout-btn">Salir</button>
+            </div>
+        </header>
+
+        <section class="content-area">
+            
+            <div class="inv-kpi-grid">
+                <div class="inv-kpi-card">
+                    <div class="inv-kpi-info">
+                        <h4>Total Artículos (Uds)</h4>
+                        <span id="kpi_total_uds">0</span>
+                    </div>
+                    <div>📦</div>
+                </div>
+                <div class="inv-kpi-card" style="border-color: #b45309;">
+                    <div class="inv-kpi-info">
+                        <h4>Alertas Stock Bajo</h4>
+                        <span id="kpi_alertas" style="color: #fbbf24;">0</span>
+                    </div>
+                    <div>⚠️</div>
+                </div>
+                <div class="inv-kpi-card">
+                    <div class="inv-kpi-info">
+                        <h4>Valor de Almacén</h4>
+                        <span id="kpi_valor" style="color: #34d399;">$0.00</span>
+                    </div>
+                    <div>💵</div>
+                </div>
+            </div>
+
+            <div class="page-header">
+                <h3>Control de Existencias / Almacén</h3>
+                <button class="btn btn-primary" onclick="abrirModalAjuste()">+ Ajuste manual de Stock</button>
+            </div>
+
+            <div class="card">
+                <div class="filter-grid">
+                    <div class="form-group">
+                        <label>Buscar Producto</label>
+                        <input type="text" id="buscador" class="form-control" placeholder="Nombre, código...">
+                    </div>
+                    <div class="form-group">
+                        <label>Estado de Existencia</label>
+                        <select id="filtro-estado" class="form-control">
+                            <option value="todos">Todos los niveles</option>
+                            <option value="ok">Disponible (Stock correcto)</option>
+                            <option value="bajo">Stock Bajo (Alerta)</option>
+                            <option value="agotado">Agotado</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Código</th>
+                                <th>Producto / Descripción</th>
+                                <th>Categoría</th>
+                                <th>Costo Prom.</th>
+                                <th>Precio Venta</th>
+                                <th>Existencia</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-inventario">
+                            <tr><td colspan="7" style="text-align: center;">Cargando inventario...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <footer class="custom-footer">
+            <p>&copy; 2026 
+                <a href="https://lorhels.web.app" target="_blank" rel="noopener noreferrer">
+                    LorHels Systems.
+                </a>Todos los derechos reservados.
+            </p>
+        </footer>
+    </main>
+
+    <div class="modal-overlay" id="modal-ajuste">
+        <div class="modal-content">
+            <button class="modal-close" onclick="cerrarModal('modal-ajuste')">&times;</button>
+            <h3 style="color: #fff; margin-bottom: 20px; border-bottom: 1px solid #374151; padding-bottom: 10px;">Ajuste Manual de Inventario</h3>
+            
+            <form id="form-ajuste">
+                <div class="form-grid">
+                    <div class="form-group full">
+                        <label>Producto a Ajustar *</label>
+                        <select id="a_producto" class="form-control" required>
+                            <option value="" disabled selected>Seleccione producto...</option>
+                        </select>
+                        <span id="lbl_stock_actual" class="help-text" style="color: #60a5fa; font-size:0.8rem;"></span>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Tipo de Ajuste *</label>
+                        <select id="a_tipo" class="form-control" required>
+                            <option value="suma">Entrada (Sumar)</option>
+                            <option value="resta">Salida / Merma (Restar)</option>
+                            <option value="reemplazo">Conteo Exacto (Reemplazar)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Cantidad *</label>
+                        <input type="number" id="a_cantidad" class="form-control" required min="0" step="0.01">
+                    </div>
+
+                    <div class="form-group full">
+                        <label>Motivo del Ajuste *</label>
+                        <textarea id="a_motivo" class="form-control" rows="2" placeholder="Ej: Mercancía dañada, Auditoría de conteo físico..." required></textarea>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-success" id="btn-save-ajuste" style="width:100%; margin-top:15px;">Aplicar Ajuste</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const menuToggleBtn = document.getElementById('menu-toggle');
+        const sidebar = document.getElementById('sidebar');
+        menuToggleBtn.addEventListener('click', () => { sidebar.classList.toggle('active-mobile'); });
+        function cerrarModal(modalId) { document.getElementById(modalId).classList.remove('active'); }
+    </script>
+
+    <script type="module">
+        import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { doc, getDoc, collection, getDocs, updateDoc, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { auth, db } from "./firebaseConfig.js";
+
+        const userDisplayName = document.getElementById('user-display-name');
+        const planBadge = document.getElementById('plan-badge');
+        const logoutBtn = document.getElementById('logout-btn');
+        
+        let currentUserId = null;
+        let inventarioGlobal = [];
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) return window.location.href = "login.html";
+            if (user.email === "tu-correo-administrador@gmail.com") return window.location.href = "admin.html";
+
+            currentUserId = user.uid;
+
+            try {
+                const docSnap = await getDoc(doc(db, "empresas", currentUserId));
+                if (docSnap.exists()) {
+                    const empresa = docSnap.data();
+                    if (empresa.estado === "pendiente") return window.location.href = "dashboard.html";
+                    userDisplayName.innerText = `👤 ${empresa.nombre}`;
+                    planBadge.innerText = `PLAN ${empresa.plan.toUpperCase()}`;
+                    
+                    await cargarInventario();
+                }
+            } catch (error) { console.error(error); }
+        });
+
+        logoutBtn.addEventListener('click', () => signOut(auth).then(() => window.location.href = "login.html"));
+
+        // ==========================================
+        // CARGAR INVENTARIO Y KPI
+        // ==========================================
+        async function cargarInventario() {
+            const tabla = document.getElementById('tabla-inventario');
+            tabla.innerHTML = '<tr><td colspan="7" style="text-align:center;">Cargando inventario...</td></tr>';
+            try {
+                // Solo traemos productos (físicos) que tienen control de stock activado
+                const q = query(
+                    collection(db, `empresas/${currentUserId}/productos`), 
+                    where("tipo", "==", "producto"),
+                    where("control_stock", "==", true)
+                );
+                const querySnapshot = await getDocs(q);
+                
+                inventarioGlobal = [];
+                let kpiUds = 0;
+                let kpiAlertas = 0;
+                let kpiValor = 0;
+
+                querySnapshot.forEach((docSnap) => {
+                    const item = { id: docSnap.id, ...docSnap.data() };
+                    inventarioGlobal.push(item);
+
+                    // Matemáticas para los KPI
+                    kpiUds += item.stock_actual;
+                    kpiValor += (item.stock_actual * (item.tasa_compra || 0));
+                    if (item.stock_actual <= item.stock_minimo) kpiAlertas++;
+                });
+
+                // Actualizar UI de KPIs
+                const fmtDinero = new Intl.NumberFormat('es-DO', { style: 'currency', currency: 'DOP' });
+                const fmtNum = new Intl.NumberFormat('es-DO');
+                
+                document.getElementById('kpi_total_uds').innerText = fmtNum.format(kpiUds);
+                document.getElementById('kpi_alertas').innerText = kpiAlertas;
+                document.getElementById('kpi_valor').innerText = fmtDinero.format(kpiValor);
+
+                renderizarTabla(inventarioGlobal);
+                llenarSelectAjuste(inventarioGlobal);
+
+            } catch (error) { console.error(error); }
+        }
+
+        function renderizarTabla(datos) {
+            const tabla = document.getElementById('tabla-inventario');
+            tabla.innerHTML = "";
+            if (datos.length === 0) { tabla.innerHTML = '<tr><td colspan="7" style="text-align:center;">No hay productos en inventario.</td></tr>'; return; }
+
+            const fmt = (val) => new Intl.NumberFormat('es-DO', { style: 'currency', currency: 'DOP' }).format(val);
+
+            datos.forEach(p => {
+                let badgeClass = "";
+                let badgeText = "";
+                
+                if (p.stock_actual <= 0) {
+                    badgeClass = "stock-none"; badgeText = "Agotado";
+                } else if (p.stock_actual <= p.stock_minimo) {
+                    badgeClass = "stock-low"; badgeText = "Stock Bajo";
+                } else {
+                    badgeClass = "stock-ok"; badgeText = "Disponible";
+                }
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><small style="color:#9ca3af;">${p.codigo}</small></td>
+                    <td><strong>${p.nombre}</strong></td>
+                    <td>${p.categoria || '-'}</td>
+                    <td>${fmt(p.tasa_compra)}</td>
+                    <td style="color:#34d399;">${fmt(p.tasa_venta)}</td>
+                    <td style="font-size:1.1rem; font-weight:bold;">${p.stock_actual} <small style="font-size:0.8rem; font-weight:normal;">${p.unidad}</small></td>
+                    <td><span class="status-badge ${badgeClass}">${badgeText}</span></td>
+                `;
+                tabla.appendChild(tr);
+            });
+        }
+
+        // ==========================================
+        // BUSCADOR Y FILTROS
+        // ==========================================
+        function aplicarFiltros() {
+            const txt = document.getElementById('buscador').value.toLowerCase();
+            const estado = document.getElementById('filtro-estado').value;
+
+            const filtrados = inventarioGlobal.filter(p => {
+                const matchTexto = p.nombre.toLowerCase().includes(txt) || p.codigo.toLowerCase().includes(txt);
+                
+                let matchEstado = true;
+                if (estado === "ok") matchEstado = (p.stock_actual > p.stock_minimo);
+                if (estado === "bajo") matchEstado = (p.stock_actual > 0 && p.stock_actual <= p.stock_minimo);
+                if (estado === "agotado") matchEstado = (p.stock_actual <= 0);
+
+                return matchTexto && matchEstado;
+            });
+            renderizarTabla(filtrados);
+        }
+
+        document.getElementById('buscador').addEventListener('input', aplicarFiltros);
+        document.getElementById('filtro-estado').addEventListener('change', aplicarFiltros);
+
+        // ==========================================
+        // AJUSTE MANUAL
+        // ==========================================
+        function llenarSelectAjuste(productos) {
+            const select = document.getElementById('a_producto');
+            select.innerHTML = '<option value="" disabled selected>Seleccione producto...</option>';
+            productos.forEach(p => {
+                const option = document.createElement('option');
+                option.value = p.id;
+                option.dataset.stock = p.stock_actual;
+                option.text = `${p.codigo} - ${p.nombre}`;
+                select.appendChild(option);
+            });
+        }
+
+        window.abrirModalAjuste = function() {
+            document.getElementById('form-ajuste').reset();
+            document.getElementById('lbl_stock_actual').innerText = "";
+            document.getElementById('modal-ajuste').classList.add('active');
+        }
+
+        document.getElementById('a_producto').addEventListener('change', function(e) {
+            const opt = e.target.options[e.target.selectedIndex];
+            document.getElementById('lbl_stock_actual').innerText = `Stock Actual Registrado: ${opt.dataset.stock} unidades.`;
+        });
+
+        document.getElementById('form-ajuste').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btn-save-ajuste');
+            btn.innerText = "Aplicando..."; btn.disabled = true;
+
+            try {
+                const selectProd = document.getElementById('a_producto');
+                const prodId = selectProd.value;
+                const tipoAjuste = document.getElementById('a_tipo').value;
+                const cantForm = parseFloat(document.getElementById('a_cantidad').value);
+                
+                const stockActualDB = parseFloat(selectProd.options[selectProd.selectedIndex].dataset.stock);
+                let nuevoStockCalculado = 0;
+
+                if (tipoAjuste === 'suma') nuevoStockCalculado = stockActualDB + cantForm;
+                else if (tipoAjuste === 'resta') nuevoStockCalculado = Math.max(0, stockActualDB - cantForm);
+                else if (tipoAjuste === 'reemplazo') nuevoStockCalculado = cantForm;
+
+                // Actualizar producto en la DB
+                await updateDoc(doc(db, `empresas/${currentUserId}/productos`, prodId), {
+                    stock_actual: nuevoStockCalculado
+                });
+
+                cerrarModal('modal-ajuste');
+                alert("Inventario ajustado correctamente.");
+                await cargarInventario(); // Recarga y recalcula KPIs
+
+            } catch (error) {
+                console.error(error);
+                alert("Error al aplicar ajuste.");
+            } finally {
+                btn.innerText = "Aplicar Ajuste"; btn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>

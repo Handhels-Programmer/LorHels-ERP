@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comisiones de Ventas - LorHels Systems</title>
+    <style>
+        /* --- 1. ESTILOS BASE Y LAYOUT --- */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { display: flex; height: 100vh; background-color: #0b0f19; color: #e2e8f0; overflow: hidden; }
+        
+        .sidebar { width: 260px; background-color: #111827; color: white; display: flex; flex-direction: column; border-right: 1px solid #1f2937; transition: transform 0.3s ease; z-index: 1000; }
+        .logo-area { padding: 25px 20px; text-align: center; border-bottom: 1px solid #1f2937; }
+        .logo-area h2 { font-size: 1.2rem; margin-bottom: 5px; color: #ffffff; }
+        .badge { background-color: #374151; font-size: 0.7rem; padding: 3px 8px; border-radius: 12px; color: #d1d5db; }
+        
+        /* --- 2. ESTILOS DEL MENÚ COMPACTO --- */
+        .menu { list-style: none; padding: 15px 0; overflow-y: auto; flex-grow: 1; }
+        .menu::-webkit-scrollbar { width: 6px; }
+        .menu::-webkit-scrollbar-thumb { background-color: #374151; border-radius: 10px; }
+        .menu li { margin: 2px 15px; }
+        .menu li a { display: block; padding: 10px 20px; text-decoration: none; color: #94a3b8; font-size: 0.95rem; border-radius: 8px; transition: all 0.2s ease; }
+        .menu li a:hover { background-color: #1e293b; color: #f8fafc; }
+        .menu li.active a { background-color: #6366f1; color: #ffffff; font-weight: 500; }
+        
+        /* --- 3. CONTENIDO PRINCIPAL --- */
+        .main-content { flex-grow: 1; display: flex; flex-direction: column; width: calc(100% - 260px); }
+        .topbar { background-color: #111827; padding: 15px 30px; border-bottom: 1px solid #1f2937; display: flex; justify-content: space-between; align-items: center; }
+        .menu-toggle { display: none; background: none; border: none; color: #f8fafc; font-size: 1.5rem; cursor: pointer; margin-right: 15px; }
+        .topbar h2 { color: #f8fafc; font-weight: 600; display: flex; align-items: center; }
+        
+        .user-profile { display: flex; align-items: center; }
+        .logout-btn { background: none; border: none; color: #f87171; cursor: pointer; font-size: 0.85rem; margin-left: 10px; text-decoration: underline; }
+        .logout-btn:hover { color: #ef4444; }
+
+        .content-area { padding: 30px; overflow-y: auto; flex-grow: 1; display: flex; flex-direction: column; }
+
+        /* --- 4. TARJETAS, TABLAS Y BOTONES --- */
+        .card { background-color: #1f2937; border-radius: 8px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); border: 1px solid #374151; margin-bottom: 20px; }
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .page-header h3 { color: #e2e8f0; font-size: 1.3rem; }
+        
+        .btn { padding: 10px 18px; border-radius: 6px; cursor: pointer; border: none; font-weight: 500; font-size: 0.9rem; transition: background-color 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 5px;}
+        .btn-primary { background-color: #5a5ce6; color: white; }
+        .btn-primary:hover { background-color: #4c4ed8; }
+
+        .btn-pay-com { background-color: #34d399; color: #0b0f19; padding: 6px 10px; border-radius: 4px; font-weight: bold; border:none; cursor:pointer;}
+        .btn-pay-com:hover { background-color: #10b981; }
+
+        .action-btn { background: none; border: none; color: #9ca3af; cursor: pointer; font-size: 1.1rem; margin-right: 10px; }
+        .action-btn:hover { color: #818cf8; }
+
+        .filter-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 10px; }
+        .form-group { display: flex; flex-direction: column; }
+        .form-group label { font-size: 0.85rem; color: #9ca3af; margin-bottom: 5px; }
+        .form-control { background-color: #111827; border: 1px solid #374151; color: #e2e8f0; padding: 10px 12px; border-radius: 6px; outline: none; }
+        .form-control:focus { border-color: #5a5ce6; }
+
+        .table-responsive { width: 100%; overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th { background-color: #111827; color: #9ca3af; padding: 12px 15px; font-size: 0.9rem; border-bottom: 2px solid #374151; white-space: nowrap; }
+        td { padding: 12px 15px; border-bottom: 1px solid #374151; font-size: 0.95rem; color: #e2e8f0; vertical-align: middle;}
+        tbody tr:hover { background-color: #374151; }
+        
+        .inp-comision { width: 60px; background-color: #0b0f19; border: 1px solid #374151; color: #fff; padding: 5px; border-radius: 4px; text-align: center; }
+        
+        /* Badges de Estado */
+        .status-badge { padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; }
+        .status-paid { background-color: rgba(52, 211, 153, 0.2); color: #34d399; }      
+        .status-pending { background-color: rgba(251, 191, 36, 0.2); color: #fbbf24; }    
+
+        /* --- 5. ESTILOS DEL FOOTER --- */
+        .custom-footer { padding: 24px; text-align: center; color: #64748b; font-size: 0.875rem; border-top: 1px solid #1e293b; margin-top: auto; }
+        .custom-footer a { color: #a3a3a3; text-decoration: underline; transition: color 0.2s; font-weight: 500; }
+        .custom-footer a:hover { color: #ffffff; }
+
+        /* --- 6. RESPONSIVO --- */
+        @media (max-width: 768px) {
+            .menu-toggle { display: block; }
+            .sidebar { position: fixed; height: 100vh; left: 0; top: 0; transform: translateX(-100%); }
+            .sidebar.active-mobile { transform: translateX(0); box-shadow: 5px 0 15px rgba(0,0,0,0.5); }
+            .main-content { width: 100%; }
+            .content-area, .topbar { padding: 15px; }
+            .page-header { flex-direction: column; align-items: flex-start; gap: 15px; }
+            .btn { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar" id="sidebar">
+        <div class="logo-area">
+            <h2>LorHels Systems</h2>
+            <span class="badge" id="plan-badge">CARGANDO...</span>
+        </div>
+        <ul class="menu">
+            <li><a href="dashboard.html">1. Dashboard</a></li>
+            <li><a href="facturas.html">2. Facturas</a></li>
+            <li><a href="cotizaciones.html">3. Cotizaciones</a></li>
+            <li><a href="compras.html">4. Compras</a></li>
+            <li><a href="orden-compra.html">5. Orden de Compra</a></li>
+            <li><a href="gastos.html">6. Gastos</a></li>
+            <li><a href="pagos.html">7. Pagos</a></li>
+            <li><a href="nota-credito.html">8. Nota de Crédito</a></li>
+            <li><a href="inventario.html">9. Inventario</a></li>
+            <li><a href="clientes-prov.html">10. Clientes/Prov.</a></li>
+            <li class="active"><a href="comisiones.html">11. Comisiones</a></li>
+            <li><a href="productos.html">12. Productos</a></li>
+            <li><a href="informes.html">13. Informes</a></li>
+            <li><a href="ajustes.html">14. Ajustes</a></li>
+            <li><a href="contabilidad-dgii.html">15. Contabilidad/DGII</a></li> 
+        </ul>
+    </aside>
+
+    <main class="main-content">
+        <header class="topbar">
+            <h2><button class="menu-toggle" id="menu-toggle">☰</button> Comisiones</h2>
+            <div class="user-profile">
+                <span id="user-display-name">👤 Cargando...</span>
+                <button id="logout-btn" class="logout-btn">Salir</button>
+            </div>
+        </header>
+
+        <section class="content-area">
+            
+            <div class="page-header">
+                <h3>Control de Comisiones por Vendedor</h3>
+                <p style="color: #9ca3af; font-size: 0.9rem;">(Se alimenta de las facturas que tengan el campo 'Vendedor' lleno)</p>
+            </div>
+
+            <div class="card">
+                <div class="filter-grid">
+                    <div class="form-group">
+                        <label>Vendedor</label>
+                        <select id="filtro-vendedor" class="form-control">
+                            <option value="todos">Todos los vendedores</option>
+                            </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Estado de Liquidación</label>
+                        <select id="filtro-estado" class="form-control">
+                            <option value="todos">Todos</option>
+                            <option value="pendiente">Pendiente de Pago</option>
+                            <option value="pagado">Pagado / Liquidado</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Fecha Fac.</th>
+                                <th>Vendedor</th>
+                                <th>Factura Ref.</th>
+                                <th>Monto Venta</th>
+                                <th>% Comisión</th>
+                                <th>Monto Comisión</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-comisiones">
+                            <tr><td colspan="8" style="text-align: center;">Buscando facturas y calculando comisiones...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <footer class="custom-footer">
+            <p>&copy; 2026 
+                <a href="https://lorhels.web.app" target="_blank" rel="noopener noreferrer">
+                    LorHels Systems.
+                </a>Todos los derechos reservados.
+            </p>
+        </footer>
+    </main>
+
+    <script>
+        const menuToggleBtn = document.getElementById('menu-toggle');
+        const sidebar = document.getElementById('sidebar');
+        menuToggleBtn.addEventListener('click', () => { sidebar.classList.toggle('active-mobile'); });
+    </script>
+
+    <script type="module">
+        import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { doc, getDoc, collection, getDocs, updateDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { auth, db } from "./firebaseConfig.js";
+
+        const userDisplayName = document.getElementById('user-display-name');
+        const planBadge = document.getElementById('plan-badge');
+        const logoutBtn = document.getElementById('logout-btn');
+        
+        let currentUserId = null;
+        let comisionesGlobales = []; // Array que extraemos de las facturas
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) return window.location.href = "login.html";
+            if (user.email === "tu-correo-administrador@gmail.com") return window.location.href = "admin.html";
+
+            currentUserId = user.uid;
+
+            try {
+                const docSnap = await getDoc(doc(db, "empresas", currentUserId));
+                if (docSnap.exists()) {
+                    const empresa = docSnap.data();
+                    if (empresa.estado === "pendiente") return window.location.href = "dashboard.html";
+                    userDisplayName.innerText = `👤 ${empresa.nombre}`;
+                    planBadge.innerText = `PLAN ${empresa.plan.toUpperCase()}`;
+                    
+                    await cargarComisionesDesdeFacturas();
+                }
+            } catch (error) { console.error(error); }
+        });
+
+        logoutBtn.addEventListener('click', () => signOut(auth).then(() => window.location.href = "login.html"));
+
+        // ==========================================
+        // CARGAR FACTURAS QUE TENGAN VENDEDOR
+        // ==========================================
+        async function cargarComisionesDesdeFacturas() {
+            const tabla = document.getElementById('tabla-comisiones');
+            try {
+                const q = query(collection(db, `empresas/${currentUserId}/facturas`), orderBy("fecha_creacion", "desc"));
+                const querySnapshot = await getDocs(q);
+                
+                comisionesGlobales = [];
+                let vendedoresUnicos = new Set();
+                
+                querySnapshot.forEach(doc => {
+                    const fac = { id: doc.id, ...doc.data() };
+                    // Solo tomamos en cuenta facturas que tengan un vendedor asignado
+                    if (fac.vendedor && fac.vendedor.trim() !== "") {
+                        vendedoresUnicos.add(fac.vendedor);
+                        
+                        // Si la factura no tiene % de comisión guardado, asumimos 5% por defecto temporalmente
+                        const porcComision = fac.comision_porcentaje || 5; 
+                        const montoComision = fac.total * (porcComision / 100);
+                        const estadoComision = fac.comision_pagada ? "pagado" : "pendiente";
+
+                        comisionesGlobales.push({
+                            factura_id: fac.id,
+                            fecha: fac.fecha_emision,
+                            vendedor: fac.vendedor,
+                            monto_venta: fac.total,
+                            porc_comision: porcComision,
+                            monto_comision: montoComision,
+                            estado: estadoComision
+                        });
+                    }
+                });
+
+                // Llenar selector de vendedores
+                const selVend = document.getElementById('filtro-vendedor');
+                selVend.innerHTML = '<option value="todos">Todos los vendedores</option>';
+                vendedoresUnicos.forEach(v => {
+                    selVend.innerHTML += `<option value="${v}">${v}</option>`;
+                });
+
+                renderizarTabla(comisionesGlobales);
+
+            } catch (error) { 
+                console.error(error); 
+                tabla.innerHTML = '<tr><td colspan="8" style="text-align:center;">Error al cargar datos.</td></tr>';
+            }
+        }
+
+        // ==========================================
+        // RENDERIZAR TABLA Y CALCULAR EN TIEMPO REAL
+        // ==========================================
+        function renderizarTabla(datos) {
+            const tabla = document.getElementById('tabla-comisiones');
+            tabla.innerHTML = "";
+            
+            if (datos.length === 0) { 
+                tabla.innerHTML = '<tr><td colspan="8" style="text-align:center; color:#9ca3af;">No se encontraron facturas con vendedores asignados.</td></tr>'; 
+                return; 
+            }
+
+            const fmt = (val) => new Intl.NumberFormat('es-DO', { style: 'currency', currency: 'DOP' }).format(val);
+
+            datos.forEach((com, index) => {
+                let badgeEst = com.estado === "pagado" 
+                    ? '<span class="status-badge status-paid">Liquidado</span>' 
+                    : '<span class="status-badge status-pending">Pendiente</span>';
+                
+                let actionBtn = com.estado === "pagado"
+                    ? `<span style="color:#64748b; font-size:0.8rem;">Ya pagado</span>`
+                    : `<button class="btn-pay-com" onclick="pagarComision('${com.factura_id}', ${index})">💵 Pagar</button>`;
+
+                // Input para el % solo si NO está pagada. Si está pagada, solo mostramos el texto.
+                let porcInput = com.estado === "pagado"
+                    ? `${com.porc_comision}%`
+                    : `<input type="number" class="inp-comision" id="porc_${index}" value="${com.porc_comision}" min="0" max="100" oninput="recalcularMonto(${index}, ${com.monto_venta})"> %`;
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${com.fecha}</td>
+                    <td><strong>${com.vendedor}</strong></td>
+                    <td style="color:#818cf8;">FAC-${com.factura_id.substring(0,6).toUpperCase()}</td>
+                    <td>${fmt(com.monto_venta)}</td>
+                    <td>${porcInput}</td>
+                    <td style="font-weight:bold; color:#34d399;" id="monto_com_${index}">${fmt(com.monto_comision)}</td>
+                    <td>${badgeEst}</td>
+                    <td>${actionBtn}</td>
+                `;
+                tabla.appendChild(tr);
+            });
+        }
+
+        // Función Global para recalcular el texto visual mientras se teclea el %
+        window.recalcularMonto = function(index, montoVenta) {
+            const porcNuevo = parseFloat(document.getElementById(`porc_${index}`).value) || 0;
+            const montoCalculado = montoVenta * (porcNuevo / 100);
+            const fmt = new Intl.NumberFormat('es-DO', { style: 'currency', currency: 'DOP' }).format(montoCalculado);
+            document.getElementById(`monto_com_${index}`).innerText = fmt;
+        }
+
+        // ==========================================
+        // FILTROS
+        // ==========================================
+        function aplicarFiltros() {
+            const vend = document.getElementById('filtro-vendedor').value;
+            const est = document.getElementById('filtro-estado').value;
+
+            const filtrados = comisionesGlobales.filter(c => {
+                const matchVend = vend === "todos" || c.vendedor === vend;
+                const matchEst = est === "todos" || c.estado === est;
+                return matchVend && matchEst;
+            });
+            renderizarTabla(filtrados);
+        }
+
+        document.getElementById('filtro-vendedor').addEventListener('change', aplicarFiltros);
+        document.getElementById('filtro-estado').addEventListener('change', aplicarFiltros);
+
+        // ==========================================
+        // ACCIÓN: PAGAR COMISIÓN A LA FACTURA
+        // ==========================================
+        window.pagarComision = async function(facturaId, indexHtml) {
+            if(!confirm("¿Confirmas que le has pagado esta comisión al vendedor?\n\nEsta acción modificará la factura original para marcar la comisión como liquidada.")) return;
+            
+            try {
+                // Obtenemos el porcentaje final que el usuario dejó en el cuadrito
+                const porcFinal = parseFloat(document.getElementById(`porc_${indexHtml}`).value) || 0;
+
+                // Actualizamos la factura original en la base de datos
+                await updateDoc(doc(db, `empresas/${currentUserId}/facturas`, facturaId), {
+                    comision_porcentaje: porcFinal,
+                    comision_pagada: true
+                });
+
+                alert("¡Comisión marcada como pagada!");
+                await cargarComisionesDesdeFacturas(); // Refrescar
+
+            } catch (error) {
+                console.error(error);
+                alert("Hubo un error al guardar el pago de comisión.");
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contabilidad y DGII - LorHels Systems</title>
+    <style>
+        /* --- 1. ESTILOS BASE Y LAYOUT --- */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { display: flex; height: 100vh; background-color: #0b0f19; color: #e2e8f0; overflow: hidden; }
+        
+        .sidebar { width: 260px; background-color: #111827; color: white; display: flex; flex-direction: column; border-right: 1px solid #1f2937; transition: transform 0.3s ease; z-index: 1000; }
+        .logo-area { padding: 25px 20px; text-align: center; border-bottom: 1px solid #1f2937; }
+        .logo-area h2 { font-size: 1.2rem; margin-bottom: 5px; color: #ffffff; }
+        .badge { background-color: #374151; font-size: 0.7rem; padding: 3px 8px; border-radius: 12px; color: #d1d5db; }
+        
+        /* --- 2. ESTILOS DEL MENÚ COMPACTO --- */
+        .menu { list-style: none; padding: 15px 0; overflow-y: auto; flex-grow: 1; }
+        .menu::-webkit-scrollbar { width: 6px; }
+        .menu::-webkit-scrollbar-thumb { background-color: #374151; border-radius: 10px; }
+        .menu li { margin: 2px 15px; }
+        .menu li a { display: block; padding: 10px 20px; text-decoration: none; color: #94a3b8; font-size: 0.95rem; border-radius: 8px; transition: all 0.2s ease; }
+        .menu li a:hover { background-color: #1e293b; color: #f8fafc; }
+        .menu li.active a { background-color: #6366f1; color: #ffffff; font-weight: 500; }
+        
+        /* --- 3. CONTENIDO PRINCIPAL --- */
+        .main-content { flex-grow: 1; display: flex; flex-direction: column; width: calc(100% - 260px); }
+        .topbar { background-color: #111827; padding: 15px 30px; border-bottom: 1px solid #1f2937; display: flex; justify-content: space-between; align-items: center; }
+        .menu-toggle { display: none; background: none; border: none; color: #f8fafc; font-size: 1.5rem; cursor: pointer; margin-right: 15px; }
+        .topbar h2 { color: #f8fafc; font-weight: 600; display: flex; align-items: center; }
+        
+        .user-profile { display: flex; align-items: center; }
+        .logout-btn { background: none; border: none; color: #f87171; cursor: pointer; font-size: 0.85rem; margin-left: 10px; text-decoration: underline; }
+        .logout-btn:hover { color: #ef4444; }
+
+        .content-area { padding: 30px; overflow-y: auto; flex-grow: 1; display: flex; flex-direction: column; }
+
+        /* --- 4. TARJETAS, TABLAS Y BOTONES --- */
+        .card { background-color: #1f2937; border-radius: 8px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); border: 1px solid #374151; margin-bottom: 20px; }
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .page-header h3 { color: #e2e8f0; font-size: 1.3rem; }
+        
+        .btn { padding: 10px 18px; border-radius: 6px; cursor: pointer; border: none; font-weight: 500; font-size: 0.9rem; transition: background-color 0.2s; }
+        .btn-primary { background-color: #5a5ce6; color: white; }
+        .btn-primary:hover { background-color: #4c4ed8; }
+        
+        .btn-dgii { background-color: #1e293b; color: #e2e8f0; border: 1px solid #475569; padding: 8px 12px; font-size: 0.85rem; border-radius: 6px; cursor: pointer; transition: all 0.2s; }
+        .btn-dgii:hover { background-color: #334155; border-color: #6366f1; }
+        .btn-dgii:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .btn-danger { background-color: transparent; border: none; color: #f87171; cursor: pointer; font-size: 1rem; }
+        .btn-danger:hover { color: #ef4444; }
+
+        .table-responsive { width: 100%; overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th { background-color: #111827; color: #9ca3af; padding: 12px 15px; font-size: 0.9rem; border-bottom: 2px solid #374151; }
+        td { padding: 12px 15px; border-bottom: 1px solid #374151; font-size: 0.95rem; color: #e2e8f0; }
+        tbody tr:hover { background-color: #374151; }
+        
+        /* Badges de alertas de NCF */
+        .status-badge { padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; }
+        .ncf-ok { background-color: rgba(52, 211, 153, 0.2); color: #34d399; }
+        .ncf-low { background-color: rgba(251, 191, 36, 0.2); color: #fbbf24; }
+        .ncf-out { background-color: rgba(248, 113, 113, 0.2); color: #f87171; }
+
+        /* Grid específico para descargas de formatos 606/607 */
+        .dgii-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; margin-top: 10px; }
+        .dgii-box { background-color: #111827; border: 1px solid #374151; border-radius: 6px; padding: 15px; display: flex; flex-direction: column; justify-content: space-between; min-height: 140px; }
+        .dgii-box h4 { color: #818cf8; margin-bottom: 5px; font-size: 1rem; }
+        .dgii-box p { color: #9ca3af; font-size: 0.85rem; margin-bottom: 15px; line-height: 1.4; }
+
+        /* --- 5. MODAL FORMULARIO NCF --- */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); display: none; justify-content: center; align-items: center; z-index: 2000; }
+        .modal-overlay.active { display: flex; }
+        .modal-content { background-color: #1f2937; padding: 25px; border-radius: 8px; border: 1px solid #374151; width: 100%; max-width: 500px; }
+        .modal-close { position: absolute; top: 15px; right: 15px; background: none; border: none; color: #9ca3af; font-size: 1.5rem; cursor: pointer; }
+        
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+        .form-group { display: flex; flex-direction: column; }
+        .form-group.full { grid-column: 1 / -1; }
+        .form-group label { font-size: 0.85rem; color: #9ca3af; margin-bottom: 5px; }
+        .form-control { background-color: #111827; border: 1px solid #374151; color: #e2e8f0; padding: 10px 12px; border-radius: 6px; outline: none; width: 100%;}
+        .form-control:focus { border-color: #5a5ce6; }
+
+        /* --- 6. ESTILOS DEL FOOTER --- */
+        .custom-footer { padding: 24px; text-align: center; color: #64748b; font-size: 0.875rem; border-top: 1px solid #1e293b; margin-top: auto; }
+        .custom-footer a { color: #a3a3a3; text-decoration: underline; transition: color 0.2s; font-weight: 500; }
+        .custom-footer a:hover { color: #ffffff; }
+
+        /* --- 7. RESPONSIVO --- */
+        @media (max-width: 768px) {
+            .menu-toggle { display: block; }
+            .sidebar { position: fixed; height: 100vh; left: 0; top: 0; transform: translateX(-100%); }
+            .sidebar.active-mobile { transform: translateX(0); box-shadow: 5px 0 15px rgba(0,0,0,0.5); }
+            .main-content { width: 100%; }
+            .content-area, .topbar { padding: 15px; }
+            .page-header { flex-direction: column; align-items: flex-start; gap: 15px; }
+            .btn { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar" id="sidebar">
+        <div class="logo-area">
+            <h2>LorHels Systems</h2>
+            <span class="badge" id="plan-badge">CARGANDO...</span>
+        </div>
+        <ul class="menu">
+            <li><a href="dashboard.html">1. Dashboard</a></li>
+            <li><a href="facturas.html">2. Facturas</a></li>
+            <li><a href="cotizaciones.html">3. Cotizaciones</a></li>
+            <li><a href="compras.html">4. Compras</a></li>
+            <li><a href="orden-compra.html">5. Orden de Compra</a></li>
+            <li><a href="gastos.html">6. Gastos</a></li>
+            <li><a href="pagos.html">7. Pagos</a></li>
+            <li><a href="nota-credito.html">8. Nota de Crédito</a></li>
+            <li><a href="inventario.html">9. Inventario</a></li>
+            <li><a href="clientes-prov.html">10. Clientes/Prov.</a></li>
+            <li><a href="comisiones.html">11. Comisiones</a></li>
+            <li><a href="productos.html">12. Productos</a></li>
+            <li><a href="informes.html">13. Informes</a></li>
+            <li><a href="ajustes.html">14. Ajustes</a></li>
+            <li class="active"><a href="contabilidad-dgii.html">15. Contabilidad/DGII</a></li> 
+        </ul>
+    </aside>
+
+    <main class="main-content">
+        <header class="topbar">
+            <h2>
+                <button class="menu-toggle" id="menu-toggle">☰</button>
+                Contabilidad / DGII
+            </h2>
+            <div class="user-profile">
+                <span id="user-display-name">👤 Cargando...</span>
+                <button id="logout-btn" class="logout-btn">Salir</button>
+            </div>
+        </header>
+
+        <section class="content-area">
+            
+            <div class="page-header">
+                <h3>Reportería Fiscal y Comprobantes</h3>
+                <button class="btn btn-primary" onclick="abrirModalNCF()">+ Registrar Nueva Secuencia NCF</button>
+            </div>
+
+            <div class="card">
+                <h3 style="color: #e2e8f0; font-size: 1.1rem; margin-bottom: 15px;">Estatus de Secuencias NCF Autorizadas</h3>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Tipo de Comprobante</th>
+                                <th>Prefijo</th>
+                                <th>Desde</th>
+                                <th>Hasta</th>
+                                <th>Último Usado</th>
+                                <th>Disponibles</th>
+                                <th>Vence</th>
+                                <th>Estado</th>
+                                <th>Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-ncf">
+                            <tr><td colspan="9" style="text-align: center;">Cargando secuencias fiscales...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3 style="color: #e2e8f0; font-size: 1.1rem; margin-bottom: 5px;">Formatos de Envío Mensual Informativo (TXT)</h3>
+                <p style="color: #9ca3af; font-size: 0.9rem; margin-bottom: 15px;">Selecciona el periodo para generar los archivos listos para subir a la Oficina Virtual.</p>
+                
+                <div style="margin-bottom: 15px; display: flex; gap: 15px; align-items: center;">
+                    <div style="display: flex; flex-direction: column;">
+                        <label style="font-size: 0.8rem; color: #9ca3af; margin-bottom: 4px;">Periodo de Reporte</label>
+                        <input type="month" id="f_periodo" class="form-control" style="width: 180px;">
+                    </div>
+                </div>
+
+                <div class="dgii-grid">
+                    <div class="dgii-box">
+                        <div>
+                            <h4>Formato 606 (Compras y Gastos)</h4>
+                            <p>Solo compilará registros que cuenten con un NCF asignado.</p>
+                        </div>
+                        <button class="btn-dgii" onclick="generar606(this)">💾 Descargar Archivo (.TXT)</button>
+                    </div>
+                    <div class="dgii-box">
+                        <div>
+                            <h4>Formato 607 (Ventas e Ingresos)</h4>
+                            <p>Solo compilará facturas emitidas que posean valor fiscal (NCF).</p>
+                        </div>
+                        <button class="btn-dgii" onclick="generar607(this)">💾 Descargar Archivo (.TXT)</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <footer class="custom-footer">
+            <p>&copy; 2026 
+                <a href="https://lorhels.web.app" target="_blank" rel="noopener noreferrer">
+                    LorHels Systems.
+                </a>Todos los derechos reservados.
+            </p>
+        </footer>
+    </main>
+
+    <div class="modal-overlay" id="modal-ncf">
+        <div class="modal-content" style="position: relative;">
+            <button class="modal-close" onclick="cerrarModal('modal-ncf')">&times;</button>
+            <h3 style="color: #fff; margin-bottom: 20px; border-bottom: 1px solid #374151; padding-bottom: 10px;">Registrar Secuencia NCF</h3>
+            
+            <form id="form-ncf">
+                <div class="form-grid">
+                    <div class="form-group full">
+                        <label>Tipo de Comprobante *</label>
+                        <select id="n_tipo" class="form-control" required>
+                            <option value="B01">Crédito Fiscal (B01)</option>
+                            <option value="B02">Consumo (B02)</option>
+                            <option value="B04">Nota de Crédito (B04)</option>
+                            <option value="B14">Gubernamental (B14)</option>
+                            <option value="B15">Exportación (B15)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Folio Desde (Solo números) *</label>
+                        <input type="number" id="n_desde" class="form-control" placeholder="Ej. 1" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Folio Hasta (Solo números) *</label>
+                        <input type="number" id="n_hasta" class="form-control" placeholder="Ej. 500" required>
+                    </div>
+                    
+                    <div class="form-group full">
+                        <label>Fecha de Vencimiento de la Resolución *</label>
+                        <input type="date" id="n_vence" class="form-control" required>
+                    </div>
+                </div>
+                
+                <p style="color: #fbbf24; font-size: 0.8rem; margin-bottom: 15px;">* Nota: El sistema rellenará automáticamente los ceros a la izquierda para completar los 8 dígitos requeridos por DGII (Ej: 1 = B0100000001).</p>
+                <button type="submit" class="btn btn-primary" id="btn-save-ncf" style="width:100%;">Guardar Secuencia</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const menuToggleBtn = document.getElementById('menu-toggle');
+        const sidebar = document.getElementById('sidebar');
+        menuToggleBtn.addEventListener('click', () => { sidebar.classList.toggle('active-mobile'); });
+        function cerrarModal(modalId) { document.getElementById(modalId).classList.remove('active'); }
+        
+        // Seteo mes actual
+        document.getElementById('f_periodo').value = new Date().toISOString().slice(0, 7);
+    </script>
+
+    <script type="module">
+        import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { doc, getDoc, collection, getDocs, addDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { auth, db } from "./firebaseConfig.js";
+
+        const userDisplayName = document.getElementById('user-display-name');
+        const planBadge = document.getElementById('plan-badge');
+        const logoutBtn = document.getElementById('logout-btn');
+        
+        let currentUserId = null;
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) return window.location.href = "login.html";
+            if (user.email === "tu-correo-administrador@gmail.com") return window.location.href = "admin.html";
+
+            currentUserId = user.uid;
+
+            try {
+                const docSnap = await getDoc(doc(db, "empresas", currentUserId));
+                if (docSnap.exists()) {
+                    const empresa = docSnap.data();
+                    if (empresa.estado === "pendiente") return window.location.href = "dashboard.html";
+                    userDisplayName.innerText = `👤 ${empresa.nombre}`;
+                    planBadge.innerText = `PLAN ${empresa.plan.toUpperCase()}`;
+                    
+                    await cargarNCF();
+                }
+            } catch (error) { console.error(error); }
+        });
+
+        logoutBtn.addEventListener('click', () => signOut(auth).then(() => window.location.href = "login.html"));
+
+        // ==========================================
+        // MÓDULO NCF (SECUENCIAS)
+        // ==========================================
+        const nombresNCF = {
+            "B01": "Crédito Fiscal", "B02": "Consumo", "B04": "Nota de Crédito", "B14": "Gubernamental", "B15": "Exportación"
+        };
+
+        async function cargarNCF() {
+            const tabla = document.getElementById('tabla-ncf');
+            tabla.innerHTML = '<tr><td colspan="9" style="text-align:center;">Cargando...</td></tr>';
+            try {
+                const q = query(collection(db, `empresas/${currentUserId}/ncf`), orderBy("prefijo", "asc"));
+                const snapshot = await getDocs(q);
+                
+                tabla.innerHTML = "";
+                
+                if(snapshot.empty) {
+                    tabla.innerHTML = '<tr><td colspan="9" style="text-align:center;">No hay secuencias registradas.</td></tr>';
+                    return;
+                }
+
+                snapshot.forEach(docSnap => {
+                    const s = { id: docSnap.id, ...docSnap.data() };
+                    const disponibles = s.hasta - s.usado_actual;
+                    
+                    let badgeEst = "";
+                    if(disponibles <= 0) badgeEst = '<span class="status-badge ncf-out">Agotado</span>';
+                    else if(disponibles <= 10) badgeEst = '<span class="status-badge ncf-low">Agotándose</span>';
+                    else badgeEst = '<span class="status-badge ncf-ok">Saludable</span>';
+
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${nombresNCF[s.prefijo] || "Comprobante"}</td>
+                        <td style="color:#818cf8; font-weight:bold;">${s.prefijo}</td>
+                        <td>${String(s.desde).padStart(8, '0')}</td>
+                        <td>${String(s.hasta).padStart(8, '0')}</td>
+                        <td>${String(s.usado_actual).padStart(8, '0')}</td>
+                        <td><strong style="color: ${disponibles <= 10 ? '#f87171' : '#e2e8f0'}">${disponibles} uds</strong></td>
+                        <td>${s.vencimiento}</td>
+                        <td>${badgeEst}</td>
+                        <td><button class="btn-danger" onclick="eliminarNCF('${s.id}')" title="Borrar Secuencia">🗑️</button></td>
+                    `;
+                    tabla.appendChild(tr);
+                });
+            } catch (error) { console.error(error); }
+        }
+
+        window.abrirModalNCF = function() {
+            document.getElementById('form-ncf').reset();
+            document.getElementById('modal-ncf').classList.add('active');
+        }
+
+        document.getElementById('form-ncf').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btn-save-ncf');
+            btn.innerText = "Guardando..."; btn.disabled = true;
+
+            const desde = parseInt(document.getElementById('n_desde').value);
+            const hasta = parseInt(document.getElementById('n_hasta').value);
+
+            if(desde > hasta) {
+                alert("El folio 'Desde' no puede ser mayor que 'Hasta'.");
+                btn.innerText = "Guardar Secuencia"; btn.disabled = false;
+                return;
+            }
+
+            try {
+                const datos = {
+                    prefijo: document.getElementById('n_tipo').value,
+                    desde: desde,
+                    hasta: hasta,
+                    usado_actual: desde - 1, 
+                    vencimiento: document.getElementById('n_vence').value
+                };
+                
+                await addDoc(collection(db, `empresas/${currentUserId}/ncf`), datos);
+                cerrarModal('modal-ncf');
+                cargarNCF();
+            } catch (error) {
+                console.error(error);
+                alert("Error al registrar secuencia.");
+            } finally {
+                btn.innerText = "Guardar Secuencia"; btn.disabled = false;
+            }
+        });
+
+        window.eliminarNCF = async function(id) {
+            if(!confirm("¿Estás seguro de eliminar esta secuencia NCF? No podrás deshacer esto.")) return;
+            try {
+                await deleteDoc(doc(db, `empresas/${currentUserId}/ncf`, id));
+                cargarNCF();
+            } catch(e) { console.error(e); alert("Error al eliminar."); }
+        }
+
+        // ==========================================
+        // GENERADORES 606 Y 607 (RESTRINGIDO SOLO A NCF)
+        // ==========================================
+        
+        function descargarTXT(contenido, nombreArchivo) {
+            const blob = new Blob([contenido], { type: 'text/plain;charset=utf-8;' });
+            const link = document.createElement("a");
+            if (link.download !== undefined) {
+                const url = URL.createObjectURL(blob);
+                link.setAttribute("href", url);
+                link.setAttribute("download", nombreArchivo);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        }
+
+        window.generar606 = async function(btn) {
+            const periodo = document.getElementById('f_periodo').value; // YYYY-MM
+            if(!periodo) return alert("Selecciona un periodo.");
+            
+            btn.innerText = "Calculando..."; btn.disabled = true;
+            
+            try {
+                const q = query(collection(db, `empresas/${currentUserId}/compras`));
+                const snapshot = await getDocs(q);
+                
+                let registros = [];
+                snapshot.forEach(doc => {
+                    const c = doc.data();
+                    // REGLA: Debe ser del mes Y tener un NCF en la referencia
+                    if(c.fecha_compra && c.fecha_compra.startsWith(periodo) && c.referencia_factura && c.referencia_factura.trim() !== "") {
+                        registros.push(c);
+                    }
+                });
+
+                if(registros.length === 0) {
+                    alert("No existen compras con comprobante fiscal (NCF) registradas en este periodo.");
+                    btn.innerText = "💾 Descargar Archivo (.TXT)"; btn.disabled = false;
+                    return;
+                }
+
+                let txt = `RNC|${periodo.replace('-','')}|${registros.length}\n`;
+                
+                registros.forEach(r => {
+                    const rncSimulado = "123456789"; 
+                    const tipoBien = "02"; // Código 02: Gastos por trabajo / Servicios
+                    const fechaTxt = r.fecha_compra.replace(/-/g, '');
+                    // Estructura oficial aproximada: RNC|TipoId|NCF|NCF_Modificado|Fecha|FechaPago|TipoBien|Monto|ITBIS
+                    txt += `${rncSimulado}|1|${r.referencia_factura}||${fechaTxt}|${fechaTxt}|${tipoBien}|${r.total.toFixed(2)}|0.00\n`;
+                });
+
+                descargarTXT(txt, `DGII_606_${periodo.replace('-','')}.txt`);
+
+            } catch(e) { console.error(e); alert("Error generando archivo."); }
+            finally { btn.innerText = "💾 Descargar Archivo (.TXT)"; btn.disabled = false; }
+        }
+
+        window.generar607 = async function(btn) {
+            const periodo = document.getElementById('f_periodo').value; // YYYY-MM
+            if(!periodo) return alert("Selecciona un periodo.");
+            
+            btn.innerText = "Calculando..."; btn.disabled = true;
+            
+            try {
+                const q = query(collection(db, `empresas/${currentUserId}/facturas`));
+                const snapshot = await getDocs(q);
+                
+                let registros = [];
+                snapshot.forEach(doc => {
+                    const f = doc.data();
+                    // REGLA: Debe ser del mes Y la factura debió ser emitida con NCF
+                    if(f.fecha_emision && f.fecha_emision.startsWith(periodo) && f.ncf && f.ncf.trim() !== "") {
+                        registros.push(f);
+                    }
+                });
+
+                if(registros.length === 0) {
+                    alert("No existen facturas de venta con valor fiscal (NCF) emitidas en este periodo.");
+                    btn.innerText = "💾 Descargar Archivo (.TXT)"; btn.disabled = false;
+                    return;
+                }
+
+                let txt = `RNC|${periodo.replace('-','')}|${registros.length}\n`;
+                
+                registros.forEach(r => {
+                    const rncCliente = r.cliente_rnc || "987654321"; // Simulado si no hay RNC
+                    const fechaTxt = r.fecha_emision.replace(/-/g, '');
+                    const tipoIngreso = "01"; // Ingresos por operaciones
+                    // Estructura oficial aproximada: RNC|TipoId|NCF|NCFModificado|TipoIngreso|Fecha|FechaPago|Monto|ITBIS
+                    txt += `${rncCliente}|1|${r.ncf}||${tipoIngreso}|${fechaTxt}|${fechaTxt}|${r.total.toFixed(2)}|0.00\n`;
+                });
+
+                descargarTXT(txt, `DGII_607_${periodo.replace('-','')}.txt`);
+
+            } catch(e) { console.error(e); alert("Error generando archivo."); }
+            finally { btn.innerText = "💾 Descargar Archivo (.TXT)"; btn.disabled = false; }
+        }
+
+    </script>
+</body>
+</html>
